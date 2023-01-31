@@ -128,8 +128,19 @@ class IMP_Smime
         try {
             $val = HordeString::convertToUtf8($val);
         } catch (Exception $ex) {
+		}
+
+		// check if a private key already exists
+        $check  = $prefs->getValue('smime_private_key');
+        // if there is no private key, give it the default $prefName, else add an unique number to the name?
+        if(empty($check)){
+            $GLOBALS['prefs']->setValue($prefName, $val);
         }
-        $GLOBALS['prefs']->setValue($prefName, $val);
+        else {
+            // TODO: setValue in a way that it is retrievable by id
+        	$GLOBALS['prefs']->setValue($prefName, $val);
+        }
+
     }
 
     /**
