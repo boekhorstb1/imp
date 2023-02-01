@@ -35,27 +35,30 @@ class IMP_Prefs_Special_SmimePublicKey implements Horde_Core_Prefs_Ui_Special
     {
         global $browser, $injector, $page_output, $prefs;
 
+        /* Adding js to page output */
         $page_output->addScriptPackage('IMP_Script_Package_Imp');
 
+        /* Adding css to page output */
         $p_css = new Horde_Themes_Element('prefs.css');
         $page_output->addStylesheet($p_css->fs, $p_css->uri);
 
+        /* Get list of Public Keys on keyring with the help of a IMP_Smime instance. */
         $imp_smime = $injector->getInstance('IMP_Smime');
-
-        /* Get list of Public Keys on keyring. */
         try {
             $pubkey_list = $imp_smime->listPublicKeys();
         } catch (Horde_Exception $e) {
             $pubkey_list = array();
         }
 
-        $smime_url = IMP_Basic_Smime::url();
-
+        /* Loading View Template and Help Template */
         $view = new Horde_View(array(
             'templatePath' => IMP_TEMPLATES . '/prefs'
         ));
         $view->addHelper('Horde_Core_View_Helper_Help');
         $view->addHelper('Text');
+
+        /* Loading the base url for smime: in order to set links for the various certificates */
+        $smime_url = IMP_Basic_Smime::url();
 
         if (!empty($pubkey_list)) {
             uasort(

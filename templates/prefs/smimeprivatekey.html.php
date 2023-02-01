@@ -36,7 +36,7 @@
    </tr>
   </table>
  </div>
-
+<!-- delete button -->
  <p>
   <input type="submit" id="delete_smime_personal" name="delete_smime_personal" class="horde-delete" value="<?php echo _("Delete Personal Certificate") ?>" />
   <?php echo $this->hordeHelp('imp', 'smime-delete-personal-certs') ?>
@@ -47,7 +47,6 @@
    <?php echo _("Your Secondary S/MIME Personal Certificate") ?>
   </h3>
  </div>
-
 <?php if ($this->expiredate_sign): ?>
  <p class="prefsSmimeWarning"><?php printf(_("Your Secondary S/MIME Personal Certificate has expired on %s at %s."), $this->expiredate_sign, $this->expiretime_sign) ?></p>
 <?php endif ?>
@@ -84,6 +83,7 @@
   <em><?php echo _("No personal certificate") ?></em>
  </div>
 <?php endif ?>
+<!-- Import button -->
 <?php if ($this->import): ?>
  <div>
   <p>
@@ -92,4 +92,30 @@
   </p>
  </div>
 <?php endif; ?>
+</div>
+<!-- Extra PrivateKeys from Keystore -->
+<div class="prefsSmimeContainer">
+    <div class="prefsSmimeHeader">
+    <h3>
+    <?php echo _("Extra S/MIME Personal Certificates") ?>
+    <!-- TODO:need to write this up<?php echo $this->hordeHelp('imp', 'smime-overview-personalkey') ?> -->
+    </h3>
+    </div>
+
+        <!-- listing extra private keys -->
+        <div>
+    <?php if (empty($this->privatekey_list)): ?>
+    <em><?php echo _("No extra Privateys in Keystore") ?></em>
+    <?php else: ?>
+    <table>
+    <?php foreach ($this->privatekey_list as $v): ?>
+        <tr>
+            <td>privatekey1</td>
+            <td>privatekey2</td>
+            <td>privatekey3</td>
+        </tr>
+    <?php endforeach; ?>
+    </table>
+    <?php endif; ?>
+    </div>
 </div>

@@ -220,14 +220,47 @@ class IMP_Smime
     {
         global $prefs;
 
+        $prefName = $signkey ? 'smime_private_sign_key' : 'smime_private_key';
         $key = $prefs->getValue(
-            $signkey ? 'smime_private_sign_key' : 'smime_private_key'
+            $prefName
         );
+
         if (!$key && $signkey == self::KEY_SECONDARY_OR_PRIMARY) {
             $key = $prefs->getValue('smime_private_key');
         }
 
+        // check if there are multiple private keys
+        $result = $this->listPrivateKeys($prefName);
+        if (!empty($result)){
+            array_push($result, $key); // last added key is the one that is 'chosen'
+        }
+
+        // in order to show the array of private keys I need a way to list them: like publicKeylist
+        // then I need to show these keys in the smimeprivatekey.html.php
+        //\Horde::debug($result, '/dev/shm/keys', false);
+
+
         return $key;
+    }
+
+    /**
+     * Retrieves all private keys from privatekey table.
+     *
+     * @return array  All S/MIME private keys available.
+     * @throws Horde_Db_Exception
+     */
+    public function listPrivateKeys($prefName = 'smime_private_key'){
+       // Build the SQL query
+        $query = 'SELECT private_key FROM imp_smime_privatekeys WHERE user=?';
+        $values = [$prefName];
+        // Run the SQL query
+       try {
+           $result = $this->_db->selectValues($query, $values); // returns an array with keys
+           return $result;
+       } catch (Horde_Db_Exception $e) {
+           dd($e);
+           return $e;
+       }
     }
 
     /**

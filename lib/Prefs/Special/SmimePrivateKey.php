@@ -35,16 +35,28 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
     {
         global $browser, $injector, $page_output, $prefs;
 
+        /* Adding js to page output */
         $page_output->addScriptPackage('IMP_Script_Package_Imp');
 
+        /* Adding css to page output */
         $p_css = new Horde_Themes_Element('prefs.css');
         $page_output->addStylesheet($p_css->fs, $p_css->uri);
 
+        /* an instance of IMP_smime to be able to list private keys from the DB */
+        $imp_smime = $injector->getInstance('IMP_Smime');
+        try {
+            $extra_private_keys = $imp_smime->listPrivateKeys();
+        } catch (Horde_Exception $e) {
+            $extra_private_keys = [];
+        }
+
+        /* Loading View Template and Help Template */
         $view = new Horde_View(array(
             'templatePath' => IMP_TEMPLATES . '/prefs'
         ));
         $view->addHelper('Horde_Core_View_Helper_Help');
 
+        /* Loading Connection Status to View */
         if (!Horde::isConnectionSecure()) {
             $view->notsecure = true;
             return $view->render('smimeprivatekey');
@@ -52,10 +64,15 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
         $smime_url = IMP_Basic_Smime::url();
 
+        /* Loading Keys that are set as Personal Certificate
+         (the certificates that are actually used) */
         $view->has_key = $prefs->getValue('smime_public_key') &&
             $prefs->getValue('smime_private_key');
         $view->has_sign_key = $prefs->getValue('smime_public_sign_key') &&
             $prefs->getValue('smime_private_sign_key');
+
+        /* Loading private keys from the Database that are not used as Personal Certificates */
+        //$view->has_extra_keys = 
 
         if ($browser->allowFileUploads()) {
             $view->import = true;
