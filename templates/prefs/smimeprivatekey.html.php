@@ -46,7 +46,7 @@
 <!-- unset personal smime button -->
  <p>
   <input type="submit" id="unset_smime_personal" name="unset_smime_personal" class="horde-unset" value="<?php echo _("Unset Personal Certificate") ?>" />
-  <?php // TODO: echo $this->hordeHelp('imp', 'smime-unset-personal-certs') ?>
+  <?php // TODO: echo $this->hordeHelp('imp', 'smime-unset-personal-certs')?>
  </p>
 
  <?php if ($this->has_sign_key): ?>
@@ -119,7 +119,9 @@
     <em><?php echo _("No extra Privateys in Keystore") ?></em>
     <?php else: ?>
     <table>
-    <?php foreach ($this->viewprivateextras as $key => $value): ?>
+        <?php $key = 0;
+        $array = $this->viewprivateextras;
+        while ($key < count($array)): ?>
         <tr>
             <td>
                 Public Certificate: [<a><?php echo _("View") ?></a>]
@@ -127,13 +129,16 @@
         </tr>
         </tr>
             <td>
-                Private Certificate: [<?php echo $value ?><?php echo _("View") ?></a>]
+                Private Certificate: [<?php echo $array[$key] ?><?php echo _("View") ?></a>]
+            <?php $key++ // even numbers contain the certificates?>
                 <!-- set-to-personal smime button -->
-                <input type="submit" id="set_smime_personal" name="set_smime_personal" class="horde-set" value="<?php echo _("Set as Personal Certificate") ?>" />
-                <?php // TODO: echo $this->hordeHelp('imp', 'smime-set-personal-certs') ?>
+                <label for="set_smime_personal">Set this key as personal certificate: </label>
+                <input type="submit" id="set_smime_personal" name="set_smime_personal" class="horde-set" value="<?php echo $array[$key] ?>" />
+                <?php // TODO: echo $this->hordeHelp('imp', 'smime-set-personal-certs')?>
+            <?php $key++ // uneven numbers contain the ids of the certificates?>
             </td>
         </tr>
-    <?php endforeach; ?>
+    <?php endwhile; ?>
     </table>
     <?php endif; ?>
     </div>

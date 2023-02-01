@@ -19,28 +19,16 @@ class ImpSMIME extends Horde_Db_Migration_Base
      */
     public function up()
     {
-        // Create: imp_smime_privatekeys
+        // Create: imp_smime_extrakeys
         $tableList = $this->tables();
-        if (!in_array('imp_smime_privatekeys', $tableList)) {
-            $t = $this->createTable('imp_smime_privatekeys', array('autoincrementKey' => 'private_key_id'));
+        if (!in_array('imp_smime_extrakeys', $tableList)) {
+            $t = $this->createTable('imp_smime_extrakeys', array('autoincrementKey' => 'private_key_id'));
             $t->column('pref_name', 'string', array('null' => false));
+            $t->column('user_name', 'string', array('null' => false));
             $t->column('private_key', 'longblob', array('null' => false));
+            $t->column('public_key', 'longblob', array('null' => true));
             $t->end();
         }
-
-        // Create: imp_smime_publickeys
-        if (!in_array('imp_smime_publickeys', $tableList)) {
-            $t = $this->createTable('imp_smime_publickeys', array('autoincrementKey' => 'public_key_id'));
-            $t->column('public_key', 'longblob', array('null' => false));
-            $t->column('private_key_id', 'int');
-            $t->end();
-        }
-
-        // adding foreign keys, so each public key only has one private key
-        // $this->execute(
-        //     "ALTER TABLE imp_smime_publickeys
-        //     ADD FOREIGN KEY (private_key_id) REFERENCES imp_smime_privatekeys (private_key_id)"
-        // );
     }
 
     /**
@@ -48,9 +36,6 @@ class ImpSMIME extends Horde_Db_Migration_Base
      */
     public function down()
     {
-        $this->dropTable('imp_smime_privatekeys');
-        $this->dropTable('imp_smime_publickeys');
+        $this->dropTable('imp_smime_extrakeys');
     }
-
 }
-

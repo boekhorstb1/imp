@@ -80,6 +80,24 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 '$("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, array('params' => array('actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))), 'height' => 450, 'width' => 750, 'urlencode' => true)) . '; e.stop(); })'
             ), true);
         }
+
+        /* Loading private keys from the Database that are not used as Personal Certificates */
+        if (!empty($extra_private_keys)){
+
+            // adding base url links to each private key: so one can view the keys
+            $pk_list = [];
+            foreach ($extra_private_keys as $val) {
+                $link = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $val['private_key_id']]);
+                $tile = "View Extra Private Keys";
+                $pk_list[] = Horde::link($link, $title, null, 'view_key'); // all uneven keys hold links
+                $pk_list[] = $val['private_key_id'];    // all even links hold privatekey ids
+            }
+
+            // Adding extra private keys to view
+            $view->{'viewprivateextras'} = $pk_list;
+        }
+
+
         /* If no key was found, return the current view and discontinue rest of the logic from here on */
         if (!$view->has_key) {
             return $view->render('smimeprivatekey');
@@ -173,21 +191,6 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             ), true);
         }
 
-        /* Loading private keys from the Database that are not used as Personal Certificates */
-        if (!empty($extra_private_keys)){
-
-            // adding base url links to each private key: so one can view the keys
-            $pk_list = [];
-            foreach ($extra_private_keys as $val) {
-                $link = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $val['private_key_id']]);
-                $tile = "View Extra Private Keys";
-                $pk_list[] = Horde::link($link, $title, null, 'view_key'); 
-            }
-
-            // Adding extra private keys to view
-            $view->{'viewprivateextras'} = $pk_list;
-        }
-
         return $view->render('smimeprivatekey');
     }
 
@@ -197,6 +200,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
     {
         global $injector, $notification;
 
+        // delete personal certificates
         if (isset($ui->vars->delete_smime_personal) ||
             isset($ui->vars->delete_smime_personal_sign)) {
             $injector->getInstance('IMP_Smime')->deletePersonalKeys(
@@ -208,13 +212,28 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                     : _("Personal S/MIME keys deleted successfully."),
                 'horde.success'
             );
-        } elseif (isset($ui->vars->unset_smime_passphrase) ||
+        } elseif (isset($ui->vars->unset_smime_passphrase) || // change passphrase
                   isset($ui->vars->unset_smime_sign_passphrase)) {
             $injector->getInstance('IMP_Smime')->unsetPassphrase(
                 $ui->vars->unset_smime_sign_passphrase
             );
             $notification->push(
                 _("S/MIME passphrase successfully unloaded."),
+                'horde.success'
+            );
+        } elseif (isset($ui->vars->unset_smime_personal)){ // unsetting personal certificate and transfering it to the db
+            $injector->getInstance('IMP_Smime')->unsetSmimePersonal();
+            $notification->push(
+                _("S/MIME Certificate unset and successfully transfered to extra keys."),
+                'horde.success'
+            );
+        } elseif (isset($ui->vars->set_smime_personal)){ // setting personal certificate... first have to unset?
+            //dd($ui->vars);
+            $injector->getInstance('IMP_Smime')->setSmimePersonal(
+                $ui->vars->set_smime_personal
+            );
+            $notification->push(
+                _("S/MIME Certificate set and successfully transfered previous certificate to extra keys."),
                 'horde.success'
             );
         }

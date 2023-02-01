@@ -26,24 +26,24 @@ use Horde\Util\HordeString;
 class IMP_Smime
 {
     /* Name of the S/MIME public key field in addressbook. */
-    const PUBKEY_FIELD = 'smimePublicKey';
+    public const PUBKEY_FIELD = 'smimePublicKey';
 
     /* Encryption type constants. */
-    const ENCRYPT = 'smime_encrypt';
-    const SIGN = 'smime_sign';
-    const SIGNENC = 'smime_signenc';
+    public const ENCRYPT = 'smime_encrypt';
+    public const SIGN = 'smime_sign';
+    public const SIGNENC = 'smime_signenc';
 
     /* Which key to use. */
-    const KEY_PRIMARY = 0;
-    const KEY_SECONDARY = 1;
-    const KEY_SECONDARY_OR_PRIMARY = 2;
+    public const KEY_PRIMARY = 0;
+    public const KEY_SECONDARY = 1;
+    public const KEY_SECONDARY_OR_PRIMARY = 2;
 
     /**
      * S/MIME object.
      *
      * @var Horde_Crypt_Smime
      */
-	protected $_smime;
+    protected $_smime;
 
     /**
      * Handle for the current database connection.
@@ -73,8 +73,8 @@ class IMP_Smime
      */
     public function __construct(Horde_Crypt_Smime $smime, $db)
     {
-		$this->_smime = $smime;
-		$this->_db = $db;
+        $this->_smime = $smime;
+        $this->_db = $db;
     }
 
     /**
@@ -138,37 +138,75 @@ class IMP_Smime
         try {
             $val = HordeString::convertToUtf8($val);
         } catch (Exception $ex) {
-		}
+        }
 
-		// check if a private key already exists
+        // check if a private key already exists
         $check  = $prefs->getValue('smime_private_key');
         // if there is no private key, give it the default $prefName, else add an unique number to the name?
-        if(empty($check)){
+        if (empty($check)) {
             $GLOBALS['prefs']->setValue($prefName, $val);
-        }
-		else {
+        } else {
             // setValue in a way that it is retrievable by id:
             // added an extra table for that, because horde_prefs has a combined pk which is not autoincrementing and need a way to identify each key easily:
             // - see: migrations/4_imp_smime.php
             //
             // Now: check if database table and entries allready exist for user
             // NOTE:one can only create unique users in Horde, so it has a unique value!
+            $this->addExtraPersonalPrivateKey($prefName, $val);
+        }
+    }
 
+    /**
+     * Adds am extra personal public key to the extra keys table.
+     *
+     * @param string|array $key  The public key to add.
+     * @param int $private_key_id   PrivateKeyId to add the Public key to.
+     */
+    public function addExtraPersonalPublicKey($pref_name = 'smime_private_key', $public_key, $private_key_id)
+    {
+        /* Build the SQL query. */
+        $query = 'INSERT INTO imp_smime_extrakeys (pref_name, public_key) VALUES (?, ?) WHERE private_key_id = ?';
+        $values = array(
+           $pref_name, $public_key, $private_key_id
+       );
+
+        try {
+            $this->_db->insert($query, $values);
+        } catch (Horde_Db_Exception $e) {
+            dd($e);
+            return $e;
+        }
+    }
+
+    /**
+     * Adds am extra personal private key to the extra keys table.
+     *
+     * @param string $pref_name To be removed... TODO.
+     * @param string|array $key  The private key to add.
+     * @param string|array $key  The public key to add (optional).
+     */
+    public function addExtraPersonalPrivateKey($pref_name = 'smime_private_key', $private_key, $public_key = null)
+    {
+        /* Get the user_name  */
+        // TODO: is there a way to only use prefs?
+        $user_name = $GLOBALS['registry']->getAuth();
+
+        if ($public_key !== null) {
             /* Build the SQL query. */
-            $query = 'INSERT INTO imp_smime_privatekeys (pref_name, private_key) VALUES (?, ?)';
-             $values = array(
-                $prefName, $val
-            );
-
-            try {
-                $this->_db->insert($query, $values);
-            } catch (Horde_Db_Exception $e) {
-                dd($e);
-                return $e;
-            }
-
+            $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key) VALUES (?, ?, ?, ?)';
+            $values = [$pref_name, $user_name, $private_key, $public_key];
+        } else {
+            /* Build the SQL query. */
+            $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key) VALUES (?, ?, ?)';
+            $values = [$pref_name, $user_name, $private_key];
         }
 
+        try {
+            $this->_db->insert($query, $values);
+        } catch (Horde_Db_Exception $e) {
+            dd($e);
+            return $e;
+        }
     }
 
     /**
@@ -233,23 +271,55 @@ class IMP_Smime
     }
 
     /**
-     * Retrieves a specific private key from the privatekey table.
+     * Retrieves a specific public key from the extrakeys table.
+     *
+     * @return string  Specific S/MIME private key.
+     * @throws Horde_Db_Exception
+     *
+     * TODO: need to remove the $prefName thingie for extrakeys table, makes no sense
+     */
+    public function getExtraPublicKey($prefName = 'smime_private_key', $privateKeyId)
+    {
+        /* Get the user_name  */
+        // TODO: is there a way to only use prefs?
+        $user_name = $GLOBALS['registry']->getAuth();
+
+        // Build the SQL query
+        $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=?';
+        $values = [$prefName, $privateKeyId, $user_name];
+        // Run the SQL query
+        try {
+            $result = $this->_db->selectOne($query, $values); // returns one key
+            return $result['public_key'];
+        } catch (Horde_Db_Exception $e) {
+            dd($e);
+            return $e;
+        }
+    }
+
+    /**
+     * Retrieves a specific private key from the extrakeys table.
      *
      * @return string  Specific S/MIME private key.
      * @throws Horde_Db_Exception
      */
-    public function getExtraPrivateKey($prefName = 'smime_private_key', $id){
+    public function getExtraPrivateKey($prefName = 'smime_private_key', $id)
+    {
+        /* Get the user_name  */
+        // TODO: is there a way to only use prefs?
+        $user_name = $GLOBALS['registry']->getAuth();
+
         // Build the SQL query
-        $query = 'SELECT private_key_id, private_key FROM imp_smime_privatekeys WHERE pref_name=? AND private_key_id=?';
-        $values = [$prefName, $id];
+        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=?';
+        $values = [$prefName, $id, $user_name];
         // Run the SQL query
-       try {
-           $result = $this->_db->selectOne($query, $values); // returns one key
-           return $result['private_key'];
-       } catch (Horde_Db_Exception $e) {
-           dd($e);
-           return $e;
-       }
+        try {
+            $result = $this->_db->selectOne($query, $values); // returns one key
+            return $result['private_key'];
+        } catch (Horde_Db_Exception $e) {
+            dd($e);
+            return $e;
+        }
     }
 
     /**
@@ -258,18 +328,76 @@ class IMP_Smime
      * @return array  All S/MIME private keys available.
      * @throws Horde_Db_Exception
      */
-    public function listPrivateKeys($prefName = 'smime_private_key'){
-       // Build the SQL query
-        $query = 'SELECT private_key_id, private_key FROM imp_smime_privatekeys WHERE pref_name=?';
-        $values = [$prefName];
+    public function listPrivateKeys($prefName = 'smime_private_key')
+    {
+        /* Get the user_name  */
+        // TODO: is there a way to only use prefs?
+        $user_name = $GLOBALS['registry']->getAuth();
+
+        // Build the SQL query
+        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
+        $values = [$prefName, $user_name];
         // Run the SQL query
-       try {
-           $result = $this->_db->selectAll($query, $values); // returns an array with keys
-           return $result;
-       } catch (Horde_Db_Exception $e) {
-           dd($e);
-           return $e;
-       }
+        try {
+            $result = $this->_db->selectAll($query, $values); // returns an array with keys
+            return $result;
+        } catch (Horde_Db_Exception $e) {
+            dd($e);
+            return $e;
+        }
+    }
+
+    /**
+     * Setting a new Personal Certificate and belonging Public Certificate:
+     * Transfers a Certificate and belonging Public Certificate from the Extra Keys table to Horde_Prefs
+     *
+     */
+    public function setSmimePersonal($key)
+    {
+        // find the private key that has been selected
+        $newprivatekey = $this->getExtraPrivateKey('smime_private_key', $key);
+        $newpublickey = $this->getExtraPublicKey('smime_private_key', $key);
+        // TODO: find the public key that belongs to this private key
+
+        // check if a personal certificate is set
+        $check = null;
+        try {
+            $check = $this->getPersonalPrivateKey();
+        } catch (\Throwable $th) {
+            dd($th);
+        }
+
+        if (!empty($check)) {
+            // if there is, copy it to the database
+            $this->unsetSmimePersonal;
+        }
+
+        // if not: import it
+        // TODO: $signkey?
+        if (!empty($newprivatekey) && !empty($newpublickey)) {
+            $this->addPersonalPrivateKey($newprivatekey);
+            $this->addPersonalPublicKey($newpublickey);
+        }
+    }
+
+    /**
+     * Unsetting a Personal Certificate and belonging Public Certificate:
+     * Transfers a Personal Certificate and belonging Public Certificate to the Extra Keys table in the DB
+     *
+     */
+    public function unsetSmimePersonal()
+    {
+        // get current personal certificates
+        $PrivateKey = $this->getPersonalPrivateKey();
+        $PublicKey = $this->getPersonalPublicKey();
+
+        // push these to the extra keys table
+        if (!empty($PrivateKey) && !empty($PublicKey)) {
+            $this->addExtraPersonalPrivateKey('smime_private_key', $PrivateKey, $PublicKey);
+        }
+
+        // remove the current Personal Keys
+        $this->deletePersonalKeys();
     }
 
     /**
@@ -419,7 +547,8 @@ class IMP_Smime
             if ($key) {
                 return $key;
             }
-        } catch (Horde_Exception_HookNotSet $e) {}
+        } catch (Horde_Exception_HookNotSet $e) {
+        }
 
         $contacts = $injector->getInstance('IMP_Contacts');
 
@@ -670,9 +799,10 @@ class IMP_Smime
      * @return Horde_Mime_Part  See Horde_Crypt_Smime::encryptMIMEPart().
      * @throws Horde_Crypt_Exception
      */
-    public function encryptMimePart($mime_part,
-                                    Horde_Mail_Rfc822_List $recip)
-    {
+    public function encryptMimePart(
+        $mime_part,
+        Horde_Mail_Rfc822_List $recip
+    ) {
         return $this->_smime->encryptMIMEPart(
             $mime_part,
             $this->_encryptParameters($recip)
@@ -705,9 +835,10 @@ class IMP_Smime
      *                          Horde_Crypt_Smime::signAndencryptMIMEPart().
      * @throws Horde_Crypt_Exception
      */
-    public function signAndEncryptMimePart($mime_part,
-                                           Horde_Mail_Rfc822_List $recip)
-    {
+    public function signAndEncryptMimePart(
+        $mime_part,
+        Horde_Mail_Rfc822_List $recip
+    ) {
         return $this->_smime->signAndEncryptMIMEPart(
             $mime_part,
             $this->_signParameters(),
@@ -727,9 +858,11 @@ class IMP_Smime
      * @throws Horde_Crypt_Exception
      */
     public function addFromPKCS12(
-        $pkcs12, $password, $pkpass = null, $signkey = false
-    )
-    {
+        $pkcs12,
+        $password,
+        $pkpass = null,
+        $signkey = false
+    ) {
         global $conf;
 
         $sslpath = empty($conf['openssl']['path'])
