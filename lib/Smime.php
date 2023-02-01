@@ -155,7 +155,7 @@ class IMP_Smime
             // NOTE:one can only create unique users in Horde, so it has a unique value!
 
             /* Build the SQL query. */
-            $query = 'INSERT INTO imp_smime_privatekeys (user, private_key) VALUES (?, ?)';
+            $query = 'INSERT INTO imp_smime_privatekeys (pref_name, private_key) VALUES (?, ?)';
              $values = array(
                 $prefName, $val
             );
@@ -229,18 +229,27 @@ class IMP_Smime
             $key = $prefs->getValue('smime_private_key');
         }
 
-        // check if there are multiple private keys
-        $result = $this->listPrivateKeys($prefName);
-        if (!empty($result)){
-            array_push($result, $key); // last added key is the one that is 'chosen'
-        }
-
-        // in order to show the array of private keys I need a way to list them: like publicKeylist
-        // then I need to show these keys in the smimeprivatekey.html.php
-        //\Horde::debug($result, '/dev/shm/keys', false);
-
-
         return $key;
+    }
+
+    /**
+     * Retrieves a specific private key from the privatekey table.
+     *
+     * @return string  Specific S/MIME private key.
+     * @throws Horde_Db_Exception
+     */
+    public function getExtraPrivateKey($prefName = 'smime_private_key', $id){
+        // Build the SQL query
+        $query = 'SELECT private_key_id, private_key FROM imp_smime_privatekeys WHERE pref_name=? AND private_key_id=?';
+        $values = [$prefName, $id];
+        // Run the SQL query
+       try {
+           $result = $this->_db->selectOne($query, $values); // returns one key
+           return $result['private_key'];
+       } catch (Horde_Db_Exception $e) {
+           dd($e);
+           return $e;
+       }
     }
 
     /**
@@ -251,11 +260,11 @@ class IMP_Smime
      */
     public function listPrivateKeys($prefName = 'smime_private_key'){
        // Build the SQL query
-        $query = 'SELECT private_key FROM imp_smime_privatekeys WHERE user=?';
+        $query = 'SELECT private_key_id, private_key FROM imp_smime_privatekeys WHERE pref_name=?';
         $values = [$prefName];
         // Run the SQL query
        try {
-           $result = $this->_db->selectValues($query, $values); // returns an array with keys
+           $result = $this->_db->selectAll($query, $values); // returns an array with keys
            return $result;
        } catch (Horde_Db_Exception $e) {
            dd($e);

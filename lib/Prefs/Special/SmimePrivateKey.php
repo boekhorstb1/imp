@@ -43,9 +43,9 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         $page_output->addStylesheet($p_css->fs, $p_css->uri);
 
         /* an instance of IMP_smime to be able to list private keys from the DB */
-        $imp_smime = $injector->getInstance('IMP_Smime');
+        $smime = $injector->getInstance('IMP_Smime');
         try {
-            $extra_private_keys = $imp_smime->listPrivateKeys();
+            $extra_private_keys = $smime->listPrivateKeys();
         } catch (Horde_Exception $e) {
             $extra_private_keys = [];
         }
@@ -62,7 +62,6 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             return $view->render('smimeprivatekey');
         }
 
-        $smime_url = IMP_Basic_Smime::url();
 
         /* Loading Keys that are set as Personal Certificate
          (the certificates that are actually used) */
@@ -71,26 +70,31 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         $view->has_sign_key = $prefs->getValue('smime_public_sign_key') &&
             $prefs->getValue('smime_private_sign_key');
 
-        /* Loading private keys from the Database that are not used as Personal Certificates */
-        //$view->has_extra_keys = 
+        /* Loading Smime bas url in order to set links to it */
+        $smime_url = IMP_Basic_Smime::url();
 
+        /* Addding to view: Browser Importoptions for uploading Certificates */
         if ($browser->allowFileUploads()) {
             $view->import = true;
             $page_output->addInlineScript(array(
                 '$("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, array('params' => array('actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))), 'height' => 450, 'width' => 750, 'urlencode' => true)) . '; e.stop(); })'
             ), true);
         }
+        /* If no key was found, return the current view and discontinue rest of the logic from here on */
         if (!$view->has_key) {
             return $view->render('smimeprivatekey');
         }
 
-        $smime = $injector->getInstance('IMP_Smime');
+        /* adding primary and secondary personal keys */
         foreach (array('' => false, '_sign' => true) as $suffix => $secondary) {
+            // If no secondary Ceritificates or signkeys are found: skip this loop
             if ($secondary && !$view->has_sign_key) {
                 continue;
             }
 
             $cert = $smime->parseCert($smime->getPersonalPublicKey($secondary));
+
+            // Checking for validity date if set
             if (!empty($cert['validity']['notafter'])) {
                 $expired = new Horde_Date($cert['validity']['notafter']);
                 if ($expired->before(time())) {
@@ -112,6 +116,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                     'target' => 'view_key'
                 ))
                 . _("View") . '</a>';
+            
             $view->{'infopublic' . $suffix} = $smime_url->copy()
                 ->add('actionID', 'info_personal_public' . $suffix . '_key')
                 ->link(array(
@@ -154,6 +159,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 ) . _("Enter Passphrase");
             }
 
+            // Adding to view: private key link
             $view->{'viewprivate' . $suffix} = $smime_url->copy()
                 ->add('actionID', 'view_personal_private' . $suffix . '_key')
                 ->link(array(
@@ -161,9 +167,25 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                     'target' => 'view_key'
                 ))
                 . _("View") . '</a>';
+
             $page_output->addInlineScript(array(
                 '$("delete_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_("Are you sure you want to delete your keypair? (This is NOT recommended!)")) . ')) { e.stop(); } })'
             ), true);
+        }
+
+        /* Loading private keys from the Database that are not used as Personal Certificates */
+        if (!empty($extra_private_keys)){
+
+            // adding base url links to each private key: so one can view the keys
+            $pk_list = [];
+            foreach ($extra_private_keys as $val) {
+                $link = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $val['private_key_id']]);
+                $tile = "View Extra Private Keys";
+                $pk_list[] = Horde::link($link, $title, null, 'view_key'); 
+            }
+
+            // Adding extra private keys to view
+            $view->{'viewprivateextras'} = $pk_list;
         }
 
         return $view->render('smimeprivatekey');

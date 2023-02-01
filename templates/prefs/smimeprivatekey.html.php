@@ -36,12 +36,21 @@
    </tr>
   </table>
  </div>
+
 <!-- delete button -->
- <p>
+<p>
   <input type="submit" id="delete_smime_personal" name="delete_smime_personal" class="horde-delete" value="<?php echo _("Delete Personal Certificate") ?>" />
   <?php echo $this->hordeHelp('imp', 'smime-delete-personal-certs') ?>
  </p>
-<?php if ($this->has_sign_key): ?>
+
+<!-- unset personal smime button -->
+ <p>
+  <input type="submit" id="unset_smime_personal" name="unset_smime_personal" class="horde-unset" value="<?php echo _("Unset Personal Certificate") ?>" />
+  <?php // TODO: echo $this->hordeHelp('imp', 'smime-unset-personal-certs') ?>
+ </p>
+
+ <?php if ($this->has_sign_key): ?>
+    <!-- Secondary Certificates -->
  <div class="prefsSmimeHeader">
   <h3>
    <?php echo _("Your Secondary S/MIME Personal Certificate") ?>
@@ -73,10 +82,12 @@
   </table>
  </div>
 
+ <!-- delete secondary button -->
  <p>
   <input type="submit" id="delete_smime_personal_sign" name="delete_smime_personal_sign" class="horde-delete" value="<?php echo _("Delete Secondary Personal Certificate") ?>" />
   <?php echo $this->hordeHelp('imp', 'smime-delete-personal-certs') ?>
  </p>
+
 <?php endif ?>
 <?php else: ?>
  <div>
@@ -102,20 +113,30 @@
     </h3>
     </div>
 
-        <!-- listing extra private keys -->
-        <div>
-    <?php if (empty($this->privatekey_list)): ?>
+    <!-- listing extra private keys -->
+    <div>
+    <?php if (empty($this->viewprivateextras)): ?>
     <em><?php echo _("No extra Privateys in Keystore") ?></em>
     <?php else: ?>
     <table>
-    <?php foreach ($this->privatekey_list as $v): ?>
+    <?php foreach ($this->viewprivateextras as $key => $value): ?>
         <tr>
-            <td>privatekey1</td>
-            <td>privatekey2</td>
-            <td>privatekey3</td>
+            <td>
+                Public Certificate: [<a><?php echo _("View") ?></a>]
+            </td>
+        </tr>
+        </tr>
+            <td>
+                Private Certificate: [<?php echo $value ?><?php echo _("View") ?></a>]
+                <!-- set-to-personal smime button -->
+                <input type="submit" id="set_smime_personal" name="set_smime_personal" class="horde-set" value="<?php echo _("Set as Personal Certificate") ?>" />
+                <?php // TODO: echo $this->hordeHelp('imp', 'smime-set-personal-certs') ?>
+            </td>
         </tr>
     <?php endforeach; ?>
     </table>
     <?php endif; ?>
     </div>
+
+    
 </div>
