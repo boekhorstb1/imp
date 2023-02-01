@@ -132,7 +132,7 @@ class IMP_Smime
     public function addPersonalPrivateKey($key, $signkey = false)
     {
         global $prefs;
-        
+
         $prefName = $signkey ? 'smime_private_sign_key' : 'smime_private_key';
         $val = is_array($key) ? implode('', $key) : $key;
         try {
@@ -147,7 +147,7 @@ class IMP_Smime
             $GLOBALS['prefs']->setValue($prefName, $val);
         }
 		else {
-			     // setValue in a way that it is retrievable by id:
+            // setValue in a way that it is retrievable by id:
             // added an extra table for that, because horde_prefs has a combined pk which is not autoincrementing and need a way to identify each key easily:
             // - see: migrations/4_imp_smime.php
             //
@@ -157,12 +157,15 @@ class IMP_Smime
             /* Build the SQL query. */
             $query = 'INSERT INTO imp_smime_privatekeys (user, private_key) VALUES (?, ?)';
              $values = array(
-                'admin', 'random key'
+                $prefName, $val
             );
 
             try {
                 $this->_db->insert($query, $values);
-            } catch (Horde_Db_Exception $e) {}
+            } catch (Horde_Db_Exception $e) {
+                dd($e);
+                return $e;
+            }
 
         }
 

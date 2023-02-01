@@ -23,14 +23,15 @@ class ImpSMIME extends Horde_Db_Migration_Base
         $tableList = $this->tables();
         if (!in_array('imp_smime_privatekeys', $tableList)) {
             $t = $this->createTable('imp_smime_privatekeys', array('autoincrementKey' => 'private_key_id'));
-            $t->column('private_key', 'string', array('null' => false));
+            $t->column('user', 'string', array('null' => false));
+            $t->column('private_key', 'longblob', array('null' => false));
             $t->end();
         }
 
         // Create: imp_smime_publickeys
         if (!in_array('imp_smime_publickeys', $tableList)) {
             $t = $this->createTable('imp_smime_publickeys', array('autoincrementKey' => 'public_key_id'));
-            $t->column('public_key', 'string', array('null' => false));
+            $t->column('public_key', 'longblob', array('null' => false));
             $t->column('private_key_id', 'int');
             $t->end();
         }
