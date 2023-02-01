@@ -43,7 +43,14 @@ class IMP_Smime
      *
      * @var Horde_Crypt_Smime
      */
-    protected $_smime;
+	protected $_smime;
+
+    /**
+     * Handle for the current database connection.
+     *
+     * @var Horde_Db_Adapter
+     */
+    protected $_db;
 
     /**
      * Return whether PGP support is current enabled in IMP.
@@ -64,9 +71,10 @@ class IMP_Smime
      *
      * @param Horde_Crypt_Smime $pgp  S/MIME object.
      */
-    public function __construct(Horde_Crypt_Smime $smime)
+    public function __construct(Horde_Crypt_Smime $smime, $db)
     {
-        $this->_smime = $smime;
+		$this->_smime = $smime;
+		$this->_db = $db;
     }
 
     /**
@@ -123,6 +131,8 @@ class IMP_Smime
      */
     public function addPersonalPrivateKey($key, $signkey = false)
     {
+        global $prefs;
+        
         $prefName = $signkey ? 'smime_private_sign_key' : 'smime_private_key';
         $val = is_array($key) ? implode('', $key) : $key;
         try {
@@ -136,9 +146,24 @@ class IMP_Smime
         if(empty($check)){
             $GLOBALS['prefs']->setValue($prefName, $val);
         }
-        else {
-            // TODO: setValue in a way that it is retrievable by id
-        	$GLOBALS['prefs']->setValue($prefName, $val);
+		else {
+			     // setValue in a way that it is retrievable by id:
+            // added an extra table for that, because horde_prefs has a combined pk which is not autoincrementing and need a way to identify each key easily:
+            // - see: migrations/4_imp_smime.php
+            //
+            // Now: check if database table and entries allready exist for user
+            // NOTE:one can only create unique users in Horde, so it has a unique value!
+
+            /* Build the SQL query. */
+            $query = 'INSERT INTO imp_smime_privatekeys (user, private_key) VALUES (?, ?)';
+             $values = array(
+                'admin', 'random key'
+            );
+
+            try {
+                $this->_db->insert($query, $values);
+            } catch (Horde_Db_Exception $e) {}
+
         }
 
     }
