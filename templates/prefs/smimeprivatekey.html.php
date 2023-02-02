@@ -135,7 +135,14 @@
                 <label for="set_smime_personal">Set this key as personal certificate: </label>
                 <input type="submit" id="set_smime_personal" name="set_smime_personal" class="horde-set" value="<?php echo $array[$key] ?>" />
                 <?php // TODO: echo $this->hordeHelp('imp', 'smime-set-personal-certs')?>
+                <!-- delete button -->
+                <p>
+                    <input type="submit" id="delete_smime_extra" name="delete_smime_extra" class="horde-delete" value="<?php echo _("Delete Certificate") ?>" />
+                    <?php // TODO: echo $this->hordeHelp('imp', 'smime-delete-personal-certs')?>
+                </p>
+
             <?php $key++ // uneven numbers contain the ids of the certificates?>
+
             </td>
         </tr>
     <?php endwhile; ?>

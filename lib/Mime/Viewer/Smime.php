@@ -95,35 +95,37 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         $id = $this->_mimepart->getMimeId();
 
         switch ($this->_mimepart->getType()) {
-        case 'multipart/signed':
-            if (!in_array($this->_mimepart->getContentTypeParameter('protocol'), array('application/pkcs7-signature', 'application/x-pkcs7-signature'))) {
-                return array();
-            }
-            $this->_parseSignedData(true);
-            // Fall-through
-
-        case 'application/pkcs7-mime':
-        case 'application/x-pkcs7-mime':
-            $cache = $this->getConfigParam('imp_contents')->getViewCache();
-
-            if (isset($cache->smime[$id])) {
-                $ret = array(
-                    $id => array(
-                        'data' => null,
-                        'status' => $cache->smime[$id]['status'],
-                        'type' => 'text/plain; charset=' . $this->getConfigParam('charset'),
-                        'wrap' => $cache->smime[$id]['wrap']
-                    )
-                );
-                if (isset($cache->smime[$id]['sig'])) {
-                    $ret[$cache->smime[$id]['sig']] = null;
+            case 'multipart/signed':
+                if (!in_array($this->_mimepart->getContentTypeParameter('protocol'), array('application/pkcs7-signature', 'application/x-pkcs7-signature'))) {
+                    return array();
                 }
-                return $ret;
-            }
-            // Fall-through
+                $this->_parseSignedData(true);
+                // Fall-through
 
-        default:
-            return array();
+                // no break
+            case 'application/pkcs7-mime':
+            case 'application/x-pkcs7-mime':
+                $cache = $this->getConfigParam('imp_contents')->getViewCache();
+
+                if (isset($cache->smime[$id])) {
+                    $ret = array(
+                        $id => array(
+                            'data' => null,
+                            'status' => $cache->smime[$id]['status'],
+                            'type' => 'text/plain; charset=' . $this->getConfigParam('charset'),
+                            'wrap' => $cache->smime[$id]['wrap']
+                        )
+                    );
+                    if (isset($cache->smime[$id]['sig'])) {
+                        $ret[$cache->smime[$id]['sig']] = null;
+                    }
+                    return $ret;
+                }
+                // Fall-through
+
+                // no break
+            default:
+                return array();
         }
     }
 
@@ -142,11 +144,11 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         }
 
         switch ($this->_getSmimeType($this->_mimepart)) {
-        case 'signed-data':
-            return $this->_parseSignedData();
+            case 'signed-data':
+                return $this->_parseSignedData();
 
-        case 'enveloped-data':
-            return $this->_parseEnvelopedData();
+            case 'enveloped-data':
+                return $this->_parseEnvelopedData();
         }
     }
 
@@ -199,7 +201,9 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         try {
             $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL));
         } catch (Horde_Exception $e) {
-            $status->addText($e->getMessage());
+            $error = $e->getMessage();
+            $status->addText($error." Would you like to test with another private key?");
+            // TODO: add drop down with option to use other private key for decritpion without needing to set a new key
             return null;
         }
 
@@ -210,18 +214,18 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         ));
 
         switch ($new_part->getType()) {
-        case 'application/pkcs7-mime':
-        case 'application/x-pkcs7-mime':
-            $signed_data = ($this->_getSmimeType($new_part) === 'signed-data');
-            break;
+            case 'application/pkcs7-mime':
+            case 'application/x-pkcs7-mime':
+                $signed_data = ($this->_getSmimeType($new_part) === 'signed-data');
+                break;
 
-        case 'multipart/signed':
-            $signed_data = true;
-            break;
+            case 'multipart/signed':
+                $signed_data = true;
+                break;
 
-        default:
-            $signed_data = false;
-            break;
+            default:
+                $signed_data = false;
+                break;
         }
 
         if ($signed_data) {
@@ -263,9 +267,9 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         if (!$curr = $iterator->current()) {
             // application/pkcs-7-mime might be the base part.
             // See RFC 5751 3.4.2
-           $data_id = $base_id;
+            $data_id = $base_id;
         } else {
-           $data_id = $curr->getMimeId();
+            $data_id = $curr->getMimeId();
         }
 
         $id_ob = new Horde_Mime_Id($data_id);
@@ -353,7 +357,13 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
                                 );
                             $status->addText(
                                 Horde::link(
-                                    '#', '', '', '', '', '', '',
+                                    '#',
+                                    '',
+                                    '',
+                                    '',
+                                    '',
+                                    '',
+                                    '',
                                     array('id' => $imple->getDomId())
                                 )
                                 . _("Save the certificate to your Address Book.")
@@ -458,15 +468,15 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
                     if ($val2['type'] == FILE_ASN1_TYPE_OBJECT_IDENTIFIER) {
                         /* ASN.1 values from STD 70/RFC 5652 - CMS syntax */
                         switch ($val2['content']) {
-                        case '1.2.840.113549.1.7.2':
-                            return 'signed-data';
+                            case '1.2.840.113549.1.7.2':
+                                return 'signed-data';
 
-                        case '1.2.840.113549.1.7.3':
-                            return 'enveloped-data';
+                            case '1.2.840.113549.1.7.3':
+                                return 'enveloped-data';
 
-                        default:
-                            // Other types not supported as of now.
-                            return null;
+                            default:
+                                // Other types not supported as of now.
+                                return null;
                         }
                     }
                 }
@@ -475,5 +485,4 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
 
         return null;
     }
-
 }

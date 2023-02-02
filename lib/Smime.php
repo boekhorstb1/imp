@@ -323,7 +323,38 @@ class IMP_Smime
     }
 
     /**
-     * Retrieves all private keys from privatekey table.
+     * check private keys allready exist
+     *
+     * @return bool if private key is there or not
+     * @throws Horde_Db_Exception
+     */
+    public function checkPrivateKey($key)
+    {
+        /* Get the user_name  */
+        // TODO: is there a way to only use prefs?
+        $user_name = $GLOBALS['registry']->getAuth();
+        
+        // Build the SQL query
+        $query = 'SELECT private_key FROM imp_smime_extrakeys WHERE user_name=? AND private_key=?';
+        $values = [$user_name, $key];        
+        // Run the SQL query
+        try {
+            $result = $this->_db->selectAll($query, $values); // returns an array with keys
+            if(empty($result)){
+                return false;
+            }
+            else {
+                return true;
+            }
+        } catch (Horde_Db_Exception $e) {
+            dd($e);
+            return $e;
+        }
+    }
+
+
+    /**
+     * Retrieves all private keys from imp_smime_extrakeys table.
      *
      * @return array  All S/MIME private keys available.
      * @throws Horde_Db_Exception
@@ -333,10 +364,10 @@ class IMP_Smime
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
-
+        
         // Build the SQL query
         $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
-        $values = [$prefName, $user_name];
+        $values = [$prefName, $user_name];        
         // Run the SQL query
         try {
             $result = $this->_db->selectAll($query, $values); // returns an array with keys
@@ -346,6 +377,7 @@ class IMP_Smime
             return $e;
         }
     }
+
 
     /**
      * Setting a new Personal Certificate and belonging Public Certificate:
@@ -393,7 +425,10 @@ class IMP_Smime
 
         // push these to the extra keys table
         if (!empty($PrivateKey) && !empty($PublicKey)) {
-            $this->addExtraPersonalPrivateKey('smime_private_key', $PrivateKey, $PublicKey);
+            if(!$this->checkPrivateKey($PrivateKey))
+            {
+                $this->addExtraPersonalPrivateKey('smime_private_key', $PrivateKey, $PublicKey);
+            }            
         }
 
         // remove the current Personal Keys

@@ -82,8 +82,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         }
 
         /* Loading private keys from the Database that are not used as Personal Certificates */
-        if (!empty($extra_private_keys)){
-
+        if (!empty($extra_private_keys)) {
             // adding base url links to each private key: so one can view the keys
             $pk_list = [];
             foreach ($extra_private_keys as $val) {
@@ -134,7 +133,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                     'target' => 'view_key'
                 ))
                 . _("View") . '</a>';
-            
+
             $view->{'infopublic' . $suffix} = $smime_url->copy()
                 ->add('actionID', 'info_personal_public' . $suffix . '_key')
                 ->link(array(
@@ -221,14 +220,13 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 _("S/MIME passphrase successfully unloaded."),
                 'horde.success'
             );
-        } elseif (isset($ui->vars->unset_smime_personal)){ // unsetting personal certificate and transfering it to the db
+        } elseif (isset($ui->vars->unset_smime_personal)) { // unsetting personal certificate and transfering it to the db
             $injector->getInstance('IMP_Smime')->unsetSmimePersonal();
             $notification->push(
                 _("S/MIME Certificate unset and successfully transfered to extra keys."),
                 'horde.success'
             );
-        } elseif (isset($ui->vars->set_smime_personal)){ // setting personal certificate... first have to unset?
-            //dd($ui->vars);
+        } elseif (isset($ui->vars->set_smime_personal)) { // setting personal certificate... first have to unset?
             $injector->getInstance('IMP_Smime')->setSmimePersonal(
                 $ui->vars->set_smime_personal
             );
@@ -240,5 +238,4 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
         return false;
     }
-
 }

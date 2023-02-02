@@ -25,8 +25,8 @@ class ImpSMIME extends Horde_Db_Migration_Base
             $t = $this->createTable('imp_smime_extrakeys', array('autoincrementKey' => 'private_key_id'));
             $t->column('pref_name', 'string', array('null' => false));
             $t->column('user_name', 'string', array('null' => false));
-            $t->column('private_key', 'longblob', array('null' => false));
-            $t->column('public_key', 'longblob', array('null' => true));
+            $t->column('private_key', 'binary', array('null' => false));
+            $t->column('public_key', 'binary', array('null' => true));
             $t->end();
         }
     }
