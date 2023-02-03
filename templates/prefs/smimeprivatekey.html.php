@@ -46,7 +46,7 @@
 <!-- unset personal smime button -->
  <p>
   <input type="submit" id="unset_smime_personal" name="unset_smime_personal" class="horde-unset" value="<?php echo _("Unset Personal Certificate") ?>" />
-  <?php // TODO: echo $this->hordeHelp('imp', 'smime-unset-personal-certs')?>
+  <?php echo $this->hordeHelp('imp', 'smime-unset-personal-certs')?>
  </p>
 
  <?php if ($this->has_sign_key): ?>
@@ -109,7 +109,7 @@
     <div class="prefsSmimeHeader">
     <h3>
     <?php echo _("Extra S/MIME Personal Certificates") ?>
-    <!-- TODO:need to write this up<?php echo $this->hordeHelp('imp', 'smime-overview-personalkey') ?> -->
+    <?php echo $this->hordeHelp('imp', 'smime-overview-extrakeys') ?>
     </h3>
     </div>
 
@@ -131,16 +131,17 @@
             <td>
                 Private Certificate: [<?php echo $array[$key] ?><?php echo _("View") ?></a>]
             <?php $key++ // even numbers contain the certificates?>
+            
                 <!-- set-to-personal smime button -->
                 <label for="set_smime_personal"><?php echo _("Set this key as personal certificate:") ?></label>
                 <input type="submit" id="set_smime_personal" name="set_smime_personal" class="horde-set" value="<?php echo $array[$key] ?>" />
-                <?php // TODO: echo $this->hordeHelp('imp', 'smime-set-personal-certs')?>
+                <?php echo $this->hordeHelp('imp', 'smime-set-personal-certs')?>
+
                 <!-- delete button -->
-                <p>
-                    <label for="delete_smime_extra"><?php echo _("Delete Certificate") ?> </label>
-                    <input type="submit" id="delete_smime_extra" name="delete_smime_extra" class="horde-delete" value="<?php echo $array[$key] ?>" />
-                    <?php // TODO: echo $this->hordeHelp('imp', 'smime-delete-personal-certs')?>
-                </p>
+                <label for="delete_smime_extra"><?php echo _("Delete Certificate") ?> </label>
+                <input type="submit" id="delete_smime_extra" name="delete_smime_extra" class="horde-delete" value="<?php echo $array[$key] ?>" />
+                <?php echo $this->hordeHelp('imp', 'smime-delete-extra-certs')?>
+                
 
             <?php $key++ // uneven numbers contain the ids of the certificates?>
 

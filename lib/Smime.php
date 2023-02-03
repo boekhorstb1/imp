@@ -173,7 +173,6 @@ class IMP_Smime
         try {
             $this->_db->insert($query, $values);
         } catch (Horde_Db_Exception $e) {
-            dd($e);
             return $e;
         }
     }
@@ -204,7 +203,6 @@ class IMP_Smime
         try {
             $this->_db->insert($query, $values);
         } catch (Horde_Db_Exception $e) {
-            dd($e);
             return $e;
         }
     }
@@ -292,7 +290,6 @@ class IMP_Smime
             $result = $this->_db->selectOne($query, $values); // returns one key
             return $result['public_key'];
         } catch (Horde_Db_Exception $e) {
-            dd($e);
             return $e;
         }
     }
@@ -317,7 +314,6 @@ class IMP_Smime
             $result = $this->_db->selectOne($query, $values); // returns one key
             return $result['private_key'];
         } catch (Horde_Db_Exception $e) {
-            dd($e);
             return $e;
         }
     }
@@ -346,7 +342,6 @@ class IMP_Smime
                 return true;
             }
         } catch (Horde_Db_Exception $e) {
-            dd($e);
             return $e;
         }
     }
@@ -372,7 +367,6 @@ class IMP_Smime
             $result = $this->_db->selectAll($query, $values); // returns an array with keys
             return $result;
         } catch (Horde_Db_Exception $e) {
-            dd($e);
             return $e;
         }
     }
@@ -395,7 +389,7 @@ class IMP_Smime
         try {
             $check = $this->getPersonalPrivateKey();
         } catch (\Throwable $th) {
-            dd($th);
+            return $th;
         }
 
         if (!empty($check)) {
@@ -490,7 +484,6 @@ class IMP_Smime
         try {
             $this->_db->delete($query, $values);
         } catch (Horde_Db_Exception $e) {
-            dd($e);
             return $e;
         }
     }
