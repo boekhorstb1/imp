@@ -142,6 +142,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 ))
                 . _("Details") . '</a>';
 
+            $view->{'privatekeyexits'} = $smime->getExtraPrivateKeyId(); // check if private key exists and return ids value if so
+
             if ($smime->getPassphrase($secondary)) {
                 $view->{'passphrase' . $suffix} = $ui->selfUrl(array(
                     'special' => true,

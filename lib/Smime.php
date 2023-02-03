@@ -120,7 +120,17 @@ class IMP_Smime
             $val = HordeString::convertToUtf8($val);
         } catch (Exception $ex) {
         }
+
         $GLOBALS['prefs']->setValue($prefName, $val);
+
+        // // check if a private key already exists
+        // $check  = $prefs->getValue('smime_public_key');
+
+        // if (empty($check)) {
+        //     $GLOBALS['prefs']->setValue($prefName, $val);
+        // } else {
+        //     $this->addExtraPublicKey($prefName, $val);
+        // }
     }
 
     /**
@@ -142,17 +152,13 @@ class IMP_Smime
 
         // check if a private key already exists
         $check  = $prefs->getValue('smime_private_key');
-        // if there is no private key, give it the default $prefName, else add an unique number to the name?
+
+        // it there is a private key, these will be unset first and then the new one will be loaded
         if (empty($check)) {
             $GLOBALS['prefs']->setValue($prefName, $val);
         } else {
-            // setValue in a way that it is retrievable by id:
-            // added an extra table for that, because horde_prefs has a combined pk which is not autoincrementing and need a way to identify each key easily:
-            // - see: migrations/4_imp_smime.php
-            //
-            // Now: check if database table and entries allready exist for user
-            // NOTE:one can only create unique users in Horde, so it has a unique value!
-            $this->addExtraPersonalPrivateKey($prefName, $val);
+            $this->unsetSmimePersonal();
+            $GLOBALS['prefs']->setValue($prefName, $val);
         }
     }
 
@@ -161,14 +167,43 @@ class IMP_Smime
      *
      * @param string|array $key  The public key to add.
      * @param int $private_key_id   PrivateKeyId to add the Public key to.
+     * previously: addExtraPersonalPublicKey
      */
-    public function addExtraPersonalPublicKey($pref_name = 'smime_private_key', $public_key, $private_key_id)
+    public function addExtraPublicKey($pref_name = 'smime_private_key', $public_key)
     {
+        /* Get the user_name  */
+        // TODO: is there a way to only use prefs?
+        $user_name = $GLOBALS['registry']->getAuth();
+
         /* Build the SQL query. */
-        $query = 'INSERT INTO imp_smime_extrakeys (pref_name, public_key) VALUES (?, ?) WHERE private_key_id = ?';
-        $values = array(
-           $pref_name, $public_key, $private_key_id
-       );
+        $query = 'UPDATE imp_smime_extrakeys SET public_key=? WHERE private_key_id = ?'; //...
+        $values = [$public_key, $private_key_id, $pref_name];
+
+        try {
+            $this->_db->insert($query, $values);
+        } catch (Horde_Db_Exception $e) {
+            return $e;
+        }
+    }
+
+
+    /**
+     * Adds am extra personal private key to the extra keys table.
+     *
+     * @param string $pref_name To be removed... TODO.
+     * @param string|array $key  The private key to add.
+     * @param string|array $key  The public key to add (optional).
+     */
+    public function addExtraPersonalPrivateKey($pref_name = 'smime_private_key', $private_key)
+    {
+        /* Get the user_name  */
+        // TODO: is there a way to only use prefs?
+        $user_name = $GLOBALS['registry']->getAuth();
+
+        /* Build the SQL query. */
+        $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key) VALUES (?, ?, ?)';
+        $values = [$pref_name, $user_name, $private_key];
+
 
         try {
             $this->_db->insert($query, $values);
@@ -178,26 +213,22 @@ class IMP_Smime
     }
 
     /**
-     * Adds am extra personal private key to the extra keys table.
+     * Adds am extra personal keys to the extra keys table.
      *
      * @param string $pref_name To be removed... TODO.
      * @param string|array $key  The private key to add.
-     * @param string|array $key  The public key to add (optional).
+     * @param string|array $key  The public key to add.
      */
-    public function addExtraPersonalPrivateKey($pref_name = 'smime_private_key', $private_key, $public_key = null)
+    public function addExtraPersonalKeys($private_key, $public_key, $pref_name = 'smime_private_key')
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
-        if ($public_key !== null) {
+        if (!empty($public_key) && !empty($private_key)) {
             /* Build the SQL query. */
             $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key) VALUES (?, ?, ?, ?)';
             $values = [$pref_name, $user_name, $private_key, $public_key];
-        } else {
-            /* Build the SQL query. */
-            $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key) VALUES (?, ?, ?)';
-            $values = [$pref_name, $user_name, $private_key];
         }
 
         try {
@@ -319,27 +350,69 @@ class IMP_Smime
     }
 
     /**
+     * Get corresponding extra private key of Personal Certificate, if it exists in DB
+     *
+     * @return int id of extra private certificate in DB
+     * @throws Horde_Db_Exception
+     */
+    public function getExtraPrivateKeyId()
+    {
+        {
+            /* Get the user_name and personal certificate if existant */
+            // TODO: is there a way to only use prefs?
+            $user_name = $GLOBALS['registry']->getAuth();
+            $personalCertificate = $this->getPersonalPrivateKey();
+
+            // Build the SQL query
+            $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE user_name=?';
+            $values = [$user_name];
+            // Run the SQL query
+            try {
+                $result = $this->_db->selectAll($query, $values); // returns one key
+                if (!empty($result)) {
+                    // check if privatekeys are the same
+                    foreach ($result as $key => $value) {
+                        if ($value['private_key'] == $personalCertificate) {
+                            return $value['private_key_id'];
+                        }
+                    }
+                } else {
+                    return -1;
+                }
+            } catch (Horde_Db_Exception $e) {
+                return $e;
+            }
+        }
+    }
+
+    /**
      * check private keys allready exist
      *
      * @return bool if private key is there or not
      * @throws Horde_Db_Exception
      */
-    public function checkPrivateKey($key)
+    public function checkPrivateKey($personalCertificate)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key FROM imp_smime_extrakeys WHERE user_name=? AND private_key=?';
-        $values = [$user_name, $key];
+        $query = 'SELECT private_key FROM imp_smime_extrakeys WHERE user_name=?';
+        $values = [$user_name];
+
         // Run the SQL query
         try {
-            $result = $this->_db->selectAll($query, $values); // returns an array with keys
-            if (empty($result)) {
-                return false;
+            $result = $this->_db->selectValues($query, $values); // returns an array with keys
+            if (!empty($result)) {
+                // check if privatekeys are the same
+                foreach ($result as $key => $value) {
+                    if ($value == $personalCertificate) {
+                        return true;
+                    }
+                }
             } else {
-                return true;
+                return false;
             }
         } catch (Horde_Db_Exception $e) {
             return $e;
@@ -382,7 +455,12 @@ class IMP_Smime
         // find the private key that has been selected
         $newprivatekey = $this->getExtraPrivateKey('smime_private_key', $key);
         $newpublickey = $this->getExtraPublicKey('smime_private_key', $key);
-        // TODO: find the public key that belongs to this private key
+
+        // keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
+
+
+        // give keys an option to name them, if nothing is set (this should show 'no alias set')
+
 
         // check if a personal certificate is set
         $check = null;
@@ -394,14 +472,16 @@ class IMP_Smime
 
         if (!empty($check)) {
             // if there is, copy it to the database
-            $this->unsetSmimePersonal;
+            $this->unsetSmimePersonal();
         }
 
         // if not: import it
         // TODO: $signkey?
-        if (!empty($newprivatekey) && !empty($newpublickey)) {
+        try {
             $this->addPersonalPrivateKey($newprivatekey);
             $this->addPersonalPublicKey($newpublickey);
+        } catch (\Throwable $th) {
+            throw $th;
         }
     }
 
@@ -417,13 +497,10 @@ class IMP_Smime
         $PublicKey = $this->getPersonalPublicKey();
 
         // push these to the extra keys table
-        if (!empty($PrivateKey) && !empty($PublicKey)) {
-            if (!$this->checkPrivateKey($PrivateKey)) {
-                $this->addExtraPersonalPrivateKey('smime_private_key', $PrivateKey, $PublicKey);
-            }
+        if (!empty($PrivateKey) && !empty($PublicKey) && !$this->checkPrivateKey($PrivateKey)) {
+            $this->addExtraPersonalKeys($PrivateKey, $PublicKey);
         }
 
-        // remove the current Personal Keys
         $this->deletePersonalKeys();
     }
 

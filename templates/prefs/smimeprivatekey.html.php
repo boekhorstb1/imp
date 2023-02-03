@@ -16,6 +16,23 @@
 <?php endif ?>
  <div>
   <table>
+    <tr>
+    <td>
+    <?php if(isset($this->alias)) {
+        echo _("Alias for your Certificate Set: ".$this->alias);
+    } else {
+        echo _("Change the alias for your Certificate Set: ");
+    } ?>
+    </td>   
+    </tr>
+  <tr>
+   <td>
+   <?php // if the personal certificate exists in the extra db, show its id
+   if($this->privatekeyexits != -1) {
+       echo _("The ID of your Certificate Set: ".$this->privatekeyexits);
+   } ?> 
+    </td>
+    </tr>
    <tr>
     <td>
      <?php echo _("Your Public Certificate") ?>:
