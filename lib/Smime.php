@@ -333,17 +333,16 @@ class IMP_Smime
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
-        
+
         // Build the SQL query
         $query = 'SELECT private_key FROM imp_smime_extrakeys WHERE user_name=? AND private_key=?';
-        $values = [$user_name, $key];        
+        $values = [$user_name, $key];
         // Run the SQL query
         try {
             $result = $this->_db->selectAll($query, $values); // returns an array with keys
-            if(empty($result)){
+            if (empty($result)) {
                 return false;
-            }
-            else {
+            } else {
                 return true;
             }
         } catch (Horde_Db_Exception $e) {
@@ -364,10 +363,10 @@ class IMP_Smime
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
-        
+
         // Build the SQL query
         $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
-        $values = [$prefName, $user_name];        
+        $values = [$prefName, $user_name];
         // Run the SQL query
         try {
             $result = $this->_db->selectAll($query, $values); // returns an array with keys
@@ -425,10 +424,9 @@ class IMP_Smime
 
         // push these to the extra keys table
         if (!empty($PrivateKey) && !empty($PublicKey)) {
-            if(!$this->checkPrivateKey($PrivateKey))
-            {
+            if (!$this->checkPrivateKey($PrivateKey)) {
                 $this->addExtraPersonalPrivateKey('smime_private_key', $PrivateKey, $PublicKey);
-            }            
+            }
         }
 
         // remove the current Personal Keys
@@ -476,6 +474,25 @@ class IMP_Smime
             $prefs->setValue('smime_additional_cert', '');
         }
         $this->unsetPassphrase($signkey);
+    }
+
+    /**
+     * Deletes the specified extra keys from the extra-keys-table.
+     *
+     * @param boolean $signkey  Return the secondary key for signing?
+     */
+    public function deleteExtraKeys($private_key_id, $signkey = false)
+    {
+        /* Build the SQL query. */
+        $query = 'DELETE FROM imp_smime_extrakeys WHERE private_key_id = ?';
+        $values = [ $private_key_id ];
+
+        try {
+            $this->_db->delete($query, $values);
+        } catch (Horde_Db_Exception $e) {
+            dd($e);
+            return $e;
+        }
     }
 
     /**

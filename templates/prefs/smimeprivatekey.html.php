@@ -132,12 +132,13 @@
                 Private Certificate: [<?php echo $array[$key] ?><?php echo _("View") ?></a>]
             <?php $key++ // even numbers contain the certificates?>
                 <!-- set-to-personal smime button -->
-                <label for="set_smime_personal">Set this key as personal certificate: </label>
+                <label for="set_smime_personal"><?php echo _("Set this key as personal certificate:") ?></label>
                 <input type="submit" id="set_smime_personal" name="set_smime_personal" class="horde-set" value="<?php echo $array[$key] ?>" />
                 <?php // TODO: echo $this->hordeHelp('imp', 'smime-set-personal-certs')?>
                 <!-- delete button -->
                 <p>
-                    <input type="submit" id="delete_smime_extra" name="delete_smime_extra" class="horde-delete" value="<?php echo _("Delete Certificate") ?>" />
+                    <label for="delete_smime_extra"><?php echo _("Delete Certificate") ?> </label>
+                    <input type="submit" id="delete_smime_extra" name="delete_smime_extra" class="horde-delete" value="<?php echo $array[$key] ?>" />
                     <?php // TODO: echo $this->hordeHelp('imp', 'smime-delete-personal-certs')?>
                 </p>
 

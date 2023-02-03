@@ -199,8 +199,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
     {
         global $injector, $notification;
 
-        // delete personal certificates
-        if (isset($ui->vars->delete_smime_personal) ||
+
+        if (isset($ui->vars->delete_smime_personal) || // delete personal certificates
             isset($ui->vars->delete_smime_personal_sign)) {
             $injector->getInstance('IMP_Smime')->deletePersonalKeys(
                 $ui->vars->delete_smime_personal_sign
@@ -209,6 +209,16 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 isset($ui->vars->delete_smime_personal_sign)
                     ? _("Secondary personal S/MIME keys deleted successfully.")
                     : _("Personal S/MIME keys deleted successfully."),
+                'horde.success'
+            );
+        } elseif (isset($ui->vars->delete_smime_extra)) { // delete extra certificates
+            $injector->getInstance('IMP_Smime')->deleteExtraKeys(
+                $ui->vars->delete_smime_extra
+            );
+            $notification->push(
+                isset($ui->vars->delete_smime_extra_secondary) // TODO: fix deletion of additional extra secondary keys?
+                    ? _("Secondary extra S/MIME keys deleted successfully.")
+                    : _("Extra S/MIME keys deleted successfully."),
                 'horde.success'
             );
         } elseif (isset($ui->vars->unset_smime_passphrase) || // change passphrase
