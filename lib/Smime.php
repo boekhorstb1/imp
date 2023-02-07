@@ -444,6 +444,30 @@ class IMP_Smime
         }
     }
 
+    /**
+     * Retrieves all private key ids from imp_smime_extrakeys table.
+     *
+     * @return array  All S/MIME private keys available.
+     * @throws Horde_Db_Exception
+     */
+    public function listPrivateKeyIds($prefName = 'smime_private_key')
+    {
+        /* Get the user_name  */
+        // TODO: is there a way to only use prefs?
+        $user_name = $GLOBALS['registry']->getAuth();
+
+        // Build the SQL query
+        $query = 'SELECT private_key_id FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
+        $values = [$prefName, $user_name];
+        // Run the SQL query
+        try {
+            $result = $this->_db->selectValues($query, $values); // returns an array with keys
+            return $result;
+        } catch (Horde_Db_Exception $e) {
+            return $e;
+        }
+    }
+
 
     /**
      * Setting a new Personal Certificate and belonging Public Certificate:

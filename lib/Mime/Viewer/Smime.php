@@ -198,12 +198,40 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
 
         $raw_text = $this->_getPartStream($this->_mimepart->getMimeId());
 
+        /* Decrypt the message */
         try {
             $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL));
         } catch (Horde_Exception $e) {
             $error = $e->getMessage();
-            $status->addText($error." Would you like to test with another private key?");
-            // TODO: add drop down with option to use other private key for decritpion without needing to set a new key
+                        
+             // Adding a menu to see other private keys for decrypting messages (not settin of keys, only decrypting)
+             $imple =  $GLOBALS['injector']->getInstance('Horde_Core_Factory_Imple')
+             ->create(
+                 'IMP_Ajax_Imple_SwitchKeyDialog',
+                 array(
+                     'params' => array(
+                         //'reload' => $ui->selfUrl()->setRaw(true),
+                         //'secondary' => intval($secondary)
+                     ),
+                     'type' => 'smimePersonal'
+                 )
+             );
+            
+             $status->addText($error." Would you like to test with ".
+                Horde::link(
+                    '#',
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    array('id' => $imple->getDomId())
+                ) 
+                . _("another private key?")
+                . '</a>'
+            );
+
             return null;
         }
 
