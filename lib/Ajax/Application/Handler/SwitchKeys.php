@@ -38,7 +38,7 @@ class IMP_Ajax_Application_Handler_SwitchKeys extends Horde_Core_Ajax_Applicatio
             foreach ($list as $key => $value) {
                 $htmlchunk = $htmlchunk."<option>".$value."</option>";
             }
-            $htmlchunk = $htmlchunk.'</select><input id="selectedkey" name="selectedkey" list="certificatekeys" type="text" style="display:none;" />';
+            $htmlchunk = $htmlchunk.'</select><input id="selectedkey" list="certificatekeys" type="text" style="display:none;" />';
 
             // return the html
             return $htmlchunk;
@@ -62,34 +62,50 @@ class IMP_Ajax_Application_Handler_SwitchKeys extends Horde_Core_Ajax_Applicatio
         global $injector, $notification;
 
         $result = false;
+        \Horde::debug($this->vars->selectedkey, '/dev/shm/settingkeys', false);
 
-        if (!$this->vars->dialog_input) {
+        if (!$this->vars->selectedkey) {
             $notification->push(_("No Keys selected."), 'horde.error');
             return $result;
         }
 
         try {
             Horde::requireSecureConnection();
+            $result = $this->vars->selectedkey;
+            $session = $GLOBALS['injector']->getInstance('Horde_Session');
+            $session->set('imp', 'otherkey', $result);
+ 
+            //$GLOBALS['vars']['otherkey'] = $result;
+            // switch ($this->vars->type) {
+            // case 'pgpPersonal': // TODO: create getExtraKey Methods for pgp...
+            //     try {
+            //         $injector->getInstance('IMP_Smime')->_parseEnvelopedData($this->vars->selectedkey);
+            //     } catch (\Throwable $th) {
+            //         throw $th;
+            //     } 
+            //     break;
 
-            switch ($this->vars->type) {
-            case 'pgpPersonal':
-                $result = $injector->getInstance('IMP_Smime')->getExtraPrivateKey('personal', $this->vars->dialog_input);
-                break;
+            // case 'pgpSymmetric':// TODO: create getExtraKey Methods for pgp...
+            //     try {
+            //         $injector->getInstance('IMP_Smime')->_parseEnvelopedData($this->vars->selectedkey);
+            //     } catch (\Throwable $th) {
+            //         throw $th;
+            //     } 
+            //     break;
 
-            case 'pgpSymmetric':
-                $result = $injector->getInstance('IMP_Smime')->getExtraPrivateKey('symmetric', $this->vars->dialog_input);
-                break;
-
-            case 'smimePersonal':
-                $result = $injector->getInstance('IMP_Smime')->getExtraPrivateKey($this->vars->dialog_input);
-                break;
-            }
-
-            if ($result) {
-                $notification->push(_("New key has been used for decrption."), 'horde.success');
-            } else {
-                $notification->push(_("Decryption with key failed, try another key."), 'horde.error');
-            }
+            // case 'smimePersonal':
+            //     //\Horde::debug('happening!', '/dev/shm/settingkeys', false);
+            //     try {
+            //         \Horde::debug('happening!', '/dev/shm/stuff', false);
+            //         $injector->getInstance('IMP_Mime_Viewer_Smime')->_parseEnvelopedData($this->vars->selectedkey);
+            //         \Horde::debug('win!', '/dev/shm/stuff', false);
+            //         $notification->push(_("New key has been used for decrption."), 'horde.success');
+            //     } catch (\Throwable $th) {
+            //         $notification->push(_("Decryption with key failed, try another key."), 'horde.error');
+            //         throw $th;
+            //     } 
+            //     break;
+            // }
         } catch (Horde_Exception $e) {
             $notification->push($e, 'horde.error');
         }

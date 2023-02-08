@@ -307,7 +307,7 @@ class IMP_Smime
      *
      * TODO: need to remove the $prefName thingie for extrakeys table, makes no sense
      */
-    public function getExtraPublicKey($prefName = 'smime_private_key', $privateKeyId)
+    public function getExtraPublicKey($privateKeyId, $prefName = 'smime_private_key')
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
@@ -477,8 +477,13 @@ class IMP_Smime
     public function setSmimePersonal($key)
     {
         // find the private key that has been selected
+<<<<<<< Updated upstream
         $newprivatekey = $this->getExtraPrivateKey('smime_private_key', $key);
         $newpublickey = $this->getExtraPublicKey('smime_private_key', $key);
+=======
+        $newprivatekey = $this->getExtraPrivateKey($key);
+        $newpublickey = $this->getExtraPublicKey($key, 'smime_private_key');
+>>>>>>> Stashed changes
 
         // keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
 
@@ -829,12 +834,33 @@ class IMP_Smime
      */
     public function decryptMessage($text)
     {
+<<<<<<< Updated upstream
         return $this->_smime->decrypt($text, array(
             'type' => 'message',
             'pubkey' => $this->getPersonalPublicKey(),
             'privkey' => $this->getPersonalPrivateKey(),
             'passphrase' => $this->getPassphrase()
         ));
+=======
+        if ($differentKey === null) {
+            \Horde::debug('hmmm', '/dev/shm/hopla', false);
+            return $this->_smime->decrypt($text, array(
+                'type' => 'message',
+                'pubkey' => $this->getPersonalPublicKey(),
+                'privkey' => $this->getPersonalPrivateKey(),
+                'passphrase' => $this->getPassphrase()
+            ));
+        } else {
+            \Horde::debug('ok then!', '/dev/shm/hopla', false);
+            \Horde::debug($differentKey, '/dev/shm/hopla', false);
+            return $this->_smime->decrypt($text, array(
+                'type' => 'message',
+                'pubkey' => $this->getExtraPublicKey($differentKey),
+                'privkey' => $this->getExtraPrivateKey($differentKey),
+                'passphrase' => $this->getPassphrase()
+            ));
+        }
+>>>>>>> Stashed changes
     }
 
     /**
