@@ -307,7 +307,7 @@ class IMP_Smime
      *
      * TODO: need to remove the $prefName thingie for extrakeys table, makes no sense
      */
-    public function getExtraPublicKey($prefName = 'smime_private_key', $privateKeyId)
+    public function getExtraPublicKey($privateKeyId, $prefName = 'smime_private_key')
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
@@ -478,7 +478,7 @@ class IMP_Smime
     {
         // find the private key that has been selected
         $newprivatekey = $this->getExtraPrivateKey($key);
-        $newpublickey = $this->getExtraPublicKey('smime_private_key', $key);
+        $newpublickey = $this->getExtraPublicKey($key, 'smime_private_key');
 
         // keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
 
@@ -839,8 +839,8 @@ class IMP_Smime
         } else {
             return $this->_smime->decrypt($text, array(
                 'type' => 'message',
-                'pubkey' => $this->getPersonalPublicKey(),
-                'privkey' => $this->getPersonalPrivateKey(),
+                'pubkey' => $this->getExtraPublicKey($differentKey),
+                'privkey' => $this->getExtraPrivateKey($differentKey),
                 'passphrase' => $this->getPassphrase()
             ));
         }

@@ -38,7 +38,7 @@ class IMP_Ajax_Application_Handler_SwitchKeys extends Horde_Core_Ajax_Applicatio
             foreach ($list as $key => $value) {
                 $htmlchunk = $htmlchunk."<option>".$value."</option>";
             }
-            $htmlchunk = $htmlchunk.'</select><input id="selectedkey" name="selectedkey" list="certificatekeys" type="text" style="display:none;" />';
+            $htmlchunk = $htmlchunk.'</select><input id="selectedkey" list="certificatekeys" type="text" style="display:none;" />';
 
             // return the html
             return $htmlchunk;
@@ -63,40 +63,23 @@ class IMP_Ajax_Application_Handler_SwitchKeys extends Horde_Core_Ajax_Applicatio
 
         $result = false;
 
-        if (!$this->vars->dialog_input) {
+        if (!$this->vars->selectedkey) {
             $notification->push(_("No Keys selected."), 'horde.error');
             return $result;
+        } else {
+            $result = true;
         }
 
         try {
             Horde::requireSecureConnection();
-
-            switch ($this->vars->type) {
-            case 'pgpPersonal':
-                $result = $injector->getInstance('IMP_Smime')->getExtraPrivateKey('personal', $this->vars->dialog_input);
-                break;
-
-            case 'pgpSymmetric':
-                $result = $injector->getInstance('IMP_Smime')->getExtraPrivateKey('symmetric', $this->vars->dialog_input);
-                break;
-
-            case 'smimePersonal':
-                $result = $injector->getInstance('IMP_Smime')->getExtraPrivateKey($this->vars->dialog_input);
-                break;
-            }
-
-            if ($result) {
-                $notification->push(_("New key has been used for decrption."), 'horde.success');
-            } else {
-                $notification->push(_("Decryption with key failed, try another key."), 'horde.error');
-            }
+            $session = $GLOBALS['injector']->getInstance('Horde_Session');
+            $session->set('imp', 'otherkey', $this->vars->selectedkey);
+ 
         } catch (Horde_Exception $e) {
             $notification->push($e, 'horde.error');
         }
 
-        return ($result && $this->vars->reload)
-            ? new Horde_Core_Ajax_Response_HordeCore_Reload($this->vars->reload)
-            : $result;
+        return new Horde_Core_Ajax_Response_HordeCore_Reload($this->vars->reload);
     }
 
 }
