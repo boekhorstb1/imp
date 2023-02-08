@@ -331,7 +331,7 @@ class IMP_Smime
      * @return string  Specific S/MIME private key.
      * @throws Horde_Db_Exception
      */
-    public function getExtraPrivateKey($prefName = 'smime_private_key', $id)
+    public function getExtraPrivateKey($id, $prefName = 'smime_private_key')
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
@@ -477,7 +477,7 @@ class IMP_Smime
     public function setSmimePersonal($key)
     {
         // find the private key that has been selected
-        $newprivatekey = $this->getExtraPrivateKey('smime_private_key', $key);
+        $newprivatekey = $this->getExtraPrivateKey($key);
         $newpublickey = $this->getExtraPublicKey('smime_private_key', $key);
 
         // keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
@@ -495,7 +495,7 @@ class IMP_Smime
         }
 
         if (!empty($check)) {
-            // if there is, copy it to the database
+            // if there is a certificate, copy it to the database
             $this->unsetSmimePersonal();
         }
 
@@ -827,14 +827,23 @@ class IMP_Smime
      * @return string  See Horde_Crypt_Smime::decrypt().
      * @throws Horde_Crypt_Exception
      */
-    public function decryptMessage($text)
+    public function decryptMessage($text, $differentKey = null)
     {
-        return $this->_smime->decrypt($text, array(
-            'type' => 'message',
-            'pubkey' => $this->getPersonalPublicKey(),
-            'privkey' => $this->getPersonalPrivateKey(),
-            'passphrase' => $this->getPassphrase()
-        ));
+        if ($differentKey === null) {
+            return $this->_smime->decrypt($text, array(
+                'type' => 'message',
+                'pubkey' => $this->getPersonalPublicKey(),
+                'privkey' => $this->getPersonalPrivateKey(),
+                'passphrase' => $this->getPassphrase()
+            ));
+        } else {
+            return $this->_smime->decrypt($text, array(
+                'type' => 'message',
+                'pubkey' => $this->getPersonalPublicKey(),
+                'privkey' => $this->getPersonalPrivateKey(),
+                'passphrase' => $this->getPassphrase()
+            ));
+        }
     }
 
     /**
