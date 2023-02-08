@@ -199,6 +199,8 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         $raw_text = $this->_getPartStream($this->_mimepart->getMimeId());
 
         /* Decrypt the message */
+
+        // check if a different key for decryption is set in the session
         $session = $GLOBALS['injector']->getInstance('Horde_Session');
         try {
             $value = $session->get('imp', 'otherkey');
@@ -206,20 +208,18 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
             throw $th;
         }
         
+        // set different key if present
         if(!empty($value)) {
-            \Horde::debug('sessionset!', '/dev/shm/hopla', false);
-            \Horde::debug($value, '/dev/shm/hopla', false);
             $otherkey = $value;
             $session->remove('imp', 'otherkey');
         }
         else {
-            \Horde::debug('no session set', '/dev/shm/hopla', false);
             $otherkey = null;
         }
+
+        // try to decrypt the data
         try{
-            \Horde::debug('decyrpting...', '/dev/shm/hopla', false);
             $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), $otherkey);
-            \Horde::debug('decryption done!', '/dev/shm/hopla', false);
         }
         catch (Horde_Exception $e) {
             $error = $e->getMessage();
@@ -251,7 +251,6 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
                 . _("another private key?")
                 . '</a>'
             );
-            //\Horde::debug($GLOBALS['session'], '/dev/shm/test', false);
 
             return null;
         }

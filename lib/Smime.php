@@ -830,7 +830,6 @@ class IMP_Smime
     public function decryptMessage($text, $differentKey = null)
     {
         if ($differentKey === null) {
-            \Horde::debug('hmmm', '/dev/shm/hopla', false);
             return $this->_smime->decrypt($text, array(
                 'type' => 'message',
                 'pubkey' => $this->getPersonalPublicKey(),
@@ -838,8 +837,6 @@ class IMP_Smime
                 'passphrase' => $this->getPassphrase()
             ));
         } else {
-            \Horde::debug('ok then!', '/dev/shm/hopla', false);
-            \Horde::debug($differentKey, '/dev/shm/hopla', false);
             return $this->_smime->decrypt($text, array(
                 'type' => 'message',
                 'pubkey' => $this->getExtraPublicKey($differentKey),
