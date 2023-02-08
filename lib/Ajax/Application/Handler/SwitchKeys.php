@@ -62,57 +62,24 @@ class IMP_Ajax_Application_Handler_SwitchKeys extends Horde_Core_Ajax_Applicatio
         global $injector, $notification;
 
         $result = false;
-        \Horde::debug($this->vars->selectedkey, '/dev/shm/settingkeys', false);
 
         if (!$this->vars->selectedkey) {
             $notification->push(_("No Keys selected."), 'horde.error');
             return $result;
+        } else {
+            $result = true;
         }
 
         try {
             Horde::requireSecureConnection();
-            $result = $this->vars->selectedkey;
             $session = $GLOBALS['injector']->getInstance('Horde_Session');
-            $session->set('imp', 'otherkey', $result);
+            $session->set('imp', 'otherkey', $this->vars->selectedkey);
  
-            //$GLOBALS['vars']['otherkey'] = $result;
-            // switch ($this->vars->type) {
-            // case 'pgpPersonal': // TODO: create getExtraKey Methods for pgp...
-            //     try {
-            //         $injector->getInstance('IMP_Smime')->_parseEnvelopedData($this->vars->selectedkey);
-            //     } catch (\Throwable $th) {
-            //         throw $th;
-            //     } 
-            //     break;
-
-            // case 'pgpSymmetric':// TODO: create getExtraKey Methods for pgp...
-            //     try {
-            //         $injector->getInstance('IMP_Smime')->_parseEnvelopedData($this->vars->selectedkey);
-            //     } catch (\Throwable $th) {
-            //         throw $th;
-            //     } 
-            //     break;
-
-            // case 'smimePersonal':
-            //     //\Horde::debug('happening!', '/dev/shm/settingkeys', false);
-            //     try {
-            //         \Horde::debug('happening!', '/dev/shm/stuff', false);
-            //         $injector->getInstance('IMP_Mime_Viewer_Smime')->_parseEnvelopedData($this->vars->selectedkey);
-            //         \Horde::debug('win!', '/dev/shm/stuff', false);
-            //         $notification->push(_("New key has been used for decrption."), 'horde.success');
-            //     } catch (\Throwable $th) {
-            //         $notification->push(_("Decryption with key failed, try another key."), 'horde.error');
-            //         throw $th;
-            //     } 
-            //     break;
-            // }
         } catch (Horde_Exception $e) {
             $notification->push($e, 'horde.error');
         }
 
-        return ($result && $this->vars->reload)
-            ? new Horde_Core_Ajax_Response_HordeCore_Reload($this->vars->reload)
-            : $result;
+        return new Horde_Core_Ajax_Response_HordeCore_Reload($this->vars->reload);
     }
 
 }
