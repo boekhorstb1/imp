@@ -107,9 +107,9 @@ class IMP_Basic_Smime extends IMP_Basic_Base
             $this->_textWindowOutput(
                 'S/MIME Extra Private Keys',
                 $this->_smime->getExtraPrivateKey(
+                    $this->vars->pkID,
                     // if actionID euquals value, add it, otherwise load defaul value of function
-                    $this->vars->actionID == 'view_personal_private_sign_key',
-                    $this->vars->pkID
+                    $this->vars->actionID == 'view_personal_private_sign_key'
                 )
             );
             break;
