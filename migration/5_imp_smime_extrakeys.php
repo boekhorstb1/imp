@@ -23,7 +23,7 @@ class ImpSmimeExtraKeys extends Horde_Db_Migration_Base
         $t = $this->_connection->table('imp_smime_extrakeys');
         $cols = $t->getColumns();
         if (!in_array('privatekey_passwd', array_keys($cols))) {
-            $this->addColumn('imp_smime_extrakeys', 'privatekey_passwd', 'string', array('null' => true));
+            $this->addColumn('imp_smime_extrakeys', 'privatekey_passwd', 'string', array('null' => false));
         }
     }
 

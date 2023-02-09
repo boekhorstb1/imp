@@ -219,16 +219,16 @@ class IMP_Smime
      * @param string|array $key  The private key to add.
      * @param string|array $key  The public key to add.
      */
-    public function addExtraPersonalKeys($private_key, $public_key, $pref_name = 'smime_private_key')
+    public function addExtraPersonalKeys($private_key, $public_key, $password, $pref_name = 'smime_private_key')
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
-        if (!empty($public_key) && !empty($private_key)) {
+        if (!empty($public_key) && !empty($private_key) && !empty($password)) {
             /* Build the SQL query. */
-            $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key) VALUES (?, ?, ?, ?)';
-            $values = [$pref_name, $user_name, $private_key, $public_key];
+            $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd) VALUES (?, ?, ?, ?, ?)';
+            $values = [$pref_name, $user_name, $private_key, $public_key, $password];
         }
 
         try {
@@ -520,10 +520,23 @@ class IMP_Smime
         $PrivateKey = $this->getPersonalPrivateKey();
         $PublicKey = $this->getPersonalPublicKey();
 
-        // push these to the extra keys table
-        if (!empty($PrivateKey) && !empty($PublicKey) && !$this->checkPrivateKey($PrivateKey)) {
-            $this->addExtraPersonalKeys($PrivateKey, $PublicKey);
+        // get password, hash it and save it to the table
+        $password = $this->getPassphrase();
+        \Horde::debug($password, '/dev/shm/backend', false);
+        if ($password == false) {
+            return false;
         }
+        \Horde::debug("uhu", '/dev/shm/backend', false);
+        // push these to the extra keys table
+        if (!empty($PrivateKey) && !empty($PublicKey) && !empty($password) && !$this->checkPrivateKey($PrivateKey)) {
+            try {
+                \Horde::debug("uhu1", '/dev/shm/backend', false);
+                $this->addExtraPersonalKeys($PrivateKey, $PublicKey, $password);
+            } catch (Horde_Exception $e) {
+                throw $e->getMessage();
+            }
+        }
+        \Horde::debug("uhu2", '/dev/shm/backend', false);
 
         $this->deletePersonalKeys();
     }
