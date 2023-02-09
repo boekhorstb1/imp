@@ -195,64 +195,34 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
             $status->addText(Horde::link('#', '', '', '', '', '', '', array('id' => $imple->getDomId())) . _("You must enter the passphrase for your S/MIME private key to view this data.") . '</a>');
             return null;
         }
-
         $raw_text = $this->_getPartStream($this->_mimepart->getMimeId());
 
         /* Decrypt the message */
 
-        // check if a different key for decryption is set in the session
-        $session = $GLOBALS['injector']->getInstance('Horde_Session');
-        try {
-            $value = $session->get('imp', 'otherkey');
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-        
-        // set different key if present
-        if(!empty($value)) {
-            $otherkey = $value;
-            $session->remove('imp', 'otherkey');
-        }
-        else {
-            $otherkey = null;
-        }
-
         // try to decrypt the data
         try{
-            $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), $otherkey);
+            $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL));
         }
         catch (Horde_Exception $e) {
-            $error = $e->getMessage();
-                        
-             // Adding a menu to see other private keys for decrypting messages (not settin of keys, only decrypting)
-             $imple =  $GLOBALS['injector']->getInstance('Horde_Core_Factory_Imple')
-             ->create(
-                 'IMP_Ajax_Imple_SwitchKeyDialog',
-                 array(
-                     'params' => array(
-                         //'reload' => $ui->selfUrl()->setRaw(true),
-                         //'secondary' => intval($secondary)
-                     ),
-                     'type' => 'smimePersonal'
-                 )
-             );
-            
-             $status->addText($error." Would you like to test with ".
-                Horde::link(
-                    '#',
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    array('id' => $imple->getDomId())
-                ) 
-                . _("another private key?")
-                . '</a>'
-            );
+            $decrypted_data = null;
+            $keyslist = $this->_impsmime->listPrivateKeyIds();
 
-            return null;
+            foreach ($keyslist as $key => $otherkey) {
+                try {
+                    $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), $otherkey);
+                } catch (Horde_Exception $f) {
+                    //throw $th;
+                }
+                if ($decrypted_data !== null){
+                    break;
+                }
+            }
+
+            if ($decrypted_data === null){
+                $error = $e->getMessage();
+                $status->addText($error."And: ".$f->getMessage());
+                return null;
+            }
         }
 
         $cache->smime[$base_id]['wrap'] = 'mimePartWrapValid';
