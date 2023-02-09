@@ -201,9 +201,11 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
 
         // try to decrypt the data
         try{
+            // try only with default personal certificates
             $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL));
         }
         catch (Horde_Exception $e) {
+            // try with extra personal certificates
             $decrypted_data = null;
             $keyslist = $this->_impsmime->listPrivateKeyIds();
 
@@ -219,6 +221,7 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
             }
 
             if ($decrypted_data === null){
+                // in case all of the certificates failed to decrypt, throw an error 
                 $error = $e->getMessage();
                 $status->addText($error."And: ".$f->getMessage());
                 return null;
