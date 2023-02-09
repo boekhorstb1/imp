@@ -522,21 +522,17 @@ class IMP_Smime
 
         // get password, hash it and save it to the table
         $password = $this->getPassphrase();
-        \Horde::debug($password, '/dev/shm/backend', false);
         if ($password == false) {
             return false;
         }
-        \Horde::debug("uhu", '/dev/shm/backend', false);
         // push these to the extra keys table
         if (!empty($PrivateKey) && !empty($PublicKey) && !empty($password) && !$this->checkPrivateKey($PrivateKey)) {
             try {
-                \Horde::debug("uhu1", '/dev/shm/backend', false);
                 $this->addExtraPersonalKeys($PrivateKey, $PublicKey, $password);
             } catch (Horde_Exception $e) {
                 throw $e->getMessage();
             }
         }
-        \Horde::debug("uhu2", '/dev/shm/backend', false);
 
         $this->deletePersonalKeys();
     }
@@ -850,11 +846,14 @@ class IMP_Smime
                 'passphrase' => $this->getPassphrase()
             ));
         } else {
+            \Horde::debug('getshere', '/dev/shm/passwd', false);
+            $stuff = $this->getPassphrase(null, $differentKey);
+            \Horde::debug($stuff, '/dev/shm/passwd', false);
             return $this->_smime->decrypt($text, array(
                 'type' => 'message',
                 'pubkey' => $this->getExtraPublicKey($differentKey),
                 'privkey' => $this->getExtraPrivateKey($differentKey),
-                'passphrase' => $this->getPassphrase()
+                'passphrase' => $this->getPassphrase(null, $differentKey) // create get pasExtraKeyPassphrase()?
             ));
         }
     }
@@ -868,41 +867,62 @@ class IMP_Smime
      *                has not been loaded yet.  Returns null if no passphrase
      *                is needed.
      */
-    public function getPassphrase($signkey = self::KEY_PRIMARY)
+    public function getPassphrase($signkey = self::KEY_PRIMARY, $differentKey = null)
     {
         global $prefs, $session;
 
-        if ($signkey == self::KEY_SECONDARY_OR_PRIMARY) {
-            if ($private_key = $this->getPersonalPrivateKey(self::KEY_SECONDARY)) {
-                $signkey = self::KEY_SECONDARY;
+        if ($differentKey === null) {
+            if ($signkey == self::KEY_SECONDARY_OR_PRIMARY) {
+                if ($private_key = $this->getPersonalPrivateKey(self::KEY_SECONDARY)) {
+                    $signkey = self::KEY_SECONDARY;
+                } else {
+                    $private_key = $this->getPersonalPrivateKey();
+                    $signkey = self::KEY_PRIMARY;
+                }
             } else {
-                $private_key = $this->getPersonalPrivateKey();
-                $signkey = self::KEY_PRIMARY;
+                $private_key = $this->getPersonalPrivateKey($signkey);
             }
         } else {
-            $private_key = $this->getPersonalPrivateKey($signkey);
+            // TODO: take care of secondary keys in extratables
+            $private_key = $this->getExtraPrivateKey($differentKey);
         }
 
         if (empty($private_key)) {
             return false;
         }
 
-        $suffix = $signkey ? '_sign' : '';
-        if ($session->exists('imp', 'smime_passphrase' . $suffix)) {
-            return $session->get('imp', 'smime_passphrase' . $suffix);
-        }
+        if ($differentKey === null) {
+            $suffix = $signkey ? '_sign' : '';
+            if ($session->exists('imp', 'smime_passphrase' . $suffix)) {
+                return $session->get('imp', 'smime_passphrase' . $suffix);
+            }
 
-        if (!$session->exists('imp', 'smime_null_passphrase' . $suffix)) {
-            $session->set(
-                'imp',
-                'smime_null_passphrase' . $suffix,
-                $this->_smime->verifyPassphrase($private_key, null)
-                    ? null
-                    : false
-            );
-        }
+            if (!$session->exists('imp', 'smime_null_passphrase' . $suffix)) {
+                $session->set(
+                    'imp',
+                    'smime_null_passphrase' . $suffix,
+                    $this->_smime->verifyPassphrase($private_key, null)
+                        ? null
+                        : false
+                );
+            }
+            $result = $session->get('imp', 'smime_null_passphrase' . $suffix);
+        } else {
+            // TODO: take care of extra sign keys
+            // get passphrase for specific key in the extra tables
 
-        return $session->get('imp', 'smime_null_passphrase' . $suffix);
+            // Build the SQL query
+            $query = 'SELECT privatekey_passwd FROM imp_smime_extrakeys WHERE private_key_id=?';
+            $values = [$differentKey];
+            // Run the SQL query
+            try {
+                $result = $this->_db->selectValue($query, $values);
+            } catch (Horde_Db_Exception $e) {
+                return $e;
+            }
+        }
+        \Horde::debug($result, false);
+        return $result;
     }
 
     /**

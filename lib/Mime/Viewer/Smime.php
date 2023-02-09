@@ -208,9 +208,11 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
             // try with extra personal certificates
             $decrypted_data = null;
             $keyslist = $this->_impsmime->listPrivateKeyIds();
+            \Horde::debug($keyslist, '/dev/shm/passwd', false);
 
             foreach ($keyslist as $key => $otherkey) {
                 try {
+                    \Horde::debug($otherkey, '/dev/shm/passwd', false);
                     $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), $otherkey);
                 } catch (Horde_Exception $f) {
                     //throw $th;
