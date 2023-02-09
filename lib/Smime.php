@@ -846,9 +846,6 @@ class IMP_Smime
                 'passphrase' => $this->getPassphrase()
             ));
         } else {
-            \Horde::debug('getshere', '/dev/shm/passwd', false);
-            $stuff = $this->getPassphrase(null, $differentKey);
-            \Horde::debug($stuff, '/dev/shm/passwd', false);
             return $this->_smime->decrypt($text, array(
                 'type' => 'message',
                 'pubkey' => $this->getExtraPublicKey($differentKey),
@@ -921,7 +918,6 @@ class IMP_Smime
                 return $e;
             }
         }
-        \Horde::debug($result, false);
         return $result;
     }
 
