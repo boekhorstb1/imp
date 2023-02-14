@@ -51,9 +51,9 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         }
 
         /* Loading View Template and Help Template */
-        $view = new Horde_View(array(
-            'templatePath' => IMP_TEMPLATES . '/prefs'
-        ));
+        $view = new Horde_View([
+            'templatePath' => IMP_TEMPLATES . '/prefs',
+        ]);
         $view->addHelper('Horde_Core_View_Helper_Help');
 
         /* Loading Connection Status to View */
@@ -76,9 +76,9 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         /* Addding to view: Browser Importoptions for uploading Certificates */
         if ($browser->allowFileUploads()) {
             $view->import = true;
-            $page_output->addInlineScript(array(
-                '$("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, array('params' => array('actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))), 'height' => 450, 'width' => 750, 'urlencode' => true)) . '; e.stop(); })'
-            ), true);
+            $page_output->addInlineScript([
+                '$("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
+            ], true);
         }
 
         /* Loading private keys from the Database that are not used as Personal Certificates */
@@ -87,7 +87,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             $pk_list = [];
             foreach ($extra_private_keys as $val) {
                 $link = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $val['private_key_id']]);
-                $tile = "View Extra Private Keys";
+                $tile = 'View Extra Private Keys';
                 $pk_list[] = Horde::link($link, $title, null, 'view_key'); // all uneven keys hold links
                 $pk_list[] = $val['private_key_id'];    // all even links hold privatekey ids
             }
@@ -103,7 +103,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         }
 
         /* adding primary and secondary personal keys */
-        foreach (array('' => false, '_sign' => true) as $suffix => $secondary) {
+        foreach (['' => false, '_sign' => true] as $suffix => $secondary) {
             // If no secondary Ceritificates or signkeys are found: skip this loop
             if ($secondary && !$view->has_sign_key) {
                 continue;
@@ -126,70 +126,70 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
             $view->{'viewpublic' . $suffix} = $smime_url->copy()
                 ->add('actionID', 'view_personal_public' . $suffix . '_key')
-                ->link(array(
+                ->link([
                     'title' => $secondary
-                        ? _("View Secondary Personal Public Certificate")
-                        : _("View Personal Public Certificate"),
-                    'target' => 'view_key'
-                ))
-                . _("View") . '</a>';
+                        ? _('View Secondary Personal Public Certificate')
+                        : _('View Personal Public Certificate'),
+                    'target' => 'view_key',
+                ])
+                . _('View') . '</a>';
 
             $view->{'infopublic' . $suffix} = $smime_url->copy()
                 ->add('actionID', 'info_personal_public' . $suffix . '_key')
-                ->link(array(
-                    'title' => _("Information on Personal Public Certificate"),
-                    'target' => 'info_key'
-                ))
-                . _("Details") . '</a>';
+                ->link([
+                    'title' => _('Information on Personal Public Certificate'),
+                    'target' => 'info_key',
+                ])
+                . _('Details') . '</a>';
 
             $view->{'privatekeyexits'} = $smime->getExtraPrivateKeyId(); // check if private key exists and return ids value if so
 
             if ($smime->getPassphrase($secondary)) {
-                $view->{'passphrase' . $suffix} = $ui->selfUrl(array(
+                $view->{'passphrase' . $suffix} = $ui->selfUrl([
                     'special' => true,
-                    'token' => true
-                ))
+                    'token' => true,
+                ])
                 ->add('unset_smime' . $suffix . '_passphrase', 1)
-                ->link(array(
-                    'title' => _("Unload Passphrase")
-                ))
-                . _("Unload Passphrase") . '</a>';
+                ->link([
+                    'title' => _('Unload Passphrase'),
+                ])
+                . _('Unload Passphrase') . '</a>';
             } else {
                 $imple = $injector->getInstance('Horde_Core_Factory_Imple')
                     ->create(
                         'IMP_Ajax_Imple_PassphraseDialog',
-                        array(
-                            'params' => array(
+                        [
+                            'params' => [
                                 'reload' => $ui->selfUrl()->setRaw(true),
-                                'secondary' => intval($secondary)
-                            ),
-                            'type' => 'smimePersonal'
-                        )
+                                'secondary' => intval($secondary),
+                            ],
+                            'type' => 'smimePersonal',
+                        ]
                     );
                 $view->{'passphrase' . $suffix} = Horde::link(
                     '#',
-                    _("Enter Passphrase"),
+                    _('Enter Passphrase'),
                     null,
                     null,
                     null,
                     null,
                     null,
-                    array('id' => $imple->getDomId())
-                ) . _("Enter Passphrase");
+                    ['id' => $imple->getDomId()]
+                ) . _('Enter Passphrase');
             }
 
             // Adding to view: private key link
             $view->{'viewprivate' . $suffix} = $smime_url->copy()
                 ->add('actionID', 'view_personal_private' . $suffix . '_key')
-                ->link(array(
-                    'title' => _("View Secondary Personal Private Key"),
-                    'target' => 'view_key'
-                ))
-                . _("View") . '</a>';
+                ->link([
+                    'title' => _('View Secondary Personal Private Key'),
+                    'target' => 'view_key',
+                ])
+                . _('View') . '</a>';
 
-            $page_output->addInlineScript(array(
-                '$("delete_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_("Are you sure you want to delete your keypair? (This is NOT recommended!)")) . ')) { e.stop(); } })'
-            ), true);
+            $page_output->addInlineScript([
+                '$("delete_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to delete your keypair? (This is NOT recommended!)')) . ')) { e.stop(); } })',
+            ], true);
         }
 
         return $view->render('smimeprivatekey');
@@ -209,18 +209,18 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             );
             $notification->push(
                 isset($ui->vars->delete_smime_personal_sign)
-                    ? _("Secondary personal S/MIME keys deleted successfully.")
-                    : _("Personal S/MIME keys deleted successfully."),
+                    ? _('Secondary personal S/MIME keys deleted successfully.')
+                    : _('Personal S/MIME keys deleted successfully.'),
                 'horde.success'
             );
         } elseif (isset($ui->vars->delete_smime_extra)) { // delete extra certificates
-            $injector->getInstance('IMP_Smime')->deleteExtraKeys(
+            $injector->getInstance('IMP_Smime')->deleteExtraKey(
                 $ui->vars->delete_smime_extra
             );
             $notification->push(
                 isset($ui->vars->delete_smime_extra_secondary) // TODO: fix deletion of additional extra secondary keys?
-                    ? _("Secondary extra S/MIME keys deleted successfully.")
-                    : _("Extra S/MIME keys deleted successfully."),
+                    ? _('Secondary extra S/MIME keys deleted successfully.')
+                    : _('Extra S/MIME keys deleted successfully.'),
                 'horde.success'
             );
         } elseif (isset($ui->vars->unset_smime_passphrase) || // change passphrase
@@ -229,28 +229,28 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 $ui->vars->unset_smime_sign_passphrase
             );
             $notification->push(
-                _("S/MIME passphrase successfully unloaded."),
+                _('S/MIME passphrase successfully unloaded.'),
                 'horde.success'
             );
         } elseif (isset($ui->vars->unset_smime_personal)) { // unsetting personal certificate and transfering it to the db
             $check = $injector->getInstance('IMP_Smime')->unsetSmimePersonal();
             if ($check === false) {
                 $notification->push(
-                    _("Please set a password before unsetting the keys."),
+                    _('Please set a password before unsetting the keys.'),
                     'horde.error'
                 );
             } else {
                 $notification->push(
-                    _("S/MIME Certificate unset and successfully transfered to extra keys."),
+                    _('S/MIME Certificate unset and successfully transfered to extra keys.'),
                     'horde.success'
-                );   
+                );
             }
         } elseif (isset($ui->vars->set_smime_personal)) { // setting personal certificate... first have to unset?
             $injector->getInstance('IMP_Smime')->setSmimePersonal(
                 $ui->vars->set_smime_personal
             );
             $notification->push(
-                _("S/MIME Certificate set and successfully transfered previous certificate to extra keys."),
+                _('S/MIME Certificate set and successfully transfered previous certificate to extra keys.'),
                 'horde.success'
             );
         }

@@ -483,7 +483,7 @@ class IMP_Smime
      *
      * @param boolean $signkey  Return the secondary key for signing?
      */
-    public function deleteExtraKeys($private_key_id, $signkey = false)
+    public function deleteExtraKey($private_key_id, $signkey = false)
     {
         /* Build the SQL query. */
         $query = 'DELETE FROM imp_smime_extrakeys WHERE private_key_id = ?';
