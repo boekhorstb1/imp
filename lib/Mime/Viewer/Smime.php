@@ -222,8 +222,9 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
 
             if ($decrypted_data === null){
                 // in case all of the certificates failed to decrypt, throw an error 
-                $error = $e->getMessage();
-                $status->addText($error."And: ".$f->getMessage());
+                if ($f->getMessage() == $e->getMessage()){
+                    $status->addText($e->getMessage()." This happend for all keys used.");
+                }
                 return null;
             }
         }

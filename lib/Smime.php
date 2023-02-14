@@ -186,32 +186,6 @@ class IMP_Smime
         }
     }
 
-
-    /**
-     * Adds am extra personal private key to the extra keys table.
-     *
-     * @param string $pref_name To be removed... TODO.
-     * @param string|array $key  The private key to add.
-     * @param string|array $key  The public key to add (optional).
-     */
-    public function addExtraPersonalPrivateKey($pref_name = 'smime_private_key', $private_key)
-    {
-        /* Get the user_name  */
-        // TODO: is there a way to only use prefs?
-        $user_name = $GLOBALS['registry']->getAuth();
-
-        /* Build the SQL query. */
-        $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key) VALUES (?, ?, ?)';
-        $values = [$pref_name, $user_name, $private_key];
-
-
-        try {
-            $this->_db->insert($query, $values);
-        } catch (Horde_Db_Exception $e) {
-            return $e;
-        }
-    }
-
     /**
      * Adds am extra personal keys to the extra keys table.
      *
@@ -225,16 +199,22 @@ class IMP_Smime
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
-        if (!empty($public_key) && !empty($private_key) && !empty($password)) {
+        // Encrypt the password
+        $key = $GLOBALS['conf']['secret_key'];
+        $blowfish = new Horde_Crypt_Blowfish($key);
+        $encryptedPassword = $blowfish->encrypt($password);
+        $encryptedPassword = base64_encode($encryptedPassword);
+
+
+        if (!empty($public_key) && !empty($private_key) && !empty($encryptedPassword)) {
             /* Build the SQL query. */
             $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd) VALUES (?, ?, ?, ?, ?)';
-            $values = [$pref_name, $user_name, $private_key, $public_key, $password];
+            $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword];
         }
-
         try {
             $this->_db->insert($query, $values);
-        } catch (Horde_Db_Exception $e) {
-            return $e;
+        } catch (\Throwable $th) {
+            throw $th;
         }
     }
 
@@ -482,7 +462,6 @@ class IMP_Smime
 
         // keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
 
-
         // give keys an option to name them, if nothing is set (this should show 'no alias set')
 
 
@@ -529,12 +508,12 @@ class IMP_Smime
         if (!empty($PrivateKey) && !empty($PublicKey) && !empty($password) && !$this->checkPrivateKey($PrivateKey)) {
             try {
                 $this->addExtraPersonalKeys($PrivateKey, $PublicKey, $password);
+                $this->deletePersonalKeys();
             } catch (Horde_Exception $e) {
                 throw $e->getMessage();
             }
         }
 
-        $this->deletePersonalKeys();
     }
 
     /**
@@ -915,8 +894,15 @@ class IMP_Smime
             try {
                 $result = $this->_db->selectValue($query, $values);
             } catch (Horde_Db_Exception $e) {
-                return $e;
+                throw $e;
             }
+
+            # decrypt the hashed value here
+            $key = $GLOBALS['conf']['secret_key'];
+            $blowfish = new Horde_Crypt_Blowfish($key);
+            $result = base64_decode($result);
+            $result = $blowfish->decrypt($result);
+
         }
         return $result;
     }
