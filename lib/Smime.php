@@ -116,21 +116,9 @@ class IMP_Smime
     {
         $prefName = $signkey ? 'smime_public_sign_key' : 'smime_public_key';
         $val = is_array($key) ? implode('', $key) : $key;
-        try {
-            $val = HordeString::convertToUtf8($val);
-        } catch (Exception $ex) {
-        }
+        $val = HordeString::convertToUtf8($val);
 
         $GLOBALS['prefs']->setValue($prefName, $val);
-
-        // // check if a private key already exists
-        // $check  = $prefs->getValue('smime_public_key');
-
-        // if (empty($check)) {
-        //     $GLOBALS['prefs']->setValue($prefName, $val);
-        // } else {
-        //     $this->addExtraPublicKey($prefName, $val);
-        // }
     }
 
     /**
@@ -145,10 +133,7 @@ class IMP_Smime
 
         $prefName = $signkey ? 'smime_private_sign_key' : 'smime_private_key';
         $val = is_array($key) ? implode('', $key) : $key;
-        try {
-            $val = HordeString::convertToUtf8($val);
-        } catch (Exception $ex) {
-        }
+        $val = HordeString::convertToUtf8($val);
 
         // check if a private key already exists
         $check  = $prefs->getValue('smime_private_key');
@@ -201,10 +186,7 @@ class IMP_Smime
     {
         $prefName = $signkey ? 'smime_additional_sign_cert' : 'smime_additional_cert';
         $val = is_array($key) ? implode('', $key) : $key;
-        try {
-            $val = HordeString::convertToUtf8($val);
-        } catch (Exception $ex) {
-        }
+        $val = HordeString::convertToUtf8($val);
         $GLOBALS['prefs']->setValue($prefName, $val);
     }
 
@@ -270,12 +252,8 @@ class IMP_Smime
         $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=?';
         $values = [$prefName, $privateKeyId, $user_name];
         // Run the SQL query
-        try {
-            $result = $this->_db->selectOne($query, $values); // returns one key
-            return $result['public_key'];
-        } catch (Horde_Db_Exception $e) {
-            throw $e;
-        }
+        $result = $this->_db->selectOne($query, $values); // returns one key
+        return $result['public_key'];
     }
 
     /**
@@ -294,12 +272,8 @@ class IMP_Smime
         $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=?';
         $values = [$prefName, $id, $user_name];
         // Run the SQL query
-        try {
-            $result = $this->_db->selectOne($query, $values); // returns one key
-            return $result['private_key'];
-        } catch (Horde_Db_Exception $e) {
-            throw $e;
-        }
+        $result = $this->_db->selectOne($query, $values); // returns one key
+        return $result['private_key'];
     }
 
     /**
@@ -320,20 +294,16 @@ class IMP_Smime
             $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE user_name=?';
             $values = [$user_name];
             // Run the SQL query
-            try {
-                $result = $this->_db->selectAll($query, $values); // returns one key
-                if (!empty($result)) {
-                    // check if privatekeys are the same
-                    foreach ($result as $key => $value) {
-                        if ($value['private_key'] == $personalCertificate) {
-                            return $value['private_key_id'];
-                        }
+            $result = $this->_db->selectAll($query, $values); // returns one key
+            if (!empty($result)) {
+                // check if privatekeys are the same
+                foreach ($result as $key => $value) {
+                    if ($value['private_key'] == $personalCertificate) {
+                        return $value['private_key_id'];
                     }
-                } else {
-                    return -1;
                 }
-            } catch (Horde_Db_Exception $e) {
-                throw $e;
+            } else {
+                return -1;
             }
         }
     }
@@ -356,20 +326,16 @@ class IMP_Smime
         $values = [$user_name];
 
         // Run the SQL query
-        try {
-            $result = $this->_db->selectValues($query, $values); // returns an array with keys
-            if (!empty($result)) {
-                // check if privatekeys are the same
-                foreach ($result as $key => $value) {
-                    if ($value == $personalCertificate) {
-                        return true;
-                    }
+        $result = $this->_db->selectValues($query, $values); // returns an array with keys
+        if (!empty($result)) {
+            // check if privatekeys are the same
+            foreach ($result as $key => $value) {
+                if ($value == $personalCertificate) {
+                    return true;
                 }
-            } else {
-                return false;
             }
-        } catch (Horde_Db_Exception $e) {
-            throw $e;
+        } else {
+            return false;
         }
     }
 
@@ -390,12 +356,8 @@ class IMP_Smime
         $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
         $values = [$prefName, $user_name];
         // Run the SQL query
-        try {
-            $result = $this->_db->selectAll($query, $values); // returns an array with keys
-            return $result;
-        } catch (Horde_Db_Exception $e) {
-            throw $e;
-        }
+        $result = $this->_db->selectAll($query, $values); // returns an array with keys
+        return $result;
     }
 
     /**
@@ -414,12 +376,8 @@ class IMP_Smime
         $query = 'SELECT private_key_id FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
         $values = [$prefName, $user_name];
         // Run the SQL query
-        try {
-            $result = $this->_db->selectValues($query, $values); // returns an array with keys
-            return $result;
-        } catch (Horde_Db_Exception $e) {
-            throw $e;
-        }
+        $result = $this->_db->selectValues($query, $values); // returns an array with keys
+        return $result;
     }
 
 
@@ -441,11 +399,7 @@ class IMP_Smime
 
         // check if a personal certificate is set
         $check = null;
-        try {
-            $check = $this->getPersonalPrivateKey();
-        } catch (\Throwable $th) {
-            return $th;
-        }
+        $check = $this->getPersonalPrivateKey();
 
         if (!empty($check)) {
             // if there is a certificate, copy it to the database
@@ -454,12 +408,8 @@ class IMP_Smime
 
         // if not: import it
         // TODO: $signkey?
-        try {
-            $this->addPersonalPrivateKey($newprivatekey);
-            $this->addPersonalPublicKey($newpublickey);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+        $this->addPersonalPrivateKey($newprivatekey);
+        $this->addPersonalPublicKey($newpublickey);
     }
 
     /**
@@ -480,12 +430,8 @@ class IMP_Smime
         }
         // push these to the extra keys table
         if (!empty($privateKey) && !empty($publicKey) && !empty($password) && !$this->privateKeyExists($privateKey)) {
-            try {
-                $this->addExtraPersonalKeys($privateKey, $publicKey, $password);
-                $this->deletePersonalKeys();
-            } catch (Horde_Exception $e) {
-                throw $e;
-            }
+            $this->addExtraPersonalKeys($privateKey, $publicKey, $password);
+            $this->deletePersonalKeys();
         }
     }
 
@@ -543,11 +489,7 @@ class IMP_Smime
         $query = 'DELETE FROM imp_smime_extrakeys WHERE private_key_id = ?';
         $values = [ $private_key_id ];
 
-        try {
-            $this->_db->delete($query, $values);
-        } catch (Horde_Db_Exception $e) {
-            throw $e;
-        }
+        $this->_db->delete($query, $values);
     }
 
     /**
@@ -645,16 +587,13 @@ class IMP_Smime
     {
         global $injector, $registry;
 
-        try {
-            $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
-                'smime_key',
-                'imp',
-                [$address]
-            );
-            if ($key) {
-                return $key;
-            }
-        } catch (Horde_Exception_HookNotSet $e) {
+        $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
+            'smime_key',
+            'imp',
+            [$address]
+        );
+        if ($key) {
+            return $key;
         }
 
         $contacts = $injector->getInstance('IMP_Contacts');
@@ -864,11 +803,7 @@ class IMP_Smime
             $query = 'SELECT privatekey_passwd FROM imp_smime_extrakeys WHERE private_key_id=?';
             $values = [$differentKey];
             // Run the SQL query
-            try {
-                $result = $this->_db->selectValue($query, $values);
-            } catch (Horde_Db_Exception $e) {
-                throw $e;
-            }
+            $result = $this->_db->selectValue($query, $values);
 
             # decrypt the hashed value here
             $key = $GLOBALS['conf']['secret_key'];
