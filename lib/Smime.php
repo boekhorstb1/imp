@@ -165,9 +165,10 @@ class IMP_Smime
     /**
      * Adds am extra personal keys to the extra keys table.
      *
-     * @param string $pref_name To be removed... TODO.
      * @param string|array $key  The private key to add.
      * @param string|array $key  The public key to add.
+     * @param string $password  The password for the private key to add.
+     * @param string $pref_name To be removed... TODO.@param string|array $key  The public key to add.
      */
     public function addExtraPersonalKeys($private_key, $public_key, $password, $pref_name = 'smime_private_key')
     {
@@ -186,11 +187,7 @@ class IMP_Smime
             /* Build the SQL query. */
             $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd) VALUES (?, ?, ?, ?, ?)';
             $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword];
-        }
-        try {
             $this->_db->insert($query, $values);
-        } catch (\Throwable $th) {
-            throw $th;
         }
     }
 
