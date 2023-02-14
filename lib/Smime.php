@@ -470,8 +470,8 @@ class IMP_Smime
     public function unsetSmimePersonal()
     {
         // get current personal certificates
-        $PrivateKey = $this->getPersonalPrivateKey();
-        $PublicKey = $this->getPersonalPublicKey();
+        $privateKey = $this->getPersonalPrivateKey();
+        $publicKey = $this->getPersonalPublicKey();
 
         // get password, hash it and save it to the table
         $password = $this->getPassphrase();
@@ -479,9 +479,9 @@ class IMP_Smime
             return false;
         }
         // push these to the extra keys table
-        if (!empty($PrivateKey) && !empty($PublicKey) && !empty($password) && !$this->privateKeyExists($PrivateKey)) {
+        if (!empty($privateKey) && !empty($publicKey) && !empty($password) && !$this->privateKeyExists($privateKey)) {
             try {
-                $this->addExtraPersonalKeys($PrivateKey, $PublicKey, $password);
+                $this->addExtraPersonalKeys($privateKey, $publicKey, $password);
                 $this->deletePersonalKeys();
             } catch (Horde_Exception $e) {
                 throw $e;
