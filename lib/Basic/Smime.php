@@ -129,7 +129,7 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                 try {
                     $pkcs12 = $this->_getImportKey('upload_key');
                     $this->_smime->addFromPKCS12($pkcs12, $this->vars->upload_key_pass, $this->vars->upload_key_pk_pass, null, true);
-                    $notification->push(_('S/MIME Public/Private Keypair successfully added to exra keys in keystore.'), 'horde.success');
+                    // notifications on success or failure are in addFromPKCS12()
                     if ($pkcs12_2nd = $this->_getSecondaryKey()) {
                         // TODO: fix setup for secondary sign keys and such
                     }

@@ -157,6 +157,7 @@ class IMP_Smime
      */
     public function addExtraPersonalKeys($private_key, $public_key, $password, $pref_name = 'smime_private_key')
     {
+        global $notification;
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
@@ -168,12 +169,17 @@ class IMP_Smime
         $encryptedPassword = base64_encode($encryptedPassword);
 
         // TODO: add check if certificate already exists give warning
+        if ($this->privateKeyExists($private_key)) {
+            $notification->push(_('Key is allready in the Database'), 'horde.success');
+            return false;
+        }
 
         if (!empty($public_key) && !empty($private_key) && !empty($encryptedPassword)) {
             /* Build the SQL query. */
             $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd) VALUES (?, ?, ?, ?, ?)';
             $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword];
             $this->_db->insert($query, $values);
+            return true;
         }
     }
 
@@ -430,9 +436,10 @@ class IMP_Smime
             return false;
         }
         // push these to the extra keys table
-        if (!empty($privateKey) && !empty($publicKey) && !empty($password) && !$this->privateKeyExists($privateKey)) {
-            $this->addExtraPersonalKeys($privateKey, $publicKey, $password);
-            $this->deletePersonalKeys();
+        if (!empty($privateKey) && !empty($publicKey) && !empty($password)) {
+            if ($this->addExtraPersonalKeys($privateKey, $publicKey, $password)) {
+                $this->deletePersonalKeys();
+            }
         }
     }
 
@@ -942,7 +949,7 @@ class IMP_Smime
         $signkey = false,
         $extrakey = false
     ) {
-        global $conf;
+        global $conf, $notification;
 
         $sslpath = empty($conf['openssl']['path'])
             ? null
@@ -961,7 +968,10 @@ class IMP_Smime
             $this->addAdditionalCert($result->certs, $signkey);
         } else {
             // need to add extrakeys here... TODO: add check of key to extraKeys, remove it from set or unsetkeys
-            $this->addExtraPersonalKeys($result->private, $result->public, $password, $pref_name = 'smime_private_key');
+            $result = $this->addExtraPersonalKeys($result->private, $result->public, $password, $pref_name = 'smime_private_key');
+            if ($result) {
+                $notification->push(_('S/MIME Public/Private Keypair successfully added to exra keys in keystore.'), 'horde.success');
+            }
         }
     }
 
