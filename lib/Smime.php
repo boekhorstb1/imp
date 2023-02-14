@@ -110,7 +110,7 @@ class IMP_Smime
      * Adds the personal public key to the prefs.
      *
      * @param string|array $key  The public key to add.
-     * @param boolean $signkey   Is this the secondary key for signing?
+     * @param boolean $signkey   The secondary key for signing (optional)
      */
     public function addPersonalPublicKey($key, $signkey = false)
     {
@@ -153,7 +153,7 @@ class IMP_Smime
      * @param string|array $key  The private key to add.
      * @param string|array $key  The public key to add.
      * @param string $password  The password for the private key to add.
-     * @param string $pref_name To be removed... TODO.@param string|array $key  The public key to add.
+     * @param string $pref_name To be removed... TODO.@param string|array
      */
     public function addExtraPersonalKeys($private_key, $public_key, $password, $pref_name = 'smime_private_key')
     {
