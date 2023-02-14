@@ -1,9 +1,9 @@
 <form enctype="multipart/form-data" method="post" name="import_smime_key" action="<?php echo $this->selfurl ?>">
 <input type="hidden" name="reload" value="<?php echo $this->h($this->reload) ?>" />
-<input type="hidden" name="actionID" value="process_import_personal_certs" />
+<input type="hidden" name="actionID" value="process_import_extra_personal_certs" />
 
 <h1 class="header">
-  <?php echo _('Import Personal S/MIME Certificate') ?>
+  <?php echo _('Import Extra Personal S/MIME Certificate') ?>
 </h1>
 
 <div class="horde-content">

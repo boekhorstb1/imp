@@ -119,6 +119,14 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                 $this->_importKeyDialog('personal');
                 break;
 
+            case 'import_extra_personal_certs':
+                $this->_importKeyDialog('extra');
+                break;
+
+            case 'process_import_extra_personal_certs':
+                $this->_importKeyDialog('extra');
+                break;
+
             case 'process_import_personal_certs':
                 $reload = false;
                 $pkcs12_2nd = false;
@@ -220,9 +228,22 @@ class IMP_Basic_Smime extends IMP_Basic_Base
         $p_css = new Horde_Themes_Element('prefs.css');
         $page_output->addStylesheet($p_css->fs, $p_css->uri);
 
-        $this->title = $target == 'personal'
-            ? _('Import Personal S/MIME Certificate')
-            : _('Import Public S/MIME Key');
+        // $this->title = $target == 'personal'
+        //     ? _('Import Personal S/MIME Certificate')
+        //     : _('Import Public S/MIME Key');
+        /* Setting target for personal, public and for extra certificates */
+        switch ($target) {
+            case 'personal':
+                $this->title = _('Import Personal S/MIME Certificate');
+                break;
+            case 'extra':
+                $this->title = _('Import Extra Personal S/MIME Certificates');
+                // no break
+            default:
+                $this->title = _('Import Public S/MIME Key');
+                break;
+        }
+
 
         /* Need to use regular status notification - AJAX notifications won't
          * show in popup windows. */
