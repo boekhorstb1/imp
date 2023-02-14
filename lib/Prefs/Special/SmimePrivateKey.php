@@ -192,6 +192,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 '$("delete_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to delete your keypair? (Please click "Unset Personal Certificate" if you want to save the key in the keystore. Non-saved certificates will be removed permanently.)')) . ')) { e.stop(); } })',
                 '$("delete_smime_extra' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to delete your keypair? You are trying to delete a keypair from the keystore. If you continue these certificates will be removed permanently. ')) . ')) { e.stop(); } })',
                 '$("unset_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to unset your keypair? You will need to add another key to be able to send encrypted mails.')) . ')) { e.stop(); } })',
+                '$("set_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to set a new keypair? Currently set keypair will be moved to the database. New emails will be encrypted with the newly set keypair.')) . ')) { e.stop(); } })',
             ], true);
         }
 
