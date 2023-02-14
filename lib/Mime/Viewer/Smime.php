@@ -38,23 +38,23 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
      *
      * @var array
      */
-    protected $_capability = array(
+    protected $_capability = [
         'full' => false,
         'info' => false,
         'inline' => true,
-        'raw' => false
-    );
+        'raw' => false,
+    ];
 
     /**
      * Metadata for the current viewer/data.
      *
      * @var array
      */
-    protected $_metadata = array(
+    protected $_metadata = [
         'compressed' => false,
         'embedded' => true,
-        'forceinline' => true
-    );
+        'forceinline' => true,
+    ];
 
     /**
      * IMP_Smime object.
@@ -96,8 +96,8 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
 
         switch ($this->_mimepart->getType()) {
             case 'multipart/signed':
-                if (!in_array($this->_mimepart->getContentTypeParameter('protocol'), array('application/pkcs7-signature', 'application/x-pkcs7-signature'))) {
-                    return array();
+                if (!in_array($this->_mimepart->getContentTypeParameter('protocol'), ['application/pkcs7-signature', 'application/x-pkcs7-signature'])) {
+                    return [];
                 }
                 $this->_parseSignedData(true);
                 // Fall-through
@@ -108,14 +108,14 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
                 $cache = $this->getConfigParam('imp_contents')->getViewCache();
 
                 if (isset($cache->smime[$id])) {
-                    $ret = array(
-                        $id => array(
+                    $ret = [
+                        $id => [
                             'data' => null,
                             'status' => $cache->smime[$id]['status'],
                             'type' => 'text/plain; charset=' . $this->getConfigParam('charset'),
-                            'wrap' => $cache->smime[$id]['wrap']
-                        )
-                    );
+                            'wrap' => $cache->smime[$id]['wrap'],
+                        ],
+                    ];
                     if (isset($cache->smime[$id]['sig'])) {
                         $ret[$cache->smime[$id]['sig']] = null;
                     }
@@ -125,7 +125,7 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
 
                 // no break
             default:
-                return array();
+                return [];
         }
     }
 
@@ -139,7 +139,7 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
      */
     protected function _getEmbeddedMimeParts()
     {
-        if (!in_array($this->_mimepart->getType(), array('application/pkcs7-mime', 'application/x-pkcs7-mime'))) {
+        if (!in_array($this->_mimepart->getType(), ['application/pkcs7-mime', 'application/x-pkcs7-mime'])) {
             return null;
         }
 
@@ -164,35 +164,35 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         /* Initialize inline data. */
         $status = new IMP_Mime_Status(
             $this->_mimepart,
-            _("The data in this part has been encrypted via S/MIME.")
+            _('The data in this part has been encrypted via S/MIME.')
         );
         $status->icon('mime/encryption.png', 'S/MIME');
 
         $cache = $this->getConfigParam('imp_contents')->getViewCache();
-        $cache->smime[$base_id] = array(
+        $cache->smime[$base_id] = [
             'status' => $status,
-            'wrap' => ''
-        );
+            'wrap' => '',
+        ];
 
         /* Is PGP active? */
         $this->_initSmime();
         if (empty($this->_impsmime)) {
-            $status->addText(_("S/MIME support is not currently enabled so the data is unable to be decrypted."));
+            $status->addText(_('S/MIME support is not currently enabled so the data is unable to be decrypted.'));
             return null;
         }
 
         if (!$this->_impsmime->getPersonalPrivateKey()) {
-            $status->addText(_("No personal private key exists so the data is unable to be decrypted."));
+            $status->addText(_('No personal private key exists so the data is unable to be decrypted.'));
             return null;
         }
 
         /* Make sure we have a passphrase. */
         $passphrase = $this->_impsmime->getPassphrase();
         if ($passphrase === false) {
-            $imple = $GLOBALS['injector']->getInstance('Horde_Core_Factory_Imple')->create('IMP_Ajax_Imple_PassphraseDialog', array(
-                'type' => 'smimePersonal'
-            ));
-            $status->addText(Horde::link('#', '', '', '', '', '', '', array('id' => $imple->getDomId())) . _("You must enter the passphrase for your S/MIME private key to view this data.") . '</a>');
+            $imple = $GLOBALS['injector']->getInstance('Horde_Core_Factory_Imple')->create('IMP_Ajax_Imple_PassphraseDialog', [
+                'type' => 'smimePersonal',
+            ]);
+            $status->addText(Horde::link('#', '', '', '', '', '', '', ['id' => $imple->getDomId()]) . _('You must enter the passphrase for your S/MIME private key to view this data.') . '</a>');
             return null;
         }
         $raw_text = $this->_getPartStream($this->_mimepart->getMimeId());
@@ -200,11 +200,10 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         /* Decrypt the message */
 
         // try to decrypt the data
-        try{
+        try {
             // try only with default personal certificates
             $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL));
-        }
-        catch (Horde_Exception $e) {
+        } catch (Horde_Exception $e) {
             // try with extra personal certificates
             $decrypted_data = null;
             $keyslist = $this->_impsmime->listPrivateKeyIds();
@@ -215,15 +214,15 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
                 } catch (Horde_Exception $f) {
                     //throw $th;
                 }
-                if ($decrypted_data !== null){
+                if (!is_null($decrypted_data)) {
                     break;
                 }
             }
 
-            if ($decrypted_data === null){
-                // in case all of the certificates failed to decrypt, throw an error 
-                if ($f->getMessage() == $e->getMessage()){
-                    $status->addText($e->getMessage()." This happend for all keys used.");
+            if (is_null($decrypted_data)) {
+                // in case all of the certificates failed to decrypt, throw an error
+                if ($f->getMessage() == $e->getMessage()) {
+                    $status->addText($e->getMessage().' This happend for all keys used.');
                 }
                 return null;
             }
@@ -231,9 +230,9 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
 
         $cache->smime[$base_id]['wrap'] = 'mimePartWrapValid';
 
-        $new_part = Horde_Mime_Part::parseMessage($decrypted_data, array(
-            'forcemime' => true
-        ));
+        $new_part = Horde_Mime_Part::parseMessage($decrypted_data, [
+            'forcemime' => true,
+        ]);
 
         switch ($new_part->getType()) {
             case 'application/pkcs7-mime':
@@ -260,9 +259,9 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
             );
 
             $new_part->setMetadata('imp-smime-decrypt', $data);
-            $new_part->setContents($decrypted_data, array(
-                'encoding' => 'binary'
-            ));
+            $new_part->setContents($decrypted_data, [
+                'encoding' => 'binary',
+            ]);
         }
 
         return $new_part;
@@ -300,20 +299,20 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         /* Initialize inline data. */
         $status = new IMP_Mime_Status(
             $this->_mimepart,
-            _("The data in this part has been digitally signed via S/MIME.")
+            _('The data in this part has been digitally signed via S/MIME.')
         );
         $status->icon('mime/encryption.png', 'S/MIME');
 
         $cache = $this->getConfigParam('imp_contents')->getViewCache();
-        $cache->smime[$base_id] = array(
+        $cache->smime[$base_id] = [
             'sig' => $sig_id,
             'status' => $status,
-            'wrap' => 'mimePartWrap'
-        );
+            'wrap' => 'mimePartWrap',
+        ];
 
         if (!IMP_Smime::enabled()) {
             $status->addText(
-                _("S/MIME support is not enabled so the digital signature is unable to be verified.")
+                _('S/MIME support is not enabled so the digital signature is unable to be verified.')
             );
             return null;
         }
@@ -337,7 +336,7 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
                     $status->action(IMP_Mime_Status::WARNING);
                 }
                 if (!is_array($sig_result->email)) {
-                    $sig_result->email = array($sig_result->email);
+                    $sig_result->email = [$sig_result->email];
                 }
                 $email = implode(', ', $sig_result->email);
                 $cache->smime[$base_id]['wrap'] = 'mimePartWrapValid';
@@ -355,13 +354,13 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
                     isset($sig_result->email) &&
                     $GLOBALS['registry']->hasMethod('contacts/addField') &&
                     $GLOBALS['prefs']->getValue('add_source')) {
-                    $status->addText(sprintf(_("Sender: %s"), $imp_contents->linkViewJS($this->_mimepart, 'view_attach', htmlspecialchars($email), array(
-                        'jstext' => _("View certificate details"),
-                        'params' => array(
+                    $status->addText(sprintf(_('Sender: %s'), $imp_contents->linkViewJS($this->_mimepart, 'view_attach', htmlspecialchars($email), [
+                        'jstext' => _('View certificate details'),
+                        'params' => [
                             'mode' => IMP_Contents::RENDER_INLINE,
-                            'view_smime_key' => 1
-                        )
-                    ))));
+                            'view_smime_key' => 1,
+                        ],
+                    ])));
 
                     foreach ($sig_result->email as $single_email) {
                         try {
@@ -371,11 +370,11 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
                                 ->getInstance('Horde_Core_Factory_Imple')
                                 ->create(
                                     'IMP_Ajax_Imple_ImportEncryptKey',
-                                    array(
+                                    [
                                         'mime_id' => $base_id,
                                         'muid' => strval($imp_contents->getIndicesOb()),
-                                        'type' => 'smime'
-                                    )
+                                        'type' => 'smime',
+                                    ]
                                 );
                             $status->addText(
                                 Horde::link(
@@ -386,16 +385,16 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
                                     '',
                                     '',
                                     '',
-                                    array('id' => $imple->getDomId())
+                                    ['id' => $imple->getDomId()]
                                 )
-                                . _("Save the certificate to your Address Book.")
+                                . _('Save the certificate to your Address Book.')
                                 . '</a>'
                             );
                             break;
                         }
                     }
                 } elseif (strlen($email)) {
-                    $status->addText(sprintf(_("Sender: %s"), htmlspecialchars($email)));
+                    $status->addText(sprintf(_('Sender: %s'), htmlspecialchars($email)));
                 }
             } catch (Horde_Exception $e) {
                 $status->action(IMP_Mime_Status::ERROR);
@@ -405,7 +404,7 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         } else {
             $status->addMimeAction(
                 'smimeVerifyMsg',
-                _("Click to verify the data.")
+                _('Click to verify the data.')
             );
         }
 
@@ -416,7 +415,7 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         if (!($subpart = $imp_contents->getMimePart($sig_id))) {
             try {
                 $msg_data = $this->_impsmime->extractSignedContents($raw_text);
-                $subpart = Horde_Mime_Part::parseMessage($msg_data, array('forcemime' => true));
+                $subpart = Horde_Mime_Part::parseMessage($msg_data, ['forcemime' => true]);
             } catch (Horde_Exception $e) {
                 $status->addText($e->getMessage());
                 return null;
@@ -434,7 +433,7 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
     protected function _outputSmimeKey()
     {
         if (empty($this->_impsmime)) {
-            return array();
+            return [];
         }
 
         $raw_text = $this->_getPartStream($this->_mimepart->getMimeId());
@@ -442,15 +441,15 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
         try {
             $sig_result = $this->_impsmime->verifySignature($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL));
         } catch (Horde_Exception $e) {
-            return array();
+            return [];
         }
 
-        return array(
-            $this->_mimepart->getMimeId() => array(
+        return [
+            $this->_mimepart->getMimeId() => [
                 'data' => $this->_impsmime->certToHTML($sig_result->cert),
-                'type' => 'text/html; charset=' . $this->getConfigParam('charset')
-            )
-        );
+                'type' => 'text/html; charset=' . $this->getConfigParam('charset'),
+            ],
+        ];
     }
 
     /**
@@ -458,7 +457,7 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
     protected function _getPartStream($id)
     {
         return $id
-            ? $this->getConfigParam('imp_contents')->getBodyPart($id, array('mimeheaders' => true, 'stream' => true))->data
+            ? $this->getConfigParam('imp_contents')->getBodyPart($id, ['mimeheaders' => true, 'stream' => true])->data
             : $this->getConfigParam('imp_contents')->fullMessageText();
     }
 

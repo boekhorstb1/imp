@@ -167,6 +167,7 @@ class IMP_Smime
         $encryptedPassword = $blowfish->encrypt($password);
         $encryptedPassword = base64_encode($encryptedPassword);
 
+        // TODO: add check if certificate already exists give warning
 
         if (!empty($public_key) && !empty($private_key) && !empty($encryptedPassword)) {
             /* Build the SQL query. */
@@ -938,7 +939,8 @@ class IMP_Smime
         $pkcs12,
         $password,
         $pkpass = null,
-        $signkey = false
+        $signkey = false,
+        $extrakey = false
     ) {
         global $conf;
 
@@ -952,9 +954,15 @@ class IMP_Smime
         }
 
         $result = $this->_smime->parsePKCS12Data($pkcs12, $params);
-        $this->addPersonalPrivateKey($result->private, $signkey);
-        $this->addPersonalPublicKey($result->public, $signkey);
-        $this->addAdditionalCert($result->certs, $signkey);
+
+        if ($extrakey === false) {
+            $this->addPersonalPrivateKey($result->private, $signkey);
+            $this->addPersonalPublicKey($result->public, $signkey);
+            $this->addAdditionalCert($result->certs, $signkey);
+        } else {
+            // need to add extrakeys here... TODO: add check of key to extraKeys, remove it from set or unsetkeys
+            $this->addExtraPersonalKeys($result->private, $result->public, $password, $pref_name = 'smime_private_key');
+        }
     }
 
     /**
