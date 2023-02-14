@@ -163,30 +163,6 @@ class IMP_Smime
     }
 
     /**
-     * Adds am extra personal public key to the extra keys table.
-     *
-     * @param string|array $key  The public key to add.
-     * @param int $private_key_id   PrivateKeyId to add the Public key to.
-     * previously: addExtraPersonalPublicKey
-     */
-    public function addExtraPublicKey($pref_name = 'smime_private_key', $public_key)
-    {
-        /* Get the user_name  */
-        // TODO: is there a way to only use prefs?
-        $user_name = $GLOBALS['registry']->getAuth();
-
-        /* Build the SQL query. */
-        $query = 'UPDATE imp_smime_extrakeys SET public_key=? WHERE private_key_id = ?'; //...
-        $values = [$public_key, $private_key_id, $pref_name];
-
-        try {
-            $this->_db->insert($query, $values);
-        } catch (Horde_Db_Exception $e) {
-            return $e;
-        }
-    }
-
-    /**
      * Adds am extra personal keys to the extra keys table.
      *
      * @param string $pref_name To be removed... TODO.
