@@ -256,7 +256,7 @@ class IMP_Smime
     }
 
     /**
-     * Retrieves a specific public key from the extrakeys table.
+     * Retrieves a specific public key from the extrakeys table or throws an exception.
      *
      * @return string  Specific S/MIME private key.
      * @throws Horde_Db_Exception
