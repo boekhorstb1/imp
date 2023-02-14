@@ -187,8 +187,10 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 ])
                 . _('View') . '</a>';
 
+            // Warning if the set personal key is about to be deleted
             $page_output->addInlineScript([
-                '$("delete_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to delete your keypair? (This is NOT recommended!)')) . ')) { e.stop(); } })',
+                '$("delete_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to delete your keypair? (Please click "Unset Personal Certificate" if you want to save the key in the keystore. Non-saved certificates will be removed permanently.)')) . ')) { e.stop(); } })',
+                '$("delete_smime_extra' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to delete your keypair? You are trying to delete a keypair from the keystore. If you continue these certificates will be removed permanently. ')) . ')) { e.stop(); } })',
             ], true);
         }
 
