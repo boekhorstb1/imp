@@ -487,7 +487,7 @@ class IMP_Smime
                 $this->addExtraPersonalKeys($PrivateKey, $PublicKey, $password);
                 $this->deletePersonalKeys();
             } catch (Horde_Exception $e) {
-                throw $e->getMessage();
+                throw $e;
             }
         }
     }
