@@ -342,12 +342,13 @@ class IMP_Smime
     }
 
     /**
-     * check private keys allready exist
+     * Check if the private keys allready exist.
+     * Example: if the key already exists, there is no need to load it into the database again
      *
      * @return bool if private key is there or not
      * @throws Horde_Db_Exception
      */
-    public function checkPrivateKey($personalCertificate)
+    public function privateKeyExists($personalCertificate)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
@@ -481,7 +482,7 @@ class IMP_Smime
             return false;
         }
         // push these to the extra keys table
-        if (!empty($PrivateKey) && !empty($PublicKey) && !empty($password) && !$this->checkPrivateKey($PrivateKey)) {
+        if (!empty($PrivateKey) && !empty($PublicKey) && !empty($password) && !$this->privateKeyExists($PrivateKey)) {
             try {
                 $this->addExtraPersonalKeys($PrivateKey, $PublicKey, $password);
                 $this->deletePersonalKeys();
