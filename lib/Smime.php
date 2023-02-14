@@ -87,20 +87,20 @@ class IMP_Smime
     {
         global $injector, $registry;
 
-        $ret = array();
+        $ret = [];
 
         if ($registry->hasMethod('contacts/getField') ||
             $injector->getInstance('Horde_Core_Hooks')->hookExists('smime_key', 'imp')) {
-            $ret += array(
-                self::ENCRYPT => _("S/MIME Encrypt Message")
-            );
+            $ret += [
+                self::ENCRYPT => _('S/MIME Encrypt Message'),
+            ];
         }
 
         if ($this->getPersonalPrivateKey()) {
-            $ret += array(
-                self::SIGN => _("S/MIME Sign Message"),
-                self::SIGNENC => _("S/MIME Sign/Encrypt Message")
-            );
+            $ret += [
+                self::SIGN => _('S/MIME Sign Message'),
+                self::SIGNENC => _('S/MIME Sign/Encrypt Message'),
+            ];
         }
 
         return $ret;
@@ -489,7 +489,6 @@ class IMP_Smime
                 throw $e->getMessage();
             }
         }
-
     }
 
     /**
@@ -564,17 +563,17 @@ class IMP_Smime
     {
         global $prefs, $registry;
 
-        list($name, $email) = $this->publicKeyInfo($cert);
+        [$name, $email] = $this->publicKeyInfo($cert);
 
         $registry->call(
             'contacts/addField',
-            array(
+            [
                 $email,
                 $name,
                 self::PUBKEY_FIELD,
                 $cert,
-                $prefs->getValue('add_source')
-            )
+                $prefs->getValue('add_source'),
+            ]
         );
     }
 
@@ -591,14 +590,14 @@ class IMP_Smime
         /* Make sure the certificate is valid. */
         $key_info = openssl_x509_parse($cert);
         if (!is_array($key_info) || !isset($key_info['subject'])) {
-            throw new Horde_Crypt_Exception(_("Not a valid public key."));
+            throw new Horde_Crypt_Exception(_('Not a valid public key.'));
         }
 
         /* Add key to the user's address book. */
         $email = $this->_smime->getEmailFromKey($cert);
         if (is_null($email)) {
             throw new Horde_Crypt_Exception(
-                _("No email information located in the public key.")
+                _('No email information located in the public key.')
             );
         }
 
@@ -611,7 +610,7 @@ class IMP_Smime
             $name = $email;
         }
 
-        return array($name, $email);
+        return [$name, $email];
     }
 
     /**
@@ -625,13 +624,13 @@ class IMP_Smime
      */
     protected function _encryptParameters(Horde_Mail_Rfc822_List $addr)
     {
-        return array(
+        return [
             'pubkey' => array_map(
-                array($this, 'getPublicKey'),
+                [$this, 'getPublicKey'],
                 $addr->bare_addresses
             ),
-            'type' => 'message'
-        );
+            'type' => 'message',
+        ];
     }
 
     /**
@@ -652,7 +651,7 @@ class IMP_Smime
             $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
                 'smime_key',
                 'imp',
-                array($address)
+                [$address]
             );
             if ($key) {
                 return $key;
@@ -665,13 +664,13 @@ class IMP_Smime
         try {
             $key = $registry->call(
                 'contacts/getField',
-                array(
+                [
                     $address,
                     self::PUBKEY_FIELD,
                     $contacts->sources,
                     true,
-                    true
-                )
+                    true,
+                ]
             );
         } catch (Horde_Exception $e) {
             /* See if the address points to the user's public key. */
@@ -703,12 +702,12 @@ class IMP_Smime
         $sources = $injector->getInstance('IMP_Contacts')->sources;
 
         if (empty($sources)) {
-            return array();
+            return [];
         }
 
         return $registry->call(
             'contacts/getAllAttributeValues',
-            array(self::PUBKEY_FIELD, $sources)
+            [self::PUBKEY_FIELD, $sources]
         );
     }
 
@@ -725,11 +724,11 @@ class IMP_Smime
 
         $registry->call(
             'contacts/deleteField',
-            array(
+            [
                 $email,
                 self::PUBKEY_FIELD,
-                $injector->getInstance('IMP_Contacts')->sources
-            )
+                $injector->getInstance('IMP_Contacts')->sources,
+            ]
         );
     }
 
@@ -741,7 +740,7 @@ class IMP_Smime
     protected function _signParameters()
     {
         $pubkey = $this->getPersonalPublicKey(true);
-        $additional = array();
+        $additional = [];
         if ($pubkey) {
             $additional[] = $this->getPersonalPublicKey();
             $secondary = true;
@@ -753,14 +752,14 @@ class IMP_Smime
         if ($secondary) {
             $additional[] = $this->getAdditionalCert();
         }
-        return array(
+        return [
             'type' => 'signature',
             'pubkey' => $pubkey,
             'privkey' => $this->getPersonalPrivateKey($secondary),
             'passphrase' => $this->getPassphrase($secondary),
             'sigtype' => 'detach',
             'certs' => implode("\n", $additional),
-        );
+        ];
     }
 
     /**
@@ -778,7 +777,7 @@ class IMP_Smime
         return $this->_smime->verify(
             $text,
             empty($conf['openssl']['cafile'])
-                ? array()
+                ? []
                 : $conf['openssl']['cafile']
         );
     }
@@ -794,19 +793,19 @@ class IMP_Smime
     public function decryptMessage($text, $differentKey = null)
     {
         if ($differentKey === null) {
-            return $this->_smime->decrypt($text, array(
+            return $this->_smime->decrypt($text, [
                 'type' => 'message',
                 'pubkey' => $this->getPersonalPublicKey(),
                 'privkey' => $this->getPersonalPrivateKey(),
-                'passphrase' => $this->getPassphrase()
-            ));
+                'passphrase' => $this->getPassphrase(),
+            ]);
         } else {
-            return $this->_smime->decrypt($text, array(
+            return $this->_smime->decrypt($text, [
                 'type' => 'message',
                 'pubkey' => $this->getExtraPublicKey($differentKey),
                 'privkey' => $this->getExtraPrivateKey($differentKey),
-                'passphrase' => $this->getPassphrase(null, $differentKey) // create get pasExtraKeyPassphrase()?
-            ));
+                'passphrase' => $this->getPassphrase(null, $differentKey), // create get pasExtraKeyPassphrase()?
+            ]);
         }
     }
 
@@ -878,7 +877,6 @@ class IMP_Smime
             $blowfish = new Horde_Crypt_Blowfish($key);
             $result = base64_decode($result);
             $result = $blowfish->decrypt($result);
-
         }
         return $result;
     }
@@ -1015,7 +1013,7 @@ class IMP_Smime
             ? null
             : $conf['openssl']['path'];
 
-        $params = array('sslpath' => $sslpath, 'password' => $password);
+        $params = ['sslpath' => $sslpath, 'password' => $password];
         if (!empty($pkpass)) {
             $params['newpassword'] = $pkpass;
         }
