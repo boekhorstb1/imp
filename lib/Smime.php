@@ -595,13 +595,16 @@ class IMP_Smime
     {
         global $injector, $registry;
 
-        $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
-            'smime_key',
-            'imp',
-            [$address]
-        );
-        if ($key) {
-            return $key;
+        try {
+            $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
+                'smime_key',
+                'imp',
+                [$address]
+            );
+            if ($key) {
+                return $key;
+            }
+        } catch (Horde_Exception_HookNotSet $e) {
         }
 
         $contacts = $injector->getInstance('IMP_Contacts');
