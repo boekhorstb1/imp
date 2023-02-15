@@ -167,7 +167,7 @@ class IMP_Smime
         $blowfish = new Horde_Crypt_Blowfish($key);
         $encryptedPassword = $blowfish->encrypt($password);
         $encryptedPassword = base64_encode($encryptedPassword);
-
+        \Horde::debug('test0', '/dev/shm/dbtest', false);
         // TODO: add check if certificate already exists give warning
         if ($this->privateKeyExists($private_key)) {
             $notification->push(_('Key is allready in the Database'), 'horde.success');
@@ -177,8 +177,10 @@ class IMP_Smime
         if (!empty($public_key) && !empty($private_key) && !empty($encryptedPassword)) {
             /* Build the SQL query. */
             $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd) VALUES (?, ?, ?, ?, ?)';
+            \Horde::debug('test1', '/dev/shm/dbtest', false);
             $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword];
             $this->_db->insert($query, $values);
+            \Horde::debug('test2', '/dev/shm/dbtest', false);
             return true;
         }
     }
@@ -393,20 +395,23 @@ class IMP_Smime
      * Transfers a Certificate and belonging Public Certificate from the Extra Keys table to Horde_Prefs
      *
      */
-    public function setSmimePersonal($key)
+    public function setSmimePersonal($key, $pref_name = 'smime_private_key')
     {
         // find the private key that has been selected
-        $newprivatekey = $this->getExtraPrivateKey($key);
-        $newpublickey = $this->getExtraPublicKey($key, 'smime_private_key');
+        $newprivatekey = $this->getExtraPrivateKey($key, $pref_name);
+        $newpublickey = $this->getExtraPublicKey($key, $pref_name);
 
         // keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
 
         // give keys an option to name them, if nothing is set (this should show 'no alias set')
 
-
-        // check if a personal certificate is set
+        // check if a personal certificate is set (secondary or primary certificate key)
         $check = null;
-        $check = $this->getPersonalPrivateKey();
+        if ($pref_name == 'smime_private_key') {
+            $check = $this->getPersonalPrivateKey();
+        } else {
+            $check = $this->getPersonalPrivateKey(self::KEY_SECONDARY);
+        }
 
         if (!empty($check)) {
             // if there is a certificate, copy it to the database
@@ -414,9 +419,13 @@ class IMP_Smime
         }
 
         // if not: import it
-        // TODO: $signkey?
-        $this->addPersonalPrivateKey($newprivatekey);
-        $this->addPersonalPublicKey($newpublickey);
+        if ($pref_name == 'smime_private_key') {
+            $this->addPersonalPrivateKey($newprivatekey);
+            $this->addPersonalPublicKey($newpublickey);
+        } else {
+            $this->addPersonalPrivateKey($newprivatekey, $signkey = true);
+            $this->addPersonalPublicKey($newpublickey, $signkey = true);
+        }
     }
 
     /**
@@ -424,21 +433,38 @@ class IMP_Smime
      * Transfers a Personal Certificate and belonging Public Certificate to the Extra Keys table in the DB
      *
      */
-    public function unsetSmimePersonal()
+    public function unsetSmimePersonal($signkey = self::KEY_PRIMARY)
     {
-        // get current personal certificates
-        $privateKey = $this->getPersonalPrivateKey();
-        $publicKey = $this->getPersonalPublicKey();
+        if ($signkey = self::KEY_PRIMARY) {
+            $pref_name = 'smime_private_key';
+        } elseif ($signkey = self::KEY_SECONDARY) {
+            $pref_name = 'smime_private_sign_key';
+        } else {
+            // KEY_SECONDARY_OR_PRIMARY?
+            // TODO: does this need to be taken into account?
+        }
 
+        \Horde::debug('test0', '/dev/shm/unset', false);
+        \Horde::debug($pref_name, '/dev/shm/unset', false);
+
+        // get current personal certificates
+        $privateKey = $this->getPersonalPrivateKey($signkey);
+        $publicKey = $this->getPersonalPublicKey($signkey);
+
+        \Horde::debug('test1', '/dev/shm/unset', false);
         // get password, hash it and save it to the table
         $password = $this->getPassphrase();
+        \Horde::debug($password, '/dev/shm/unset', false);
         if ($password == false) {
             return false;
         }
+        \Horde::debug('test2', '/dev/shm/unset', false);
         // push these to the extra keys table
         if (!empty($privateKey) && !empty($publicKey) && !empty($password)) {
-            if ($this->addExtraPersonalKeys($privateKey, $publicKey, $password)) {
-                $this->deletePersonalKeys();
+            \Horde::debug('test3', '/dev/shm/unset', false);
+            if ($this->addExtraPersonalKeys($privateKey, $publicKey, $password, $pref_name)) {
+                \Horde::debug('test4', '/dev/shm/unset', false);
+                $this->deletePersonalKeys($signkey);
             }
         }
     }

@@ -156,6 +156,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 ])
                 . _('Unload Passphrase') . '</a>';
             } else {
+                \Horde::debug($ui->selfUrl()->setRaw(true), '/dev/shm/passphraseissue2', false);
                 $imple = $injector->getInstance('Horde_Core_Factory_Imple')
                     ->create(
                         'IMP_Ajax_Imple_PassphraseDialog',
@@ -176,7 +177,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                     null,
                     null,
                     ['id' => $imple->getDomId()]
-                ) . _('Enter Passphrase');
+                ) . _('Enter Passphrase') . '</a>';
+                //\Horde::debug($view->passphrase, '/dev/shm/passphraseissue', false);
             }
 
             // Adding to view: private key link

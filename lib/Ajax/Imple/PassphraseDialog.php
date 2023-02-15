@@ -30,7 +30,7 @@ class IMP_Ajax_Imple_PassphraseDialog extends Horde_Core_Ajax_Imple
      *             AJAX action.
      *   - type: (string) The dialog type.
      */
-    public function __construct(array $params = array())
+    public function __construct(array $params = [])
     {
         parent::__construct($params);
     }
@@ -45,40 +45,44 @@ class IMP_Ajax_Imple_PassphraseDialog extends Horde_Core_Ajax_Imple
             $page_output->addScriptPackage('Horde_Core_Script_Package_Dialog');
             $page_output->addScriptFile('passphrase.js', 'imp');
         }
+        \Horde::debug('test0', '/dev/shm/imple', false);
 
-        $params = isset($this->_params['params'])
-            ? $this->_params['params']
-            : array();
+        $params = $this->_params['params']
+            ?? [];
         if (isset($params['reload'])) {
             $params['reload'] = strval($params['reload']);
         }
 
+        \Horde::debug('test2', '/dev/shm/imple', false);
         switch ($this->_params['type']) {
-        case 'pgpPersonal':
-            $text = _("Enter your personal PGP passphrase.");
-            break;
+            case 'pgpPersonal':
+                $text = _('Enter your personal PGP passphrase.');
+                break;
 
-        case 'pgpSymmetric':
-            $text = _("Enter the passphrase used to encrypt this message.");
-            break;
+            case 'pgpSymmetric':
+                $text = _('Enter the passphrase used to encrypt this message.');
+                break;
 
-        case 'smimePersonal':
-            $text = _("Enter your personal S/MIME passphrase.");
-            break;
+            case 'smimePersonal':
+                \Horde::debug('hapenninnnng', '/dev/shm/imple', false);
+                $text = _('Enter your personal S/MIME passphrase.');
+                break;
         }
+        \Horde::debug('test3', '/dev/shm/imple', false);
+        $js_params = [
+            'hidden' => array_merge($params, ['type' => $this->_params['type']]),
+            'text' => $text,
+        ];
 
-        $js_params = array(
-            'hidden' => array_merge($params, array('type' => $this->_params['type'])),
-            'text' => $text
-        );
-
-        $js = 'ImpPassphraseDialog.display(' . Horde::escapeJson($js_params, array('nodelimit' => true)) . ')';
+        $js = 'ImpPassphraseDialog.display(' . Horde::escapeJson($js_params, ['nodelimit' => true]) . ')';
+        \Horde::debug('test4', '/dev/shm/imple', false);
+        \Horde::debug($this->_params['onload'], '/dev/shm/imple', false);
 
         if (!empty($this->_params['onload'])) {
-            $page_output->addInlineScript(array($js), true);
+            $page_output->addInlineScript([$js], true);
             return false;
         }
-
+        \Horde::debug('test5', '/dev/shm/imple', false);
         return $js;
     }
 
@@ -88,5 +92,4 @@ class IMP_Ajax_Imple_PassphraseDialog extends Horde_Core_Ajax_Imple
     {
         return false;
     }
-
 }
