@@ -593,16 +593,21 @@ class IMP_Smime
      */
     public function getPublicKey($address)
     {
-        global $injector, $registry;
+        global $injector, $registry, $notification;
 
-        $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
-            'smime_key',
-            'imp',
-            [$address]
-        );
-        if ($key) {
-            return $key;
+        try {
+            $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
+                'smime_key',
+                'imp',
+                [$address]
+            );
+            if ($key) {
+                return $key;
+            }
+        } catch (Horde_Exception $e) {
+            $notification->push(_('No hooks are set to get public keys from remote locations'), 'horde.message');
         }
+
 
         $contacts = $injector->getInstance('IMP_Contacts');
 
