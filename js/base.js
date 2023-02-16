@@ -1986,7 +1986,7 @@ var ImpBase = {
     _dragAtc: function(e)
     {
         var base = e.element().up();
-
+        console.log("PLEASE!");
         /* As of November 2014, only supported in Chrome. */
         try {
             e.dataTransfer.setData(

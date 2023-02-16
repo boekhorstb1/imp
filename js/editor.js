@@ -67,6 +67,7 @@ var IMP_Editor = Class.create({
 
     setData: function(data)
     {
+        console.log("öhö ok");
         if (this.busy()) {
             this.setData.bind(this, data).delay(0.1);
         } else {

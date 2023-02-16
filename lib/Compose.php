@@ -3301,6 +3301,7 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
      */
     public function addAttachmentFromPart($part)
     {
+        \Horde::debug('test1', '/dev/shm/attachmentfrompart', false);
         /* Extract the data from the Horde_Mime_Part. */
         $atc_file = Horde::getTempFile('impatt');
         $stream = $part->getContents(array(
@@ -3316,7 +3317,7 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
         if ($size === false) {
             throw new IMP_Compose_Exception(sprintf(_("Could not attach %s to the message."), $part->getName()));
         }
-
+        \Horde::debug('test2', '/dev/shm/attachmentfrompart', false);
         return $this->_addAttachment(
             $atc_file,
             $size,
@@ -3338,12 +3339,15 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
     public function addAttachmentFromUpload($field)
     {
         global $browser;
+        \Horde::debug('test1', '/dev/shm/attachement', false);
 
         try {
+            \Horde::debug('test2', '/dev/shm/attachement', false);
             $browser->wasFileUploaded($field, _("attachment"));
         } catch (Horde_Browser_Exception $e) {
             throw new IMP_Compose_Exception($e);
         }
+        \Horde::debug('test3', '/dev/shm/attachement', false);
 
         $finfo = array();
         if (is_array($_FILES[$field]['size'])) {
@@ -3357,7 +3361,7 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
         } else {
             $finfo[] = $_FILES[$field];
         }
-
+        \Horde::debug('test4', '/dev/shm/attachement', false);
         $out = array();
 
         foreach ($finfo as $val) {
@@ -3383,7 +3387,8 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
                 $out[] = $e;
             }
         }
-
+        \Horde::debug('test5', '/dev/shm/attachement', false);
+        \Horde::debug($out, '/dev/shm/attachement', false);
         return $out;
     }
 
@@ -3404,7 +3409,7 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
 
         $atc = new Horde_Mime_Part();
         $atc->setBytes($bytes);
-
+        \Horde::debug('test1', '/dev/shm/atc', false);
         /* Try to determine the MIME type from 1) the extension and
          * then 2) analysis of the file (if available). */
         if (strlen($filename)) {
@@ -3413,7 +3418,7 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
                 $type = Horde_Mime_Magic::filenameToMIME($filename, false);
             }
         }
-
+        \Horde::debug('test2', '/dev/shm/atc', false);
         $atc->setType($type);
         $atc->setHeaderCharset('UTF-8');
 
@@ -3435,7 +3440,7 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
                 }
             }
         }
-
+        \Horde::debug('test3', '/dev/shm/atc', false);
         $atc_ob = new IMP_Compose_Attachment($this, $atc, $atc_file);
 
         /* Check for attachment size limitations. */
@@ -3449,7 +3454,7 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
             $linked = false;
             $size_limit = 'attach_size_limit';
         }
-
+        \Horde::debug('test4', '/dev/shm/atc', false);
         if (!is_null($size_limit)) {
             $total_size = $conf['compose'][$size_limit] - $bytes;
             foreach ($this as $val) {
@@ -3462,7 +3467,7 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
                 throw new IMP_Compose_Exception(strlen($filename) ? sprintf(_("Attached file \"%s\" exceeds the attachment size limits. File NOT attached."), $filename) : _("Attached file exceeds the attachment size limits. File NOT attached."));
             }
         }
-
+        \Horde::debug('test5', '/dev/shm/atc', false);
         try {
             $injector->getInstance('Horde_Core_Hooks')->callHook(
                 'compose_attachment',
@@ -3473,7 +3478,8 @@ class IMP_Compose implements ArrayAccess, Countable, IteratorAggregate
 
         $this->_atc[$atc_ob->id] = $atc_ob;
         $this->changed = 'changed';
-
+        \Horde::debug('test6', '/dev/shm/atc', false);
+        \Horde::debug($atc_ob, '/dev/shm/atc', false);
         return $atc_ob;
     }
 

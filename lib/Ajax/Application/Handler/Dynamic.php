@@ -1067,6 +1067,8 @@ extends Horde_Core_Ajax_Application_Handler
     public function addAttachmentCkeditor()
     {
         global $injector;
+        \Horde::debug('test0', '/dev/shm/addAttachmentCkeditor', false);
+
 
         $data = $url = null;
 

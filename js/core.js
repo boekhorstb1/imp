@@ -120,6 +120,7 @@ var ImpCore = {
     addContextMenu: function(p)
     {
         if (this.DMenu) {
+            console.log('test Dmenu?');
             this.DMenu.addElement(p.elt.identify(), 'ctx_' + p.type, p);
         }
     },

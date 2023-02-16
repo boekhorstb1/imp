@@ -477,6 +477,8 @@ var ImpCompose = {
 
     toggleHtmlEditor: function(noupdate)
     {
+        console.log('mmm?');
+
         var action, changed, sc, tmp,
             active = this.editor_on,
             params = $H();
@@ -551,6 +553,7 @@ var ImpCompose = {
 
     RTELoading: function(show, notxt)
     {
+        console.log('test0 RTELoading');
         var loading = $('rteloading'),
             opts = {
                 duration: 0.1,
@@ -1474,6 +1477,7 @@ var ImpCompose = {
     onDomLoad: function()
     {
         var tmp;
+        console.log('onDomLoad test 0');
 
         /* Initialize autocompleters. */
         $('to', 'cc', 'bcc', 'redirect_to').compact().invoke('identify').each(function(id) {
@@ -1541,8 +1545,10 @@ var ImpCompose = {
         HordeCore.initHandler('click');
 
         this.attachlist = new this.classes.Attachlist(this);
-
+        console.log('tja composer.js test 1000');
         if ((tmp = $('atcdrop'))) {
+            console.log('compose start');
+            console.log(tmp);
             tmp.observe('DragHandler:drop', this.attachlist.uploadAttach.bindAsEventListener(this.attachlist));
             DragHandler.dropelt = tmp;
             DragHandler.droptarget = $('atcdiv');
@@ -1611,6 +1617,7 @@ var ImpCompose = {
 
     onAjaxFailure: function(e)
     {
+        console.log("onAjaxFailure test0");
         switch (e.memo[0].request.action) {
         case 'redirectMessage':
         case 'saveDraft':
@@ -1636,6 +1643,7 @@ ImpCompose.classes.Attachlist = Class.create({
 
     initialize: function(compose)
     {
+        console.log('attachlist creat! teste 0');
         var tmp = $('upload');
 
         this.compose = compose;
@@ -1677,6 +1685,7 @@ ImpCompose.classes.Attachlist = Class.create({
     //   view: (boolean) Link to attachment preview page
     addAttach: function(opts)
     {
+        console.log('addAttach test0');
         var canvas, img,
             li = new Element('LI')
                 .addClassName('attach_file')
@@ -1719,6 +1728,7 @@ ImpCompose.classes.Attachlist = Class.create({
 
     getAttach: function(id)
     {
+        console.log('getAttach test0');
         return $('attach_list').childElements().detect(function(e) {
             return e.retrieve('atc_id') == id;
         });
@@ -1762,6 +1772,7 @@ ImpCompose.classes.Attachlist = Class.create({
 
     initAttachList: function()
     {
+        console.log('initAttach test0');
         var al = $('attach_list');
 
         [ $('upload_add') ].invoke(this.num_limit === 0 ? 'hide' : 'show');
@@ -1776,6 +1787,7 @@ ImpCompose.classes.Attachlist = Class.create({
 
     uploadAttachWait: function(f)
     {
+        console.log('uplAttachWait test0');
         var li = new Element('LI')
             .insert(
                 new Element('SPAN')
@@ -1792,6 +1804,7 @@ ImpCompose.classes.Attachlist = Class.create({
     // data: (Element | Event object | array)
     uploadAttach: function(data, params, callback)
     {
+        console.log('uploadAttach test0');
         var li, tmp,
             out = $H()
             u = $('upload');

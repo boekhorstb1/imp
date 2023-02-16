@@ -43,7 +43,7 @@ class IMP_Ajax_Application_Handler_ComposeAttach extends Horde_Core_Ajax_Applica
     public function addAttachment()
     {
         global $injector, $notification;
-
+        \Horde::debug('test0', '/dev/shm/ComposeAttach', false);
         $result = new stdClass;
         $result->action = 'addAttachment';
         if (isset($this->vars->file_id)) {
@@ -60,6 +60,7 @@ class IMP_Ajax_Application_Handler_ComposeAttach extends Horde_Core_Ajax_Applica
 
             if ($imp_compose->canUploadAttachment()) {
                 try {
+                    \Horde::debug('test1', '/dev/shm/ComposeAttach', false);
                     foreach ($imp_compose->addAttachmentFromUpload('file_upload') as $val) {
                         if ($val instanceof IMP_Compose_Exception) {
                             $notification->push($val, 'horde.error');

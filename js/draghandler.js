@@ -17,10 +17,25 @@ var DragHandler = {
 
     isFileDrag: function(e)
     {
-        return (e.dataTransfer &&
-                e.dataTransfer.types &&
-                $A(e.dataTransfer.types).include('Files') &&
-                ((e.type != 'drop') || e.dataTransfer.files.length));
+        //console.log(e);
+        console.log("start");
+        console.log(e);
+        let first = e.dataTransfer;
+        let second = e.dataTransfer.types;
+        let third = $A(e.dataTransfer.types).include('Files');
+        let fourth = ((e.type != 'drop') || e.dataTransfer.files.length);
+        console.log(first);
+        console.log(second);
+        console.log(third);
+        console.log(fourth);
+        console.log("stop");
+        e.dataTransfer.clearData();
+        let toReturn = first && second && third && fourth;
+        return toReturn;
+        // return (e.dataTransfer &&
+        //         e.dataTransfer.types &&
+        //         $A(e.dataTransfer.types).include('Files') &&
+        //         ((e.type != 'drop') || e.dataTransfer.files.length));
     },
 
     handleObserve: function(e)
@@ -32,6 +47,7 @@ var DragHandler = {
             if (Prototype.Browser.IE &&
                 !(("onpropertychange" in document) && (!!window.matchMedia))) {
                 // IE 9 supports drag/drop, but not dataTransfer.files
+                console.log('holy cow');
             } else {
                 switch (e.type) {
                 case 'dragleave':
@@ -83,13 +99,18 @@ var DragHandler = {
 
     handleOver: function(e)
     {
+        console.log('test0 handleOver');
         var file = this.isFileDrag(e);
+        console.log('test1 handleOver');
+        //console.log(this.dropelt.visible());
+        console.log(file);
 
         if (file && !this.dropelt.visible()) {
+            console.log('this should trigger');
             this.dropelt.clonePosition(this.droptarget).show();
             this.droptarget.hide();
         }
-
+        console.log('test2 handleOver');
         this.leave = false;
 
         if (file && (e.target == this.dropelt)) {

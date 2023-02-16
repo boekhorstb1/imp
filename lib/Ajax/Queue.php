@@ -309,6 +309,7 @@ class IMP_Ajax_Queue
      */
     public function attachment($ob, $type = IMP_Compose::COMPOSE)
     {
+        \Horde::debug('test 0 queue', '/dev/shm/queue', false);
         global $injector;
 
         $parts = ($ob instanceof IMP_Compose)

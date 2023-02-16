@@ -287,6 +287,7 @@ var ViewPort = Class.create({
     //                 search: (object) Search parameters
     loadView: function(view, opts)
     {
+        console.log('viewport?');
         var buffer, curr, ps,
             f_opts = {},
             init = true;
