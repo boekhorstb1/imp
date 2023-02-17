@@ -166,6 +166,8 @@
         </tr>
     <?php endwhile; ?>
     </table>
+    <?php endif; ?>
+
     <!-- Import button -->
 <?php if ($this->import): ?>
  <div>
@@ -175,7 +177,6 @@
   </p>
  </div>
 <?php endif; ?>
-    <?php endif; ?>
     </div>
 
     
