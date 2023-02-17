@@ -77,8 +77,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         if ($browser->allowFileUploads()) {
             $view->import = true;
             $page_output->addInlineScript([
-                '$("import_smime_personal", ).observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
-                '$("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
+                // '$("import_smime_personal", ).observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
+                // '$("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
             ], true);
         }
 
@@ -190,11 +190,11 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
             // Warning if the set personal key is about to be deleted
             $page_output->addInlineScript([
-                '$("delete_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to delete your keypair? (Please click "Unset Personal Certificate" if you want to save the key in the keystore. Non-saved certificates will be removed permanently.)')) . ')) { e.stop(); } })',
-                '$("delete_smime_extra' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to delete your keypair? You are trying to delete a keypair from the keystore. If you continue these certificates will be removed permanently. ')) . ')) { e.stop(); } })',
-                '$("unset_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to unset your keypair? You will need to add another key to be able to send encrypted mails.')) . ')) { e.stop(); } })',
-                '$("set_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to set a new keypair? Currently set keypair will be moved to the database. New emails will be encrypted with the newly set keypair.')) . ')) { e.stop(); } })',
-                '$("unset_smime_secondary' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to unset your secondary keypair?')) . ')) { e.stop(); } })',
+                'if ($("delete_smime_personal' . $suffix . '") != undefined) $("delete_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to delete your keypair? (Please click "Unset Personal Certificate" if you want to save the key in the keystore. Non-saved certificates will be removed permanently.)')) . ')) { e.stop(); } })',
+                'if ($("delete_smime_extra' . $suffix . '") != undefined) $("delete_smime_extra' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to delete your keypair? You are trying to delete a keypair from the keystore. If you continue these certificates will be removed permanently. ')) . ')) { e.stop(); } })',
+                'if ($("unset_smime_personal' . $suffix . '") != undefined) $("unset_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to unset your keypair? You will need to add another key to be able to send encrypted mails.')) . ')) { e.stop(); } })',
+                'if ($("set_smime_personal' . $suffix . '") != undefined) $("set_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to set a new keypair? Currently set keypair will be moved to the database. New emails will be encrypted with the newly set keypair.')) . ')) { e.stop(); } })',
+                'if ($("unset_smime_secondary' . $suffix . '") != undefined) $("unset_smime_secondary' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to unset your secondary keypair?')) . ')) { e.stop(); } })',
             ], true);
         }
 
@@ -239,31 +239,9 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 'horde.success'
             );
         } elseif (isset($ui->vars->unset_smime_personal)) { // unsetting personal certificate and transfering it to the db
-            $check = $injector->getInstance('IMP_Smime')->unsetSmimePersonal();
-            if ($check === false) {
-                $notification->push(
-                    _('Please set a password before unsetting the keys.'),
-                    'horde.error'
-                );
-            } else {
-                $notification->push(
-                    _('S/MIME Certificate unset and successfully transfered to extra keys.'),
-                    'horde.success'
-                );
-            }
+            $injector->getInstance('IMP_Smime')->unsetSmimePersonal();
         } elseif (isset($ui->vars->unset_smime_secondary)) { // unsetting secondary certificate and transfering it to the db
-            $check = $injector->getInstance('IMP_Smime')->unsetSmimeSecondary();
-            if ($check === false) {
-                $notification->push(
-                    _('Please set a password before unsetting the keys.'),
-                    'horde.error'
-                );
-            } else {
-                $notification->push(
-                    _('S/MIME Secondary Certificate unset and successfully transfered to extra keys.'),
-                    'horde.success'
-                );
-            }
+            $injector->getInstance('IMP_Smime')->unsetSmimeSecondary();
         } elseif (isset($ui->vars->set_smime_personal)) { // setting personal certificate... first have to unset?
             $injector->getInstance('IMP_Smime')->setSmimePersonal(
                 $ui->vars->set_smime_personal

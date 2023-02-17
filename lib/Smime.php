@@ -237,11 +237,6 @@ class IMP_Smime
         if (!$key && $signkey == self::KEY_SECONDARY_OR_PRIMARY) {
             $key = $prefs->getValue('smime_private_key');
         }
-
-        \Horde::debug('Singkey: ', '/dev/shm/pubkey', false);
-        \Horde::debug($signkey, '/dev/shm/pubkey', false);
-        \Horde::debug('Key: ', '/dev/shm/pubkey', false);
-        \Horde::debug($key, '/dev/shm/pubkey', false);
         return $key;
     }
 
@@ -430,6 +425,8 @@ class IMP_Smime
      */
     public function unsetSmimePersonal($signkey = self::KEY_PRIMARY)
     {
+        global $notification;
+
         // get current personal certificates
         $privateKey = $this->getPersonalPrivateKey($signkey);
         $publicKey = $this->getPersonalPublicKey($signkey);
@@ -437,12 +434,30 @@ class IMP_Smime
         // get password, hash it and save it to the table
         $password = $this->getPassphrase($signkey);
         if ($password == false) {
+            // TODO: add notification of some sort! at least for secondary key!
+            $notification->push(
+                _('Please set a correct password before unsetting the keys.'),
+                'horde.error'
+            );
             return false;
         }
+
         // push these to the extra keys table
         if (!empty($privateKey) && !empty($publicKey) && !empty($password)) {
             if ($this->addExtraPersonalKeys($privateKey, $publicKey, $password)) {
-                $this->deletePersonalKeys();
+                try {
+                    $this->deletePersonalKeys($signkey);
+                    $notification->push(
+                        _('S/MIME Certificate unset and successfully transfered to extra keys.'),
+                        'horde.success'
+                    );
+                } catch (\Throwable $th) {
+                    $notification->push(
+                        _('S/MIME Certificates were not proberly deleted from database.'),
+                        'horde.error'
+                    );
+                    throw $th;
+                }
             }
         }
     }
@@ -780,7 +795,7 @@ class IMP_Smime
         global $prefs, $session;
 
         if ($differentKey === null) {
-            if ($signkey == self::KEY_SECONDARY_OR_PRIMARY) {
+            if ($signkey == self::KEY_SECONDARY_OR_PRIMARY || $signkey == self::KEY_SECONDARY) {
                 if ($private_key = $this->getPersonalPrivateKey(self::KEY_SECONDARY)) {
                     $signkey = self::KEY_SECONDARY;
                 } else {
