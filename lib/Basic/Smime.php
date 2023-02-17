@@ -98,7 +98,6 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                 $this->_textWindowOutput(
                     'S/MIME Personal Private Key',
                     $this->_smime->getPersonalPrivateKey(
-                        \Horde::debug($this->vars->actionID, '/dev/shm/checkingTrue', false),
                         $this->vars->actionID == 'view_personal_private_sign_key'
                     )
                 );

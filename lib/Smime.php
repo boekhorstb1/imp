@@ -238,6 +238,10 @@ class IMP_Smime
             $key = $prefs->getValue('smime_private_key');
         }
 
+        \Horde::debug('Singkey: ', '/dev/shm/pubkey', false);
+        \Horde::debug($signkey, '/dev/shm/pubkey', false);
+        \Horde::debug('Key: ', '/dev/shm/pubkey', false);
+        \Horde::debug($key, '/dev/shm/pubkey', false);
         return $key;
     }
 
@@ -424,14 +428,14 @@ class IMP_Smime
      * Transfers a Personal Certificate and belonging Public Certificate to the Extra Keys table in the DB
      *
      */
-    public function unsetSmimePersonal()
+    public function unsetSmimePersonal($signkey = self::KEY_PRIMARY)
     {
         // get current personal certificates
-        $privateKey = $this->getPersonalPrivateKey();
-        $publicKey = $this->getPersonalPublicKey();
+        $privateKey = $this->getPersonalPrivateKey($signkey);
+        $publicKey = $this->getPersonalPublicKey($signkey);
 
         // get password, hash it and save it to the table
-        $password = $this->getPassphrase();
+        $password = $this->getPassphrase($signkey);
         if ($password == false) {
             return false;
         }
@@ -441,6 +445,11 @@ class IMP_Smime
                 $this->deletePersonalKeys();
             }
         }
+    }
+
+    public function unsetSmimeSecondary()
+    {
+        $this->unsetSmimePersonal(self::KEY_SECONDARY);
     }
 
     /**
