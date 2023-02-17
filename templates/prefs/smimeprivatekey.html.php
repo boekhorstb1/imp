@@ -105,6 +105,12 @@
   <?php echo $this->hordeHelp('imp', 'smime-delete-personal-certs') ?>
  </p>
 
+ <!-- unset personal smime button -->
+ <p>
+  <input type="submit" id="unset_smime_secondary" name="unset_smime_secondary" class="horde-unset" value="<?php echo _('Unset Secondary Certificate') ?>" />
+  <?php echo $this->hordeHelp('imp', 'smime-unset-secondary-certs')?>
+ </p>
+
 <?php endif ?>
 <?php else: ?>
  <div>

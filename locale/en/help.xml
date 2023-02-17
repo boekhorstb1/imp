@@ -397,6 +397,14 @@
         </para>
     </entry>
 
+    <entry id="smime-unset-secondary-certs">
+        <title>S/MIME: Preferences: Secondary Certificates: Unset</title>
+        <para>
+            Unset a secondary certificate from the prefs table but save it as a backup in the extra certificates table. 
+            After the secondary certificate is unset, you can import or set another certificate for signing S/MIME messages.
+        </para>
+    </entry>
+
     <entry id="smime-set-personal-certs">
         <title>S/MIME: Preferences: Extra Certificates: Set</title>
         <para>
