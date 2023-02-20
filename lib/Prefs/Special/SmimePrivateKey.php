@@ -195,6 +195,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 'if ($("unset_smime_personal' . $suffix . '") != undefined) $("unset_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to unset your keypair? You will need to add another key to be able to send encrypted mails.')) . ')) { e.stop(); } })',
                 'if ($("set_smime_personal' . $suffix . '") != undefined) $("set_smime_personal' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to set a new keypair? Currently set keypair will be moved to the database. New emails will be encrypted with the newly set keypair.')) . ')) { e.stop(); } })',
                 'if ($("unset_smime_secondary' . $suffix . '") != undefined) $("unset_smime_secondary' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to unset your secondary keypair?')) . ')) { e.stop(); } })',
+                'if ($("set_smime_secondary' . $suffix . '") != undefined) $("set_smime_secondary' . $suffix . '").observe("click", function(e) { if (!window.confirm(' . json_encode(_('Are you sure you want to set a singing key? Current key for singing will be moved to the database. New emails will be singing with the newly set singing key.')) . ')) { e.stop(); } })',
             ], true);
         }
 
@@ -250,6 +251,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 _('S/MIME Certificate set and successfully transfered previous certificate to extra keys.'),
                 'horde.success'
             );
+        } elseif (isset($ui->vars->set_smime_secondary)) { // setting secondary certificate
+            $injector->getInstance('IMP_Smime')->setSmimeSecondary();
         }
 
         return false;

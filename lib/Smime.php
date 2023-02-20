@@ -412,7 +412,6 @@ class IMP_Smime
 
         if (!empty($check)) {
             // if there is a certificate, copy it to the database otherwise discontinue the action
-            \Horde::debug($keyExists, '/dev/shm/test', false);
             if ($keyExists) {
                 $this->addPersonalPrivateKey($newprivatekey);
                 $this->addPersonalPublicKey($newpublickey);
@@ -433,6 +432,14 @@ class IMP_Smime
     }
 
     /**
+     * Setting a new certificate for signing SMIME mails
+     */
+    public function setSmimeSecondary()
+    {
+        $this->setSmimePersonal(self::KEY_SECONDARY);
+    }
+
+    /**
      * Unsetting a Personal Certificate and belonging Public Certificate:
      * Transfers a Personal Certificate and belonging Public Certificate to the Extra Keys table in the DB
      *
@@ -448,8 +455,6 @@ class IMP_Smime
         // get password, hash it and save it to the table
         $password = $this->getPassphrase($signkey);
 
-        \Horde::debug($password, '/dev/shm/backend', false);
-
         if ($password == false || is_null($password) || empty($password)) {
             // TODO: add notification of some sort! at least for secondary key!
             $notification->push(
@@ -458,11 +463,10 @@ class IMP_Smime
             );
             return false;
         }
-        \Horde::debug('hapening1', '/dev/shm/backend', false);
+
         // push these to the extra keys table
         if (!empty($privateKey) && !empty($publicKey) && !empty($password)) {
             if ($this->addExtraPersonalKeys($privateKey, $publicKey, $password)) {
-                \Horde::debug('happenign2', '/dev/shm/backend', false);
                 try {
                     $this->deletePersonalKeys($signkey);
                     $notification->push(
@@ -481,6 +485,9 @@ class IMP_Smime
         }
     }
 
+    /**
+     * Unsetting a Certificate for Singing and transerfing it to extra tables
+     */
     public function unsetSmimeSecondary()
     {
         $this->unsetSmimePersonal(self::KEY_SECONDARY);

@@ -155,6 +155,11 @@
                 Private Certificate: [<?php echo $array[$key] ?><?php echo _('View') ?></a>]
             <?php $key++ // even numbers contain the certificates?>
             
+                <!-- set-to-secondary smime button -->
+                <label for="set_smime_secondary"><?php echo _('Set this key as a secondary sign certificate:') ?></label>
+                <input type="submit" id="set_smime_secondary" name="set_smime_secondary" class="horde-set" value="<?php echo $array[$key] ?>" />
+                <?php echo $this->hordeHelp('imp', 'smime-set-secondary-certs')?>
+
                 <!-- set-to-personal smime button -->
                 <label for="set_smime_personal"><?php echo _('Set this key as personal certificate:') ?></label>
                 <input type="submit" id="set_smime_personal" name="set_smime_personal" class="horde-set" value="<?php echo $array[$key] ?>" />
