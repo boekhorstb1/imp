@@ -433,7 +433,10 @@ class IMP_Smime
 
         // get password, hash it and save it to the table
         $password = $this->getPassphrase($signkey);
-        if ($password == false) {
+
+        \Horde::debug($password, '/dev/shm/backend', false);
+
+        if ($password == false || is_null($password) || empty($password)) {
             // TODO: add notification of some sort! at least for secondary key!
             $notification->push(
                 _('Please set a correct password before unsetting the keys.'),
