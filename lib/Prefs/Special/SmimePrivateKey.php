@@ -252,7 +252,13 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 'horde.success'
             );
         } elseif (isset($ui->vars->set_smime_secondary)) { // setting secondary certificate
-            $injector->getInstance('IMP_Smime')->setSmimeSecondary();
+            $injector->getInstance('IMP_Smime')->setSmimeSecondary(
+                $ui->vars->set_smime_secondary
+            );
+            $notification->push(
+                _('S/MIME Singing Certificate set and successfully transfered previous signing certificate to extra keys.'),
+                'horde.success'
+            );
         }
 
         return false;

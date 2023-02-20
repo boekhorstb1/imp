@@ -132,7 +132,11 @@ class IMP_Smime
         global $prefs;
 
         $prefName = $signkey ? 'smime_private_sign_key' : 'smime_private_key';
+        \Horde::debug('singkey added 1!', '/dev/shm/singkey', false);
+        \Horde::debug($prefName, '/dev/shm/singkey', false);
+        \Horde::debug($key, '/dev/shm/singkey', false);
         $val = is_array($key) ? implode('', $key) : $key;
+        \Horde::debug($val, '/dev/shm/singkey', false);
         $val = HordeString::convertToUtf8($val);
 
         // check if a private key already exists
@@ -272,11 +276,14 @@ class IMP_Smime
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
+        // TODO: delete the prefName variable?
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=?';
-        $values = [$prefName, $id, $user_name];
+        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE private_key_id=? AND user_name=?';
+        $values = [$id, $user_name];
+        \Horde::debug($values, '/dev/shm/setSmimePersonal', false);
+
         // Run the SQL query
         $result = $this->_db->selectOne($query, $values); // returns one key
         return $result['private_key'];
@@ -394,12 +401,20 @@ class IMP_Smime
      * Transfers a Certificate and belonging Public Certificate from the Extra Keys table to Horde_Prefs
      *
      */
-    public function setSmimePersonal($key)
+    public function setSmimePersonal($key, $signkey=self::KEY_PRIMARY)
     {
-        // find the private key that has been selected
-        $newprivatekey = $this->getExtraPrivateKey($key);
-        $newpublickey = $this->getExtraPublicKey($key, 'smime_private_key');
+        \Horde::debug($key, '/dev/shm/setSmimePersonal', false);
+        if ($signkey == self::KEY_PRIMARY) {
+            $prefName = 'smime_private_key';
+        } elseif ($signkey == self::KEY_SECONDARY) {
+            $prefName = 'smime_private_sign_key';
+        }
 
+        // find the private key that has been selected (NB: do not care if the key is a sign key or not, so no prefname?)
+        $newprivatekey = $this->getExtraPrivateKey($key);
+        $newpublickey = $this->getExtraPublicKey($key);
+        \Horde::debug('test', '/dev/shm/setSmimePersonal', false);
+        \Horde::debug($newprivatekey, '/dev/shm/setSmimePersonal', false);
         // keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
 
         // give keys an option to name them, if nothing is set (this should show 'no alias set')
@@ -410,21 +425,26 @@ class IMP_Smime
         $check = $this->getPersonalPrivateKey();
         $keyExists = $this->privateKeyExists($check);
 
+        \Horde::debug('singkey!', '/dev/shm/singkey', false);
         if (!empty($check)) {
             // if there is a certificate, copy it to the database otherwise discontinue the action
             if ($keyExists) {
-                $this->addPersonalPrivateKey($newprivatekey);
-                $this->addPersonalPublicKey($newpublickey);
+                \Horde::debug('singkey2!', '/dev/shm/singkey', false);
+                $this->addPersonalPrivateKey($newprivatekey, $signkey);
+                $this->addPersonalPublicKey($newpublickey, $signkey);
                 return;
             }
             if ($this->unsetSmimePersonal() != false) {
-                $this->addPersonalPrivateKey($newprivatekey);
-                $this->addPersonalPublicKey($newpublickey);
+                \Horde::debug('singkey3!', '/dev/shm/singkey', false);
+                $this->addPersonalPrivateKey($newprivatekey, $signkey);
+                $this->addPersonalPublicKey($newpublickey, $signkey);
                 return;
             }
             // otherwise do nothing
+            \Horde::debug('singkey4!', '/dev/shm/singkey', false);
             return;
         }
+        \Horde::debug('singkey5!', '/dev/shm/singkey', false);
         // if not: import it
         // TODO: $signkey?
         $this->addPersonalPrivateKey($newprivatekey);
@@ -434,9 +454,9 @@ class IMP_Smime
     /**
      * Setting a new certificate for signing SMIME mails
      */
-    public function setSmimeSecondary()
+    public function setSmimeSecondary($keyid)
     {
-        $this->setSmimePersonal(self::KEY_SECONDARY);
+        $this->setSmimePersonal($keyid, self::KEY_SECONDARY);
     }
 
     /**
