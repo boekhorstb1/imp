@@ -469,6 +469,7 @@ class IMP_Smime
                         _('S/MIME Certificate unset and successfully transfered to extra keys.'),
                         'horde.success'
                     );
+                    return true;
                 } catch (\Throwable $th) {
                     $notification->push(
                         _('S/MIME Certificates were not proberly deleted from database.'),
