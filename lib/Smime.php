@@ -336,7 +336,9 @@ class IMP_Smime
         if (!empty($result)) {
             // check if privatekeys are the same
             foreach ($result as $key => $value) {
-                if ($value == $personalCertificate) {
+                //\Horde::debug($value, '/dev/shm/test', false);
+                if ($value == $personalCertificate || strcmp($value, $personalCertificate) == 0) {
+                    \Horde::debug('ok', '/dev/shm/test', false);
                     return true;
                 }
             }
@@ -406,12 +408,24 @@ class IMP_Smime
         // check if a personal certificate is set
         $check = null;
         $check = $this->getPersonalPrivateKey();
+        $keyExists = $this->privateKeyExists($check);
 
         if (!empty($check)) {
-            // if there is a certificate, copy it to the database
-            $this->unsetSmimePersonal();
+            // if there is a certificate, copy it to the database otherwise discontinue the action
+            \Horde::debug($keyExists, '/dev/shm/test', false);
+            if ($keyExists) {
+                $this->addPersonalPrivateKey($newprivatekey);
+                $this->addPersonalPublicKey($newpublickey);
+                return;
+            }
+            if ($this->unsetSmimePersonal() != false) {
+                $this->addPersonalPrivateKey($newprivatekey);
+                $this->addPersonalPublicKey($newpublickey);
+                return;
+            }
+            // otherwise do nothing
+            return;
         }
-
         // if not: import it
         // TODO: $signkey?
         $this->addPersonalPrivateKey($newprivatekey);
@@ -423,7 +437,7 @@ class IMP_Smime
      * Transfers a Personal Certificate and belonging Public Certificate to the Extra Keys table in the DB
      *
      */
-    public function unsetSmimePersonal($signkey = self::KEY_PRIMARY)
+    public function unsetSmimePersonal($signkey = self::KEY_PRIMARY, $calledFromSetSmime = false)
     {
         global $notification;
 
@@ -444,10 +458,11 @@ class IMP_Smime
             );
             return false;
         }
-
+        \Horde::debug('hapening1', '/dev/shm/backend', false);
         // push these to the extra keys table
         if (!empty($privateKey) && !empty($publicKey) && !empty($password)) {
             if ($this->addExtraPersonalKeys($privateKey, $publicKey, $password)) {
+                \Horde::debug('happenign2', '/dev/shm/backend', false);
                 try {
                     $this->deletePersonalKeys($signkey);
                     $notification->push(
