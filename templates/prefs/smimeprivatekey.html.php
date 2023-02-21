@@ -28,9 +28,12 @@
   <tr>
    <td>
    <?php // if the personal certificate exists in the extra db, show its id
-   if($this->privatekeyexits != -1) {
+   if($this->privatekeyexits) {
        echo _('The ID of your Certificate Set: '.$this->privatekeyexits);
-   } ?> 
+   } else {
+       echo _('The ID of your Sign Certificate Set: <i>not set in database</i>');
+   }
+   ?> 
     </td>
     </tr>
    <tr>
@@ -81,9 +84,11 @@
   <tr>
    <td>
    <?php // if the personal certificate exists in the extra db, show its id
-   if($this->signkeyexits != -1) {
-       echo _('The ID of your Sign Certificate Set: '.$this->signkeyexits);
-   } ?> 
+      if($this->signkeyexits) {
+          echo _('The ID of your Sign Certificate Set: '.$this->signkeyexits);
+      } else {
+          echo _('The ID of your Sign Certificate Set: <i>not set in database</i>');
+      }?> 
     </td>
     </tr>
    <tr>

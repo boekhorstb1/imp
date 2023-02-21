@@ -413,7 +413,7 @@ class IMP_Smime
         // find the private key that has been selected (NB: do not care if the key is a sign key or not, so no prefname?)
         $newprivatekey = $this->getExtraPrivateKey($keyid);
         $newpublickey = $this->getExtraPublicKey($keyid);
-        // keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
+        // TO DO: keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
 
         // give keys an option to name them, if nothing is set (this should show 'no alias set')
 
