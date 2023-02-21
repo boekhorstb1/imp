@@ -295,13 +295,13 @@ class IMP_Smime
      * @return int id of extra private certificate in DB
      * @throws Horde_Db_Exception
      */
-    public function getExtraPrivateKeyId()
+    public function getExtraPrivateKeyId($signkey = self::KEY_PRIMARY)
     {
         {
             /* Get the user_name and personal certificate if existant */
             // TODO: is there a way to only use prefs?
             $user_name = $GLOBALS['registry']->getAuth();
-            $personalCertificate = $this->getPersonalPrivateKey();
+            $personalCertificate = $this->getPersonalPrivateKey($signkey);
 
             // Build the SQL query
             $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE user_name=?';
@@ -413,8 +413,6 @@ class IMP_Smime
         // find the private key that has been selected (NB: do not care if the key is a sign key or not, so no prefname?)
         $newprivatekey = $this->getExtraPrivateKey($key);
         $newpublickey = $this->getExtraPublicKey($key);
-        \Horde::debug('test', '/dev/shm/setSmimePersonal', false);
-        \Horde::debug($newprivatekey, '/dev/shm/setSmimePersonal', false);
         // keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
 
         // give keys an option to name them, if nothing is set (this should show 'no alias set')
@@ -425,26 +423,21 @@ class IMP_Smime
         $check = $this->getPersonalPrivateKey();
         $keyExists = $this->privateKeyExists($check);
 
-        \Horde::debug('singkey!', '/dev/shm/singkey', false);
         if (!empty($check)) {
             // if there is a certificate, copy it to the database otherwise discontinue the action
             if ($keyExists) {
-                \Horde::debug('singkey2!', '/dev/shm/singkey', false);
                 $this->addPersonalPrivateKey($newprivatekey, $signkey);
                 $this->addPersonalPublicKey($newpublickey, $signkey);
                 return;
             }
             if ($this->unsetSmimePersonal() != false) {
-                \Horde::debug('singkey3!', '/dev/shm/singkey', false);
                 $this->addPersonalPrivateKey($newprivatekey, $signkey);
                 $this->addPersonalPublicKey($newpublickey, $signkey);
                 return;
             }
             // otherwise do nothing
-            \Horde::debug('singkey4!', '/dev/shm/singkey', false);
             return;
         }
-        \Horde::debug('singkey5!', '/dev/shm/singkey', false);
         // if not: import it
         // TODO: $signkey?
         $this->addPersonalPrivateKey($newprivatekey);
@@ -501,6 +494,9 @@ class IMP_Smime
                     );
                     throw $th;
                 }
+            } else {
+                // unsetting can be done because certificate is in the database anyway
+                $this->deletePersonalKeys($signkey);
             }
         }
     }

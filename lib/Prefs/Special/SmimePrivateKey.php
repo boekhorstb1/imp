@@ -144,6 +144,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 . _('Details') . '</a>';
 
             $view->{'privatekeyexits'} = $smime->getExtraPrivateKeyId(); // check if private key exists and return ids value if so
+            $view->{'signkeyexits'} = $smime->getExtraPrivateKeyId(1); // Note: self::KEY_SECONDARY = 1 in Smime.php...  This checks if a sigm key exists and returns the id
 
             if ($smime->getPassphrase($secondary)) {
                 $view->{'passphrase' . $suffix} = $ui->selfUrl([

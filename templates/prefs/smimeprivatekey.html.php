@@ -78,6 +78,14 @@
 <?php endif ?>
  <div>
   <table>
+  <tr>
+   <td>
+   <?php // if the personal certificate exists in the extra db, show its id
+   if($this->signkeyexits != -1) {
+       echo _('The ID of your Sign Certificate Set: '.$this->signkeyexits);
+   } ?> 
+    </td>
+    </tr>
    <tr>
     <td>
      <?php echo _('Your Secondary Public Certificate') ?>:
