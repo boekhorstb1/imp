@@ -391,6 +391,39 @@ class IMP_Smime
         return $result;
     }
 
+    /**
+     * Setting an alias in the database
+     * @return bool|error returns eiter true, false or an error concerning the insertion of an alias in the database
+     *
+     * @param int $keyid to set the alias to the key with specific id     *
+     */
+    public function setAlias($keyid, $alias)
+    {
+        $query = 'INSERT INTO imp_smime_extrakeys (private_key_id, alias) VALUES (?, ?)';
+        $values = [$keyid, $alias];
+        $this->_db->insert($query, $values);
+    }
+
+    /**
+     * Getting an alias from the database
+     *
+     * @param int $keyid to find the alias belong to the key
+     * @return string|bool returns an alias (name) of the certification or false if nothing is returned
+     */
+    public function getAlias($keyid)
+    {
+        $query = 'SELECT alias FROM imp_smime_extrakeys WHERE private_key_id=?';
+        $values = [$keyid];
+        $result = $this->_db->selectValue($query, $values);
+
+        // checking if $result is empty
+        if (empty($result)) {
+            return false;
+        } else {
+            return $result;
+        }
+    }
+
 
     /**
      * Setting a new Personal Certificate and belonging Public Certificate:
@@ -413,9 +446,8 @@ class IMP_Smime
         // find the private key that has been selected (NB: do not care if the key is a sign key or not, so no prefname?)
         $newprivatekey = $this->getExtraPrivateKey($keyid);
         $newpublickey = $this->getExtraPublicKey($keyid);
-        // TO DO: keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
 
-        // give keys an option to name them, if nothing is set (this should show 'no alias set')
+        // TODO: give keys an option to name them, if nothing is set (this should show 'no alias set')
 
 
         // check if a personal certificate is set

@@ -28,6 +28,7 @@ class ImpSMIME extends Horde_Db_Migration_Base
             $t->column('private_key', 'binary', ['null' => false]);
             $t->column('public_key', 'binary', ['null' => true]);
             $t->column('privatekey_passwd', 'string', ['limit' => 50,'null' => true]);
+            $t->column('alias', 'string', ['limit' => 50,'null' => true]);
             $t->end();
         }
     }

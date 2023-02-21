@@ -18,12 +18,18 @@
   <table>
     <tr>
     <td>
-    <?php if(isset($this->alias)) {
-        echo _('Alias for your Certificate Set: '.$this->alias);
-    } else {
-        echo _('Change the alias for your Certificate Set: ');
-    } ?>
+        <?php
+        // Show or set an alias for a certificate
+        if($this->aliasexists != false) {
+            echo _('Current alias for your Certificate Set: '.$this->aliasexists);
+        } else {
+            echo _('Set Alias for your certificate: ');
+        }
+   ?> 
     </td>   
+    <td>
+     [<?php echo $this->alias ?>]
+    </td>
     </tr>
   <tr>
    <td>
@@ -33,7 +39,7 @@
    } else {
        echo _('The ID of your Sign Certificate Set: <i>not set in database</i>');
    }
-   ?> 
+   ?>
     </td>
     </tr>
    <tr>
