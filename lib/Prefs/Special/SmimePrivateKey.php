@@ -77,8 +77,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         if ($browser->allowFileUploads()) {
             $view->import = true;
             $page_output->addInlineScript([
-                '$("import_smime_personal", ).observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
-                '$("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
+                'if ($("import_smime_personal") != undefined) $("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
+                'if ($("import_extra_smime_personal") != undefined) $("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
             ], true);
         }
 
@@ -145,7 +145,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
             $view->{'privatekeyexits'} = $smime->getExtraPrivateKeyId(); // check if private key exists and return ids value if so
             $view->{'signkeyexits'} = $smime->getExtraPrivateKeyId(1); // Note: self::KEY_SECONDARY = 1 in Smime.php...  This checks if a sigm key exists and returns the id
-            $view->{'aliasexists'} = $smime->getAlias($view->privatekeyexits); // gets the alias of the key by ID
+            //$view->{'aliasexists'} = $smime->getAlias($view->privatekeyexits); // gets the alias of the key by ID
 
             $aliasImple = $injector->getInstance('Horde_Core_Factory_Imple')
             ->create(
@@ -154,8 +154,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                     'params' => [
                         'reload' => $ui->selfUrl()->setRaw(true),
                     ],
-                    'type' => 'smimeAlias',
-                    'keyid' => $view->privatekeyexits,
+                    'type' => 'smime',
+                    'keyid' => 1,
                 ]
             );
             $view->{'alias'} = Horde::link(
@@ -168,7 +168,6 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 null,
                 ['id' => $aliasImple->getDomId()]
             ) . _('Enter Alias')  . '</a>';
-
 
             if ($smime->getPassphrase($secondary)) {
                 $view->{'passphrase' . $suffix} = $ui->selfUrl([

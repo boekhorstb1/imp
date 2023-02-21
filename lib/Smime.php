@@ -399,6 +399,7 @@ class IMP_Smime
      */
     public function setAlias($keyid, $alias)
     {
+        \Horde::debug('test 1 setAlias is called in Smime.php', '/dev/shm/setalias', false);
         $query = 'INSERT INTO imp_smime_extrakeys (private_key_id, alias) VALUES (?, ?)';
         $values = [$keyid, $alias];
         $this->_db->insert($query, $values);

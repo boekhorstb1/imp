@@ -47,19 +47,18 @@ class IMP_Ajax_Imple_AliasDialog extends Horde_Core_Ajax_Imple
         }
 
         $params = $this->_params['params']
-            ?? [];
+        ?? [];
         if (isset($params['reload'])) {
             $params['reload'] = strval($params['reload']);
         }
 
 
         $js_params = [
-            'hidden' => array_merge($params, ['type' => $this->_params['type']]),
+            'hidden' => array_merge($params, ['keyid' => $this->_params['keyid']]),
             'text' => _('Enter the alias for your certificate.'),
         ];
 
         $js = 'ImpAliasDialog.display(' . Horde::escapeJson($js_params, ['nodelimit' => true]) . ')';
-
         if (!empty($this->_params['onload'])) {
             $page_output->addInlineScript([$js], true);
             return false;

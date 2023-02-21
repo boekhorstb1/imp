@@ -17,7 +17,6 @@
 
 var ImpAliasDialog = {
     display: function (data) {
-    console.log("bla0");
         HordeDialog.display(Object.extend(data, {
             form_id: 'imp_alias',
             password: false
