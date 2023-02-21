@@ -126,17 +126,14 @@ class IMP_Smime
      *
      * @param string|array $key  The private key to add.
      * @param boolean $signkey   Is this the secondary key for signing?
+     * @param boolean $calledFromSetSmime to stop unneded notifications
      */
-    public function addPersonalPrivateKey($key, $signkey = false)
+    public function addPersonalPrivateKey($key, $signkey = false, $calledFromSetSmime = false)
     {
         global $prefs;
 
         $prefName = $signkey ? 'smime_private_sign_key' : 'smime_private_key';
-        \Horde::debug('singkey added 1!', '/dev/shm/singkey', false);
-        \Horde::debug($prefName, '/dev/shm/singkey', false);
-        \Horde::debug($key, '/dev/shm/singkey', false);
         $val = is_array($key) ? implode('', $key) : $key;
-        \Horde::debug($val, '/dev/shm/singkey', false);
         $val = HordeString::convertToUtf8($val);
 
         // check if a private key already exists
@@ -146,13 +143,13 @@ class IMP_Smime
         if (empty($check)) {
             $GLOBALS['prefs']->setValue($prefName, $val);
         } else {
-            $this->unsetSmimePersonal();
+            $this->unsetSmimePersonal($signkey, $calledFromSetSmime);
             $GLOBALS['prefs']->setValue($prefName, $val);
         }
     }
 
     /**
-     * Adds am extra personal keys to the extra keys table.
+     * Adds extra personal keys to the extra keys table.
      *
      * @param string|array $key  The private key to add.
      * @param string|array $key  The public key to add.
@@ -282,7 +279,6 @@ class IMP_Smime
         // Build the SQL query
         $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE private_key_id=? AND user_name=?';
         $values = [$id, $user_name];
-        \Horde::debug($values, '/dev/shm/setSmimePersonal', false);
 
         // Run the SQL query
         $result = $this->_db->selectOne($query, $values); // returns one key
@@ -400,19 +396,23 @@ class IMP_Smime
      * Setting a new Personal Certificate and belonging Public Certificate:
      * Transfers a Certificate and belonging Public Certificate from the Extra Keys table to Horde_Prefs
      *
+     * @param int $keyid returns the key from the keyid
+     * @param int $signkey sets a sign key, per default a personal (primary) key is set
      */
-    public function setSmimePersonal($key, $signkey=self::KEY_PRIMARY)
+    public function setSmimePersonal($keyid, $signkey=self::KEY_PRIMARY)
     {
-        \Horde::debug($key, '/dev/shm/setSmimePersonal', false);
         if ($signkey == self::KEY_PRIMARY) {
             $prefName = 'smime_private_key';
         } elseif ($signkey == self::KEY_SECONDARY) {
             $prefName = 'smime_private_sign_key';
         }
 
+        // Warns unsetSmime functions that no notifications are needed
+        $calledFromSetSmime = true;
+
         // find the private key that has been selected (NB: do not care if the key is a sign key or not, so no prefname?)
-        $newprivatekey = $this->getExtraPrivateKey($key);
-        $newpublickey = $this->getExtraPublicKey($key);
+        $newprivatekey = $this->getExtraPrivateKey($keyid);
+        $newpublickey = $this->getExtraPublicKey($keyid);
         // keys that are not saved in the extra database, have not got an id yet (this should show: 'no id set')
 
         // give keys an option to name them, if nothing is set (this should show 'no alias set')
@@ -423,29 +423,34 @@ class IMP_Smime
         $check = $this->getPersonalPrivateKey();
         $keyExists = $this->privateKeyExists($check);
 
+        // check if there is a personal Certificate set
         if (!empty($check)) {
-            // if there is a certificate, copy it to the database otherwise discontinue the action
-            if ($keyExists) {
-                $this->addPersonalPrivateKey($newprivatekey, $signkey);
+            // if there is a personal certificate, copy the personal certificate itself or the singkey (depending on wheater it is set) to the database otherwise discontinue the action
+            if ($keyExists) { // if the key exists in the database just add (overwrite) the key to the prefs table
+                $this->addPersonalPrivateKey($newprivatekey, $signkey, $calledFromSetSmime);
                 $this->addPersonalPublicKey($newpublickey, $signkey);
                 return;
             }
-            if ($this->unsetSmimePersonal() != false) {
-                $this->addPersonalPrivateKey($newprivatekey, $signkey);
+            // if the key is not in the database, first unset the key (which copies it to the database) and than add (overwrite) the new keys in the prefs table
+            // Note $calledFromSetSmime: because setSmimePersonal() adds certifactes from the database, there is no need to check for a correct password, as it should be set in the database already. Setting $calledFromSetSmime = true stopps notifications from poping up.
+            // TODO: the singkey stuff is very confusing, needs to be refactored
+            if ($this->unsetSmimePersonal($signkey = self::KEY_PRIMARY, $calledFromSetSmime) != false) {
+                $this->addPersonalPrivateKey($newprivatekey, $signkey, $calledFromSetSmime);
                 $this->addPersonalPublicKey($newpublickey, $signkey);
                 return;
             }
             // otherwise do nothing
             return;
         }
-        // if not: import it
-        // TODO: $signkey?
-        $this->addPersonalPrivateKey($newprivatekey);
-        $this->addPersonalPublicKey($newpublickey);
+        // if not: import it. NOte: if a newly imported but yet non-existant (in the database) key is to be added, $calledFromSetSmime is not set to true, because password checks need to happen
+        $this->addPersonalPrivateKey($newprivatekey, $signkey);
+        $this->addPersonalPublicKey($newpublickey, $signkey);
     }
 
     /**
      * Setting a new certificate for signing SMIME mails
+     *
+     * @param int $keyid to inform which key should be set as a secondary signkey
      */
     public function setSmimeSecondary($keyid)
     {
@@ -456,6 +461,8 @@ class IMP_Smime
      * Unsetting a Personal Certificate and belonging Public Certificate:
      * Transfers a Personal Certificate and belonging Public Certificate to the Extra Keys table in the DB
      *
+     * @param int $singkey defines the key to be processed. Per default it is the personal (primary) key, when e.g. set to self::KEY_SECONDARY the secondary sign key will be processed
+     * @param bool $calledFromSetSmime disables notifications for unset passwords: If the function is called from setSmimePersonal there is no reason to check for a password, because the key and the password is set in the database allready.
      */
     public function unsetSmimePersonal($signkey = self::KEY_PRIMARY, $calledFromSetSmime = false)
     {
@@ -469,11 +476,13 @@ class IMP_Smime
         $password = $this->getPassphrase($signkey);
 
         if ($password == false || is_null($password) || empty($password)) {
-            // TODO: add notification of some sort! at least for secondary key!
-            $notification->push(
-                _('Please set a correct password before unsetting the keys.'),
-                'horde.error'
-            );
+            // check if unsetSmimePersonal is called from setSmime, where passwords are set in the DB allready, and there is no need to push any notifications
+            if ($calledFromSetSmime == false) {
+                $notification->push(
+                    _('Please set a correct password before unsetting the keys.'),
+                    'horde.error'
+                );
+            }
             return false;
         }
 
