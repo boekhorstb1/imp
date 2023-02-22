@@ -88,6 +88,21 @@
  <div>
   <table>
   <tr>
+    <td>
+        <?php
+        // Show or set an alias for a certificate
+        if($this->aliasexists != false) {
+            echo _('Current alias for your Certificate Set: '.$this->aliasexists);
+        } else {
+            echo _('Set Alias for your certificate: ');
+        }
+   ?> 
+    </td>   
+    <td>
+     [<?php echo $this->alias_sign ?>]
+    </td>
+    </tr>
+  <tr>
    <td>
    <?php // if the personal certificate exists in the extra db, show its id
       if($this->signkeyexits) {
