@@ -447,9 +447,6 @@ class IMP_Smime
         $newprivatekey = $this->getExtraPrivateKey($keyid);
         $newpublickey = $this->getExtraPublicKey($keyid);
 
-        // TODO: give keys an option to name them, if nothing is set (this should show 'no alias set')
-
-
         // check if a personal certificate is set
         $check = null;
         $check = $this->getPersonalPrivateKey();
