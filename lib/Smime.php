@@ -286,12 +286,12 @@ class IMP_Smime
     }
 
     /**
-     * Get corresponding extra private key of Personal Certificate, if it exists in DB
+     * Get private key id of the set Personal Certificate if it exists in the database
      *
      * @return int id of extra private certificate in DB
      * @throws Horde_Db_Exception
      */
-    public function getExtraPrivateKeyId($signkey = self::KEY_PRIMARY)
+    public function getSetPrivateKeyId($signkey = self::KEY_PRIMARY)
     {
         {
             /* Get the user_name and personal certificate if existant */

@@ -199,6 +199,19 @@
                 Private Certificate: [<?php echo $array[$key] ?><?php echo _('View') ?></a>]
                 <?php $key++ // even numbers contain the certificates?>
 
+                
+                <?php
+                    // Show or set an alias for a certificate
+                    if($this->aliasexists != false) {
+                        echo _('Alias: '.$this->aliasexists);
+                    } elseif($this->signaliasexists != false) {
+                        echo _('Alias: '.$this->signaliasexists);
+                    } else {
+                        echo '<i>'._('No Alias').'<\i>';
+                    }
+                ?>
+                
+
                 <!-- set-to-secondary smime button -->
                 <label
                     for="set_smime_secondary"><?php echo _('Set this key as a secondary sign certificate:') ?></label>
