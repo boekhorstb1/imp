@@ -81,3 +81,6 @@ div.vpRowSelected .msCheck {
 .closeImg {
     background-image: url("graphics/close.png");
 }
+#set-smime-personal.horde-set{
+    background-image: url("graphics/button-set.png");
+}
