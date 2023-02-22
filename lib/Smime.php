@@ -339,9 +339,7 @@ class IMP_Smime
         if (!empty($result)) {
             // check if privatekeys are the same
             foreach ($result as $key => $value) {
-                //\Horde::debug($value, '/dev/shm/test', false);
                 if ($value == $personalCertificate || strcmp($value, $personalCertificate) == 0) {
-                    \Horde::debug('ok', '/dev/shm/test', false);
                     return true;
                 }
             }
@@ -352,19 +350,19 @@ class IMP_Smime
 
 
     /**
-     * Retrieves all private keys and their aliases from imp_smime_extrakeys table.
+     * Retrieves all public and private keys and their aliases from imp_smime_extrakeys table.
      *
      * @return array  All S/MIME private keys available.
      * @throws Horde_Db_Exception
      */
-    public function listPrivateKeys($prefName = 'smime_private_key')
+    public function listAllKeys($prefName = 'smime_private_key')
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key_id, private_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
+        $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
         $values = [$prefName, $user_name];
         // Run the SQL query
         $result = $this->_db->selectAll($query, $values); // returns an array with keys

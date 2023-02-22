@@ -201,12 +201,12 @@
             </tr>
             <tr>
                 <td>
-                    Public Certificate: [<a><?php echo _('View') ?></a>]
+                    Public Certificate: [<?php echo $keyArray['publiclink'] ?><?php echo _('View') ?></a>]
                 </td>
             </tr>
             </tr>
             <td>
-                Private Certificate: [<?php echo $keyArray['link'] ?><?php echo _('View') ?></a>]
+                Private Certificate: [<?php echo $keyArray['privatelink'] ?><?php echo _('View') ?></a>]
 
                 <!-- set-to-secondary smime button -->
                 <label

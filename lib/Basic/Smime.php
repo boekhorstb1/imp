@@ -114,6 +114,17 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                 );
                 break;
 
+            case 'view_extra_public_keys':
+                $this->_textWindowOutput(
+                    'S/MIME Extra Private Keys',
+                    $this->_smime->getExtraPublicKey(
+                        $this->vars->pkID,
+                        // if actionID euquals value, add it, otherwise load defaul value of function
+                        $this->vars->actionID == 'view_personal_public_sign_key'
+                    )
+                );
+                break;
+
             case 'import_personal_certs':
                 $this->_importKeyDialog('personal');
                 break;

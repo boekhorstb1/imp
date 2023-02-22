@@ -42,10 +42,10 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         $p_css = new Horde_Themes_Element('prefs.css');
         $page_output->addStylesheet($p_css->fs, $p_css->uri);
 
-        /* an instance of IMP_smime to be able to list private keys from the DB */
+        /* an instance of IMP_smime to be able to list all keys, their ids and aliases from the DB */
         $smime = $injector->getInstance('IMP_Smime');
         try {
-            $extra_private_keys = $smime->listPrivateKeys();
+            $extra_private_keys = $smime->listAllKeys();
         } catch (Horde_Exception $e) {
             $extra_private_keys = [];
         }
@@ -88,9 +88,11 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             $pk_list = [];
             $countnumber = 0;
             foreach ($extra_private_keys as $val) {
-                $link = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $val['private_key_id']]);
+                $privatelink = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $val['private_key_id']]);
+                $publiclink = $smime_url->copy()->add(['actionID' => 'view_extra_public_keys', 'pkID' => $val['private_key_id']]);
                 $tile = 'View Extra Private Keys';
-                $pk_list[$countnumber]['link'] = Horde::link($link, $title, null, 'view_key');
+                $pk_list[$countnumber]['publiclink'] = Horde::link($publiclink, $title, null, 'view_key');
+                $pk_list[$countnumber]['privatelink'] = Horde::link($privatelink, $title, null, 'view_key');
                 $pk_list[$countnumber]['id'] = $val['private_key_id'];
                 $pk_list[$countnumber]['alias'] = $val['alias'];
                 $countnumber ++;
