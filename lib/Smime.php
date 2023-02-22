@@ -352,7 +352,7 @@ class IMP_Smime
 
 
     /**
-     * Retrieves all private keys from imp_smime_extrakeys table.
+     * Retrieves all private keys and their aliases from imp_smime_extrakeys table.
      *
      * @return array  All S/MIME private keys available.
      * @throws Horde_Db_Exception
@@ -364,7 +364,7 @@ class IMP_Smime
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
+        $query = 'SELECT private_key_id, private_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
         $values = [$prefName, $user_name];
         // Run the SQL query
         $result = $this->_db->selectAll($query, $values); // returns an array with keys

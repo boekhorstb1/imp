@@ -189,6 +189,17 @@
             <?php $key = 0;
             $array = $this->viewprivateextras;
             foreach ($array as $countNumber => $keyArray): ?>
+            <!-- show alias -->
+            <tr>
+                <td>
+            <?php // dd($keyArray);?>
+                alias: <?php if (empty($keyArray['alias'])) {
+                    echo '<i>'._('No alias').'</i>';
+                } else {
+                    echo $keyArray['alias'];
+                } ?>
+                 </td>
+            </tr>
             <tr>
                 <td>
                     Public Certificate: [<a><?php echo _('View') ?></a>]
@@ -198,9 +209,6 @@
             <td>
                 Private Certificate: [<?php echo $keyArray['link'] ?><?php echo _('View') ?></a>]
                 
-                <!-- show alias -->
-                alias: <?php echo $keyArray['alias'] ?>
-
                 <!-- set-to-secondary smime button -->
                 <label
                     for="set_smime_secondary"><?php echo _('Set this key as a secondary sign certificate:') ?></label>
