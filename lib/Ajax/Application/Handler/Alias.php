@@ -35,7 +35,6 @@ class IMP_Ajax_Application_Handler_Alias extends Horde_Core_Ajax_Application_Han
      */
     public function checkAlias()
     {
-        \Horde::debug('allright0', '/dev/shm/keyid', false);
         global $injector, $notification;
 
         $result = false;
@@ -47,17 +46,11 @@ class IMP_Ajax_Application_Handler_Alias extends Horde_Core_Ajax_Application_Han
 
         $alias = $this->vars->dialog_input;
         $keyid = $this->vars->keyid;
-        \Horde::debug('allright1', '/dev/shm/keyid', false);
-        \Horde::debug($keyid, '/dev/shm/keyid', false);
-        try {
-            Horde::requireSecureConnection();
-            $result = $injector->getInstance('IMP_Smime')->setAlias($keyid, $alias);
 
-            if ($result) {
-                $notification->push(_('Alias verified.'), 'horde.success');
-            } else {
-                $notification->push(_('Invalid alias entered.'), 'horde.error');
-            }
+        try {
+            $injector->getInstance('IMP_Smime')->updateAlias($keyid, $alias);
+            $result = true;
+            $notification->push(_('Alias has been set.'), 'horde.success');
         } catch (Horde_Exception $e) {
             $notification->push($e, 'horde.error');
         }

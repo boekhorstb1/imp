@@ -157,7 +157,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                             'reload' => $ui->selfUrl()->setRaw(true),
                             'secondary' => intval($secondary),
                         ],
-                        'keyid' => $view->$signkeyexits,
+                        'keyid' => $view->signkeyexits,
                     ]
                 );
             } else {
@@ -168,7 +168,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                             'reload' => $ui->selfUrl()->setRaw(true),
                             'secondary' => intval($secondary),
                         ],
-                        'keyid' => $view->$privatekeyexits,
+                        'keyid' => $view->privatekeyexits,
                     ]
                 );
             }
