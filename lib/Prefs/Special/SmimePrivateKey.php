@@ -145,29 +145,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
             $view->{'privatekeyexits'} = $smime->getExtraPrivateKeyId(); // check if private key exists and return ids value if so
             $view->{'signkeyexits'} = $smime->getExtraPrivateKeyId(1); // Note: self::KEY_SECONDARY = 1 in Smime.php...  This checks if a sigm key exists and returns the id
-            //$view->{'aliasexists'} = $smime->getAlias($view->privatekeyexits); // gets the alias of the key by ID
-
-            $aliasImple = $injector->getInstance('Horde_Core_Factory_Imple')
-            ->create(
-                'IMP_Ajax_Imple_AliasDialog',
-                [
-                    'params' => [
-                        'reload' => $ui->selfUrl()->setRaw(true),
-                    ],
-                    'type' => 'smime',
-                    'keyid' => 1,
-                ]
-            );
-            $view->{'alias'} = Horde::link(
-                '#',
-                _('Enter Alias'),
-                null,
-                null,
-                null,
-                null,
-                null,
-                ['id' => $aliasImple->getDomId()]
-            ) . _('Enter Alias')  . '</a>';
+            $view->{'aliasexists'} = $smime->getAlias($view->privatekeyexits); // gets the alias of the key by ID
 
             if ($smime->getPassphrase($secondary)) {
                 $view->{'passphrase' . $suffix} = $ui->selfUrl([
@@ -223,8 +201,30 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             ], true);
         }
 
+        // set alias
+        $imple2 = $injector->getInstance('Horde_Core_Factory_Imple')->create(
+            'IMP_Ajax_Imple_AliasDialog',
+            [
+                'params' => [
+                    'reload' => $ui->selfUrl()->setRaw(true),
+                ],
+                'keyid' => 1,
+            ]
+        );
+        $view->{'alias'} = Horde::link(
+            '#',
+            _('Enter Alias'),
+            null,
+            null,
+            null,
+            null,
+            null,
+            ['id' => $imple2->getDomId()]
+        ) . _('Enter Alias')  . '</a>';
+
         return $view->render('smimeprivatekey');
     }
+
 
     /**
      */
