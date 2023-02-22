@@ -86,17 +86,19 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         if (!empty($extra_private_keys)) {
             // adding base url links to each private key: so one can view the keys
             $pk_list = [];
+            $countnumber = 0;
             foreach ($extra_private_keys as $val) {
                 $link = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $val['private_key_id']]);
                 $tile = 'View Extra Private Keys';
-                $pk_list[] = Horde::link($link, $title, null, 'view_key'); // all uneven keys hold links
-                $pk_list[] = $val['private_key_id'];    // all even links hold privatekey ids
+                $pk_list[$countnumber]['link'] = Horde::link($link, $title, null, 'view_key');
+                $pk_list[$countnumber]['id'] = $val['private_key_id'];
+                $pk_list[$countnumber]['alias'] = $val['alias'];
+                $countnumber ++;
             }
 
             // Adding extra private keys to view
             $view->{'viewprivateextras'} = $pk_list;
         }
-
 
         /* If no key was found, return the current view and discontinue rest of the logic from here on */
         if (!$view->has_key) {

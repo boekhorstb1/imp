@@ -188,7 +188,7 @@
         <table>
             <?php $key = 0;
             $array = $this->viewprivateextras;
-            while ($key < count($array)): ?>
+            foreach ($array as $countNumber => $keyArray): ?>
             <tr>
                 <td>
                     Public Certificate: [<a><?php echo _('View') ?></a>]
@@ -196,47 +196,33 @@
             </tr>
             </tr>
             <td>
-                Private Certificate: [<?php echo $array[$key] ?><?php echo _('View') ?></a>]
-                <?php $key++ // even numbers contain the certificates?>
-
+                Private Certificate: [<?php echo $keyArray['link'] ?><?php echo _('View') ?></a>]
                 
-                <?php
-                    // Show or set an alias for a certificate
-                    if($this->aliasexists != false) {
-                        echo _('Alias: '.$this->aliasexists);
-                    } elseif($this->signaliasexists != false) {
-                        echo _('Alias: '.$this->signaliasexists);
-                    } else {
-                        echo '<i>'._('No Alias').'<\i>';
-                    }
-                ?>
-                
+                <!-- show alias -->
+                alias: <?php echo $keyArray['alias'] ?>
 
                 <!-- set-to-secondary smime button -->
                 <label
                     for="set_smime_secondary"><?php echo _('Set this key as a secondary sign certificate:') ?></label>
                 <input type="submit" id="set_smime_secondary" name="set_smime_secondary" class="horde-set"
-                    value="<?php echo $array[$key] ?>" />
+                    value="<?php echo $keyArray['id'] ?>" />
                 <?php echo $this->hordeHelp('imp', 'smime-set-secondary-certs')?>
 
                 <!-- set-to-personal smime button -->
                 <label for="set_smime_personal"><?php echo _('Set this key as personal certificate:') ?></label>
                 <input type="submit" id="set_smime_personal" name="set_smime_personal" class="horde-set"
-                    value="<?php echo $array[$key] ?>" />
+                    value="<?php echo $keyArray['id'] ?>" />
                 <?php echo $this->hordeHelp('imp', 'smime-set-personal-certs')?>
 
                 <!-- delete button -->
                 <label for="delete_smime_extra"><?php echo _('Delete Certificate') ?> </label>
                 <input type="submit" id="delete_smime_extra" name="delete_smime_extra" class="horde-delete"
-                    value="<?php echo $array[$key] ?>" />
+                    value="<?php echo $keyArray['id'] ?>" />
                 <?php echo $this->hordeHelp('imp', 'smime-delete-extra-certs')?>
-
-
-                <?php $key++ // uneven numbers contain the ids of the certificates?>
 
             </td>
             </tr>
-            <?php endwhile; ?>
+            <?php endforeach; ?>
         </table>
         <?php endif; ?>
 
