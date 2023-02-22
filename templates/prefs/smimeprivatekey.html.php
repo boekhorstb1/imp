@@ -98,8 +98,8 @@
                 <td>
                     <?php
                         // Show or set an alias for a certificate
-                        if($this->aliasexists != false) {
-                            echo _('Current alias for your Certificate Set: '.$this->aliasexists);
+                        if($this->signaliasexists != false) {
+                            echo _('Current alias for your Certificate Set: '.$this->signaliasexists);
                         } else {
                             echo _('Set Alias for your certificate: ');
                         }
