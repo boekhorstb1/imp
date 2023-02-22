@@ -90,8 +90,10 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             foreach ($extra_private_keys as $val) {
                 $privatelink = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $val['private_key_id']]);
                 $publiclink = $smime_url->copy()->add(['actionID' => 'view_extra_public_keys', 'pkID' => $val['private_key_id']]);
+                $publicInfoLink = $smime_url->copy()->add(['actionID' => 'view_extra_public_info', 'pkID' => $val['private_key_id']]);
                 $tile = 'View Extra Private Keys';
                 $pk_list[$countnumber]['publiclink'] = Horde::link($publiclink, $title, null, 'view_key');
+                $pk_list[$countnumber]['publicinfolink'] = Horde::link($publicInfoLink, $title, null, 'info_key');
                 $pk_list[$countnumber]['privatelink'] = Horde::link($privatelink, $title, null, 'view_key');
                 $pk_list[$countnumber]['id'] = $val['private_key_id'];
                 $pk_list[$countnumber]['alias'] = $val['alias'];
