@@ -44,7 +44,7 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
      */
     protected $_impPrefs = array(
         'replyto_addr', 'alias_addr', 'tieto_addr', 'bcc_addr', 'signature',
-        'signature_html', 'save_sent_mail', IMP_Mailbox::MBOX_SENT
+        'signature_html', 'save_sent_mail', IMP_Mailbox::MBOX_SENT, 'identitiykeys'
         // TODO: adding ceritifacte keys here: only need public keys?
     );
 
@@ -542,8 +542,12 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
                 ->expire(IMP_Mailbox_SessionCache::CACHE_SPECIALMBOXES);
             $val = IMP_Mailbox::prefTo($val);
             break;
+        
+        case 'identitiykeys':
+            echo "TODO: getting the keys somehow";
+            break;
         }
-
+        
         return parent::setValue($key, $val, $identity);
     }
 
@@ -584,6 +588,16 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
         return $GLOBALS['injector']->getInstance('IMP_Factory_Imap')->create()->access(IMP_Imap::ACCESS_FOLDERS)
             ? $this->getValue('save_sent_mail', $ident)
             : false;
+    }
+
+    /**
+     * Gets the identities keys for signing and encryption
+     * TODO: somehow get the keys
+     */
+    public function getIdentityKeys()
+    {
+        // 'identitiykeys'
+        return 'key';
     }
 
 }

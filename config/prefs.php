@@ -105,7 +105,11 @@ $_prefs['sentmailselect'] = array(
     'requires_nolock' => array('sent_mail_folder')
 );
 
-
+// TODO: keys to send (only public keys?)
+$_prefs['identitiykeys'] = array(
+    'value' => '',
+    'desc' => _("Use specific Keys for this identity?")
+);
 
 // *** ACL Preferences ***
 
