@@ -44,7 +44,7 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
      */
     protected $_impPrefs = array(
         'replyto_addr', 'alias_addr', 'tieto_addr', 'bcc_addr', 'signature',
-        'signature_html', 'save_sent_mail', IMP_Mailbox::MBOX_SENT, 'identitiykeys'
+        'signature_html', 'save_sent_mail', IMP_Mailbox::MBOX_SENT, 'identitykeys'
         // TODO: adding ceritifacte keys here: only need public keys?
     );
 
@@ -547,7 +547,7 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
             echo "TODO: getting the keys somehow";
             break;
         }
-        
+
         return parent::setValue($key, $val, $identity);
     }
 

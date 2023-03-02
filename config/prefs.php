@@ -17,7 +17,7 @@ $prefGroups['identities'] = array(
     'members' => array(
         'replyto_addr', 'alias_addr', 'tieto_addr', 'bcc_addr', 'signature',
         'sig_dashes', 'signature_html_select', 'save_sent_mail',
-        'sent_mail_folder', 'sentmailselect'
+        'sent_mail_folder', 'sentmailselect', 'identitykeys'
     ),
     'type' => 'identities'
 );
@@ -106,8 +106,9 @@ $_prefs['sentmailselect'] = array(
 );
 
 // TODO: keys to send (only public keys?)
-$_prefs['identitiykeys'] = array(
-    'value' => '',
+$_prefs['identitykeys'] = array(
+    'value' => 1,
+    'type' => 'textarea',
     'desc' => _("Use specific Keys for this identity?")
 );
 
