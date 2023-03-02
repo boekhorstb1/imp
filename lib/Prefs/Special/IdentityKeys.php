@@ -41,8 +41,8 @@ class IMP_Prefs_Special_IdentityKeys implements Horde_Core_Prefs_Ui_Special
 
         $page_output->addInlineJsVars(array(
             'ImpIdentityKeysPrefs.sigs' =>
-                array(-1 => $prefs->getValue('identitiykey')) +
-                $injector->getInstance('IMP_Identity')->getAll('identitiykey')
+                array(-1 => $prefs->getValue('identitykey')) +
+                $injector->getInstance('IMP_Identity')->getAll('identitykey')
         ));
 
         $view = new Horde_View(array(

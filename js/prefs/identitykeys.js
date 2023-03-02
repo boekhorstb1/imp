@@ -67,10 +67,10 @@ var ImpHtmlIdentitykeyPrefs = {
             }
         });
 
-        this.editor = new IMP_Editor('signature_html', IMP.ckeditor_config);
+        this.editor = new IMP_Editor('identitykeys', IMP.ckeditor_config);
     }
 
 };
 
-document.observe('dom:loaded', ImpHtmlSignaturePrefs.onDomLoad.bind(ImpHtmlSignaturePrefs));
-document.observe('HordeIdentitySelect:change', ImpHtmlSignaturePrefs.changeIdentity.bindAsEventListener(ImpHtmlSignaturePrefs));
+document.observe('dom:loaded', ImpHtmlIdentitykeyPrefs.onDomLoad.bind(ImpHtmlIdentitykeyPrefs));
+document.observe('HordeIdentitySelect:change', ImpHtmlIdentitykeyPrefs.changeIdentity.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
