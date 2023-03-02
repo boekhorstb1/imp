@@ -107,8 +107,8 @@ $_prefs['sentmailselect'] = array(
 
 // TODO: keys to send (only public keys?)
 $_prefs['identitykeys'] = array(
-    'value' => 1,
-    'type' => 'textarea',
+    'type' => 'special',
+    'handler' => 'IMP_Prefs_Special_HtmlSignature',
     'desc' => _("Use specific Keys for this identity?")
 );
 
