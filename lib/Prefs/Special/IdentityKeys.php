@@ -35,9 +35,7 @@ class IMP_Prefs_Special_IdentityKeys implements Horde_Core_Prefs_Ui_Special
     {
         global $conf, $injector, $page_output, $prefs;
 
-        $page_output->addScriptFile('editor.js');
         $page_output->addScriptFile('prefs/identitykeys.js');
-        //$page_output->addScriptPackage('IMP_Script_Package_Editor'); // I just need to somehow upload those keys, no need for fancy editing
 
         $page_output->addInlineJsVars(array(
             'ImpIdentityKeysPrefs.sigs' =>
@@ -50,7 +48,7 @@ class IMP_Prefs_Special_IdentityKeys implements Horde_Core_Prefs_Ui_Special
         ));
         $view->addHelper('Text');
 
-        $view->identitiykey = $prefs->getValue('identitykeys');
+        $view->identitykeys = $prefs->getValue('identitykeys');
 
         return $view->render('identitykeys');
     }
@@ -60,15 +58,7 @@ class IMP_Prefs_Special_IdentityKeys implements Horde_Core_Prefs_Ui_Special
     public function update(Horde_Core_Prefs_Ui $ui)
     {
         global $injector, $notification;
-
-        try {
-            /* Throws exception if over image size limit. */ 
-            new IMP_Compose_HtmlSignature($ui->vars->identitykeys);
-        } catch (IMP_Exception $e) {
-            $notification->push($e, 'horde.error');
-            return false;
-        }
-
+        
         return $injector->getInstance('IMP_Identity')->setValue(
             'identitykeys',
             $ui->vars->identitykeys

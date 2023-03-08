@@ -9,6 +9,8 @@
 var ImpHtmlIdentitykeyPrefs = {
 
     // Variables defined by other code: editor, sigs
+    // I guess this code adds the signature to the new identity ...?
+    // TODO: function to add a new set of keys 
 
     changeIdentity: function(e)
     {
@@ -25,49 +27,7 @@ var ImpHtmlIdentitykeyPrefs = {
 
     onDomLoad: function()
     {
-        /* Add ability to "upload" image to editor without using server. */
-        CKEDITOR.on('dialogDefinition', function(ev) {
-            var definition = ev.data.definition,
-                button, upload;
-
-            if (ev.data.name == 'image') {
-                upload = definition.getContents('Upload');
-                upload.hidden = false;
-
-                upload.get('upload').label = ev.editor.lang.common.upload;
-
-                button = upload.get('uploadButton');
-                button.label = ev.editor.lang.common.upload;
-                button.onClick = function(ev2) {
-                    var f = ev2.data.dialog.getContentElement('Upload', 'upload').getInputElement().$.files, fr;
-
-                    if (f.length) {
-                        fr = new FileReader();
-                        fr.onload = function(e) {
-                            var d = definition.dialog;
-                            d.getContentElement('info', 'txtUrl').setValue(e.target.result);
-                            d.selectPage('info');
-                        };
-                        fr.readAsDataURL(f[0]);
-                    }
-                };
-                button.type = 'button';
-
-                /* Add shortcut to Upload tab in first dialog tab. */
-                definition.getContents('info').add({
-                    align: 'center',
-                    id: 'uploadshortcut',
-                    label: ev.editor.lang.common.upload,
-                    onClick: function() {
-                        definition.dialog.selectPage('Upload');
-                    },
-                    style: 'display:inline-block;margin-top:10px;',
-                    type: 'button'
-                }, 'browse');
-            }
-        });
-
-        this.editor = new IMP_Editor('identitykeys_html', IMP.ckeditor_config);
+       
     }
 
 };

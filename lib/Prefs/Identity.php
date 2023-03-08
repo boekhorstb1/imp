@@ -543,7 +543,7 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
             $val = IMP_Mailbox::prefTo($val);
             break;
         
-        case 'identitiykeys':
+        case 'identitykeys':
             echo "TODO: getting the keys somehow";
             break;
         }
@@ -596,7 +596,7 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
      */
     public function getIdentityKeys()
     {
-        // 'identitiykeys'
+        // 'identitykeys'
         return 'key';
     }
 

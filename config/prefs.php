@@ -108,7 +108,7 @@ $_prefs['sentmailselect'] = array(
 // TODO: keys to send (only public keys?)
 $_prefs['identitykeys'] = array(
     'type' => 'special',
-    'handler' => 'IMP_Prefs_Special_IdentityKeys',
+    'handler' => 'IMP_Prefs_Special_SmimePrivateKey',
     'desc' => _("Use specific Keys for this identity?")
 );
 
