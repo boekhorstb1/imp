@@ -12,7 +12,7 @@
  */
 
 /**
- * Special prefs handling for the 'signature_html_select' preference.
+ * Special prefs handling for the 'identitykeys_html_select' preference.
  *
  * @author    Rafael te Boekhorst <boekhorst@b1-systems.de>
  * @author    Michael Slusarz <slusarz@horde.org>
@@ -41,8 +41,8 @@ class IMP_Prefs_Special_IdentityKeys implements Horde_Core_Prefs_Ui_Special
 
         $page_output->addInlineJsVars(array(
             'ImpIdentityKeysPrefs.sigs' =>
-                array(-1 => $prefs->getValue('identitykey')) +
-                $injector->getInstance('IMP_Identity')->getAll('identitykey')
+                array(-1 => $prefs->getValue('identitykeys')) +
+                $injector->getInstance('IMP_Identity')->getAll('identitykeys')
         ));
 
         $view = new Horde_View(array(
@@ -50,9 +50,9 @@ class IMP_Prefs_Special_IdentityKeys implements Horde_Core_Prefs_Ui_Special
         ));
         $view->addHelper('Text');
 
-        $view->identitiykey = $prefs->getValue('identitiykey');
+        $view->identitiykey = $prefs->getValue('identitykeys');
 
-        return $view->render('signaturehtml');
+        return $view->render('identitykeys');
     }
 
     /**
@@ -62,16 +62,16 @@ class IMP_Prefs_Special_IdentityKeys implements Horde_Core_Prefs_Ui_Special
         global $injector, $notification;
 
         try {
-            /* Throws exception if over image size limit. */
-            new IMP_Compose_HtmlSignature($ui->vars->signature_html);
+            /* Throws exception if over image size limit. */ 
+            new IMP_Compose_HtmlSignature($ui->vars->identitykeys);
         } catch (IMP_Exception $e) {
             $notification->push($e, 'horde.error');
             return false;
         }
 
         return $injector->getInstance('IMP_Identity')->setValue(
-            'signature_html',
-            $ui->vars->signature_html
+            'identitykeys',
+            $ui->vars->identitykeys
         );
     }
 

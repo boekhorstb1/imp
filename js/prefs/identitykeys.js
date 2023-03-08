@@ -13,7 +13,7 @@ var ImpHtmlIdentitykeyPrefs = {
     changeIdentity: function(e)
     {
         switch (e.memo.pref) {
-        case 'signature_html_select':
+        case 'identitykeys_html_select':
             if (this.editor) {
                 this.editor.setData(this.sigs[e.memo.i]);
             } else {
@@ -67,7 +67,7 @@ var ImpHtmlIdentitykeyPrefs = {
             }
         });
 
-        this.editor = new IMP_Editor('identitykeys', IMP.ckeditor_config);
+        this.editor = new IMP_Editor('identitykeys_html', IMP.ckeditor_config);
     }
 
 };
