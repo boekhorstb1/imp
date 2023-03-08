@@ -38,6 +38,19 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         /* Adding js to page output */
         $page_output->addScriptPackage('IMP_Script_Package_Imp');
 
+        /* checking if identities section is being used */
+        if ($ui->vars->group === "identities") {
+            $identities = true;
+
+            /* checking the identiy name that is being used */
+            //$identityClass = new IMP_Prefs_Identity();
+            $hordeVariables = \Horde_Variables::getDefaultVariables();
+            $fullName = $hordeVariables->get('fullname');
+            
+           //\Horde::debug($fullName, '/dev/shm/ennoying', false);
+        }
+
+        
         /* Adding css to page output */
         $p_css = new Horde_Themes_Element('prefs.css');
         $page_output->addStylesheet($p_css->fs, $p_css->uri);
@@ -45,7 +58,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         /* an instance of IMP_smime to be able to list all keys, their ids and aliases from the DB */
         $smime = $injector->getInstance('IMP_Smime');
         try {
-            $extra_private_keys = $smime->listAllKeys();
+            $extra_private_keys = $smime->listAllKeys($fullName);
         } catch (Horde_Exception $e) {
             $extra_private_keys = [];
         }
@@ -61,7 +74,6 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             $view->notsecure = true;
             return $view->render('smimeprivatekey');
         }
-
 
         /* Loading Keys that are set as Personal Certificate
          (the certificates that are actually used) */

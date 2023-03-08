@@ -355,11 +355,14 @@ class IMP_Smime
      * @return array  All S/MIME private keys available.
      * @throws Horde_Db_Exception
      */
-    public function listAllKeys($prefName = 'smime_private_key')
+    public function listAllKeys($prefName = 'smime_private_key', $identity = null)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
+
+        // if an identity is set take care of that identity
+        // Question is: how to manage the identities... in the same table?
 
         // Build the SQL query
         $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
