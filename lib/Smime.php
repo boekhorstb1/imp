@@ -286,7 +286,29 @@ class IMP_Smime
     }
 
     /**
-     * Get private key id of the set Personal Certificate if it exists in the database
+     * Retrieves the primary key (certificate) that is used by an identity
+     * 
+     * @param string $identity: the identities name
+     * @return string the privatekey that is used by the identity
+     */
+
+    public function getUsedKeyOfIdentity($identity){
+        /* Get the user_name  */
+        // TODO: is there a way to only use prefs?
+        // TODO: delete the prefName variable?
+        $user_name = $GLOBALS['registry']->getAuth();
+
+        // Build the SQL query
+        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE identity=? AND identity_used=true AND user_name=?';
+        $values = [$identity, $user_name];
+
+        // Run the SQL query
+        $result = $this->_db->selectOne($query, $values); // returns one key
+        return $result['private_key'];
+    }
+
+    /**
+     * Get private key id of the set Personal Certificate (if it exists in the database)
      *
      * @return int id of extra private certificate in DB
      * @throws Horde_Db_Exception
@@ -362,11 +384,16 @@ class IMP_Smime
         $user_name = $GLOBALS['registry']->getAuth();
 
         // if an identity is set take care of that identity
-        // Idea: identities are managed from the same table 
+        if ($identity != null) {
+            // Build the SQL query
+            $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=? AND identity=?';
+            $values = [$prefName, $user_name, $identity];
+        } else {
+            // Build the SQL query
+            $query = 'SELECT private_key_id, psrivate_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
+            $values = [$prefName, $user_name];
+        }
 
-        // Build the SQL query
-        $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
-        $values = [$prefName, $user_name];
         // Run the SQL query
         $result = $this->_db->selectAll($query, $values); // returns an array with keys
         return $result;

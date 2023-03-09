@@ -43,9 +43,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             $identities = true;
 
             /* checking the identiy name that is being used */
-            //$identityClass = new IMP_Prefs_Identity();
             $hordeVariables = \Horde_Variables::getDefaultVariables();
-            $fullName = $hordeVariables->get('fullname');
+            $identityName = $hordeVariables->get('fullname');
             
            //\Horde::debug($fullName, '/dev/shm/ennoying', false);
         }
@@ -77,10 +76,22 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
         /* Loading Keys that are set as Personal Certificate
          (the certificates that are actually used) */
-        $view->has_key = $prefs->getValue('smime_public_key') &&
-            $prefs->getValue('smime_private_key');
+
+        // Check if this concerns the keys of an identity.
+        // Identities are used to reply to mails with a seemingly different account.
+        // See: Preferences > Mail > Personal Information
+        if (!$identities) {
+            $view->has_key = $prefs->getValue('smime_public_key') &&
+            $prefs->getValue('smime_private_key'); // check if both private and public keys can be fetched (returns a boolean)
         $view->has_sign_key = $prefs->getValue('smime_public_sign_key') &&
             $prefs->getValue('smime_private_sign_key');
+        } else {
+            // if an identity is being used, only list the keys that belong to that identity
+            // fetch keys of a certain identity with identity-used = true
+            $view->has_key = $smime->getUsedKeyOfIdentity($identityName);
+        }
+
+        
 
         /* Loading Smime bas url in order to set links to it */
         $smime_url = IMP_Basic_Smime::url();
