@@ -362,7 +362,7 @@ class IMP_Smime
         $user_name = $GLOBALS['registry']->getAuth();
 
         // if an identity is set take care of that identity
-        // Question is: how to manage the identities... in the same table?
+        // Idea: identities are managed from the same table 
 
         // Build the SQL query
         $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
