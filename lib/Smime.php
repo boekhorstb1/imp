@@ -96,6 +96,8 @@ class IMP_Smime
             ];
         }
 
+        // here the code has to be changed to allow the use of keys from an identity
+
         if ($this->getPersonalPrivateKey()) {
             $ret += [
                 self::SIGN => _('S/MIME Sign Message'),
