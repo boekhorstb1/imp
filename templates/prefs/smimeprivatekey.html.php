@@ -1,9 +1,16 @@
 <div class="prefsSmimeContainer">
     <div class="prefsSmimeHeader">
+    <?php if ($this->identities): ?>
+        <h3>
+            <?php echo _('S/MIME Personal Certificate of Identity') ?>
+            <?php echo $this->hordeHelp('imp', 'smime-overview-identities') ?>
+        </h3>
+    <?php else: ?>
         <h3>
             <?php echo _('Your S/MIME Personal Certificate') ?>
             <?php echo $this->hordeHelp('imp', 'smime-overview-personalkey') ?>
         </h3>
+    <?php endif; ?>
     </div>
 
     <?php if ($this->notsecure): ?>
@@ -28,7 +35,7 @@
                         } else {
                             echo _('Set Alias for your certificate: ');
                         }
-            ?>
+    ?>
                 </td>
                 <td>
                     [<?php echo $this->alias ?>]
@@ -37,12 +44,12 @@
             <tr>
                 <td>
                     <?php // if the personal certificate exists in the extra db, show its id
-            if($this->privatekeyexits) {
-                echo _('The ID of your Certificate Set: '.$this->privatekeyexits);
-            } else {
-                echo _('The ID of your Sign Certificate Set: <i>not set in database</i>');
-            }
-            ?>
+    if($this->privatekeyexits) {
+        echo _('The ID of your Certificate Set: '.$this->privatekeyexits);
+    } else {
+        echo _('The ID of your Sign Certificate Set: <i>not set in database</i>');
+    }
+    ?>
                 </td>
             </tr>
             <tr>
@@ -97,13 +104,13 @@
             <tr>
                 <td>
                     <?php
-                        // Show or set an alias for a certificate
-                        if($this->signaliasexists != false) {
-                            echo _('Current alias for your Certificate Set: '.$this->signaliasexists);
-                        } else {
-                            echo _('Set Alias for your certificate: ');
-                        }
-            ?>
+                // Show or set an alias for a certificate
+                if($this->signaliasexists != false) {
+                    echo _('Current alias for your Certificate Set: '.$this->signaliasexists);
+                } else {
+                    echo _('Set Alias for your certificate: ');
+                }
+    ?>
                 </td>
                 <td>
                     [<?php echo $this->alias_sign ?>]
@@ -112,11 +119,11 @@
             <tr>
                 <td>
                     <?php // if the personal certificate exists in the extra db, show its id
-            if($this->signkeyexits) {
-                echo _('The ID of your Sign Certificate Set: '.$this->signkeyexits);
-            } else {
-                echo _('The ID of your Sign Certificate Set: <i>not set in database</i>');
-            }?>
+    if($this->signkeyexits) {
+        echo _('The ID of your Sign Certificate Set: '.$this->signkeyexits);
+    } else {
+        echo _('The ID of your Sign Certificate Set: <i>not set in database</i>');
+    }?>
                 </td>
             </tr>
             <tr>
@@ -162,23 +169,51 @@
     <?php endif ?>
     <!-- Import button -->
     <?php if ($this->import): ?>
-    <div>
-        <p>
-            <input type="submit" name="save" class="horde-default" id="import_smime_personal"
-                value="<?php echo _('Import Personal Certificate') ?>" />
-            <?php echo $this->hordeHelp('imp', 'smime-import-personal-certs') ?>
-        </p>
-    </div>
+
+    
+    <?php if ($this->identities): ?>
+                
+                <div>
+                    <p>
+                        <input type="submit" name="save" class="horde-default" id="import_extra_smime_identity"
+                            value="<?php echo _('Import SMIME Certificate for a new Identity') ?>" />
+                        <?php echo $this->hordeHelp('imp', 'smime-import-identity-certs') ?>
+                    </p>
+                </div>
+
+            <?php else: ?>
+                
+                <div>
+                    <p>
+                        <input type="submit" name="save" class="horde-default" id="import_smime_personal"
+                            value="<?php echo _('Import Personal Certificate') ?>" />
+                        <?php echo $this->hordeHelp('imp', 'smime-import-personal-certs') ?>
+                    </p>
+                </div>
+                
+            <?php endif; ?>
+
+
     <?php endif; ?>
 </div>
 <!-- Extra PrivateKeys from Keystore -->
 <div class="prefsSmimeContainer">
-    <div class="prefsSmimeHeader">
+    <?php if ($this->identities): ?>
+        <div class="prefsSmimeHeader">
+        <h3>
+            <?php echo _('S/MIME Personal Certificates for new Identity') ?>
+            <?php echo $this->hordeHelp('imp', 'smime-overview-identities') ?>
+        </h3>
+    </div>
+    <?php else: ?>
+        <div class="prefsSmimeHeader">
         <h3>
             <?php echo _('Extra S/MIME Personal Certificates') ?>
             <?php echo $this->hordeHelp('imp', 'smime-overview-extrakeys') ?>
         </h3>
     </div>
+    <?php endif; ?>
+    
 
     <!-- listing extra private keys -->
     <div>
@@ -202,8 +237,8 @@
             <tr>
                 <td>
                     Public Certificate: [<?php echo $keyArray['publiclink'];
-                    echo _('View') ?></a>][<?php echo $keyArray['publicinfolink'];
-                    echo _('Details') ?></a>]
+                echo _('View') ?></a>][<?php echo $keyArray['publicinfolink'];
+                echo _('Details') ?></a>]
                 </td>
             </tr>
             </tr>
@@ -238,13 +273,28 @@
 
         <!-- Import button -->
         <?php if ($this->import): ?>
-        <div>
-            <p>
-                <input type="submit" name="save" class="horde-default" id="import_extra_smime_personal"
-                    value="<?php echo _('Import Extra Personal Certificate') ?>" />
-                <?php echo $this->hordeHelp('imp', 'smime-import-personal-certs') ?>
-            </p>
-        </div>
+            
+            <?php if ($this->identities): ?>
+                
+                <div>
+                    <p>
+                        <input type="submit" name="save" class="horde-default" id="import_extra_smime_identity"
+                            value="<?php echo _('Import SMIME Certificate for a new Identity') ?>" />
+                        <?php echo $this->hordeHelp('imp', 'smime-import-identity-certs') ?>
+                    </p>
+                </div>
+
+            <?php else: ?>
+                
+                <div>
+                    <p>
+                        <input type="submit" name="save" class="horde-default" id="import_extra_smime_personal"
+                            value="<?php echo _('Import Extra Personal Certificate test') ?>" />
+                        <?php echo $this->hordeHelp('imp', 'smime-import-personal-certs') ?>
+                    </p>
+                </div>
+                
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 

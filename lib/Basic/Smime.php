@@ -30,12 +30,24 @@ class IMP_Basic_Smime extends IMP_Basic_Base
     protected $_smime;
 
     /**
+     * @var IMP_Identity
+     */
+    protected $_identity;
+
+    /**
      */
     protected function _init()
     {
         global $injector, $notification;
 
         $this->_smime = $injector->getInstance('IMP_Smime');
+        $this->_identity = $injector->getInstance('IMP_Identity');
+        $selected_identity = $this->_identity->getDefault();
+        //\Horde::debug($selected_identity, '/dev/shm/checkIdentityName', false);
+
+        // $hordeVariables = \Horde_Variables::getDefaultVariables();
+        //                 $identityName = $hordeVariables;
+        //                 \Horde::debug($identityName, '/dev/shm/checkIdentityName', false);
 
         /* Run through the action handlers */
         switch ($this->vars->actionID) {
@@ -143,12 +155,34 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                 $this->_importKeyDialog('extra');
                 break;
 
+            case 'import_extra_identity_certs':
+                $this->_importKeyDialog('identity');
+                break;
+
+            case 'process_import_extra_identity_certs':
             case 'process_import_extra_personal_certs':
                 $reload = false;
                 $pkcs12_2nd = false;
                 try {
+                    // check if identity or personal certs are added
+                    $identity = false;
+                    $extra = false;
+                    $identityName = null;
+                    $identity_used =false;
+                    if ($this->vars->actionID === 'process_import_extra_identity_certs') {
+                        $identity=true;
+                        $identityName = $this->_identity->getName();
+
+                        \Horde::debug('workign?', '/dev/shm/checkIdentityName', false);
+                        // get the name of the identity to use
+                        $hordeVariables = \Horde_Variables::getDefaultVariables();
+                        $identityName = $hordeVariables->identity;
+                        \Horde::debug($identityName, '/dev/shm/checkIdentityName', false);
+                    } else {
+                        $extra=true;
+                    }
                     $pkcs12 = $this->_getImportKey('upload_key');
-                    $this->_smime->addFromPKCS12($pkcs12, $this->vars->upload_key_pass, $this->vars->upload_key_pk_pass, null, true);
+                    $this->_smime->addFromPKCS12($pkcs12, $this->vars->upload_key_pass, $this->vars->upload_key_pk_pass, null, $extra, $identityName, $identity_used);
                     // notifications on success or failure are in addFromPKCS12()
                     if ($pkcs12_2nd = $this->_getSecondaryKey()) {
                         // TODO: fix setup for secondary sign keys and such
@@ -167,8 +201,15 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                     $this->_reloadWindow();
                 }
 
-                $this->vars->actionID = 'import_extra_personal_certs';
-                $this->_importKeyDialog('extra');
+                // set correct actionID and importKeyDialog feature
+                if ($identity) {
+                    $this->vars->actionID = 'import_extra_identity_certs';
+                    $this->_importKeyDialog('identity');
+                } elseif ($extra) {
+                    $this->vars->actionID = 'import_extra_personal_certs';
+                    $this->_importKeyDialog('extra');
+                }
+
                 break;
 
             case 'process_import_personal_certs':
@@ -282,6 +323,9 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                 break;
             case 'extra':
                 $this->title = _('Import Extra Personal S/MIME Certificates');
+                // no break
+            case 'identity':
+                $this->title = _('Import S/MIME Certificates for new Identity');
                 // no break
             default:
                 $this->title = _('Import Public S/MIME Key');

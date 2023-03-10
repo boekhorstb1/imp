@@ -96,8 +96,6 @@ class IMP_Smime
             ];
         }
 
-        // here the code has to be changed to allow the use of keys from an identity
-
         if ($this->getPersonalPrivateKey()) {
             $ret += [
                 self::SIGN => _('S/MIME Sign Message'),
@@ -157,9 +155,17 @@ class IMP_Smime
      * @param string|array $key  The public key to add.
      * @param string $password  The password for the private key to add.
      * @param string $pref_name To be removed... TODO.@param string|array
+     * @param string $identity The name of the identity to save the keys for
+     * @param bool $identity_used Marks the keys as the one that is being used
      */
-    public function addExtraPersonalKeys($private_key, $public_key, $password, $pref_name = 'smime_private_key')
-    {
+    public function addExtraPersonalKeys(
+        $private_key,
+        $public_key,
+        $password,
+        $pref_name = 'smime_private_key',
+        $identity=null,
+        $identity_used=false
+    ) {
         global $notification;
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
@@ -177,12 +183,20 @@ class IMP_Smime
             return false;
         }
 
+
         if (!empty($public_key) && !empty($private_key) && !empty($encryptedPassword)) {
-            /* Build the SQL query. */
-            $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd) VALUES (?, ?, ?, ?, ?)';
-            $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword];
-            $this->_db->insert($query, $values);
-            return true;
+            // See if the keys should be added for the current user or for an identity of the user
+            if ($identity === null) {
+                $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd) VALUES (?, ?, ?, ?, ?)';
+                $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword];
+                $this->_db->insert($query, $values);
+                return true;
+            } else {
+                $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd, identity, identity_used) VALUES (?, ?, ?, ?, ?)';
+                $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword, $identity, $identity_used];
+                $this->_db->insert($query, $values);
+                return true;
+            }
         }
     }
 
@@ -288,7 +302,34 @@ class IMP_Smime
     }
 
     /**
-     * Get private key id of the set Personal Certificate if it exists in the database
+     * Retrieves the primary key (certificate) that is used by an identity
+     *
+     * @param string $identity: the identities name
+     * @param string $type: public or private key (private is set by default)
+     * @return string the privatekey that is used by the identity
+     */
+
+    public function getUsedKeyOfIdentity($identity, $pref_name='smime_private_key', $type='private')
+    {
+        /* Get the user_name  */
+        // TODO: is there a way to only use prefs?
+        $user_name = $GLOBALS['registry']->getAuth();
+
+        if ($type === 'public') {
+            $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE identity=? AND identity_used=true AND user_name=? AND pref_name=?';
+        } else {
+            $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE identity=? AND identity_used=true AND user_name=? AND pref_name=?';
+        }
+
+        $values = [$identity, $user_name, $pref_name];
+
+        // Run the SQL query
+        $result = $this->_db->selectOne($query, $values); // returns one key
+        return $result['private_key'];
+    }
+
+    /**
+     * Get private key id of the set Personal Certificate (if it exists in the database)
      *
      * @return int id of extra private certificate in DB
      * @throws Horde_Db_Exception
@@ -357,15 +398,23 @@ class IMP_Smime
      * @return array  All S/MIME private keys available.
      * @throws Horde_Db_Exception
      */
-    public function listAllKeys($prefName = 'smime_private_key')
+    public function listAllKeys($prefName = 'smime_private_key', $identity = null)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
-        // Build the SQL query
-        $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
-        $values = [$prefName, $user_name];
+        // if an identity is set take care of that identity
+        if ($identity != null) {
+            // Build the SQL query
+            $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=? AND identity=?';
+            $values = [$prefName, $user_name, $identity];
+        } else {
+            // Build the SQL query
+            $query = 'SELECT private_key_id, psrivate_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
+            $values = [$prefName, $user_name];
+        }
+
         // Run the SQL query
         $result = $this->_db->selectAll($query, $values); // returns an array with keys
         return $result;
@@ -1042,10 +1091,13 @@ class IMP_Smime
      * Stores the public/private/additional certificates in the preferences
      * from a given PKCS 12 file.
      *
+     * TODO: Should keys be added to the extra table per default?
+     *
      * @param string $pkcs12    The PKCS 12 data.
      * @param string $password  The password of the PKCS 12 file.
      * @param string $pkpass    The password to use to encrypt the private key.
      * @param boolean $signkey  Is this the secondary key for signing?
+     * @param boolean $extrakey Specifies if the key should be added to the extrakeys table
      *
      * @throws Horde_Crypt_Exception
      */
@@ -1054,7 +1106,9 @@ class IMP_Smime
         $password,
         $pkpass = null,
         $signkey = false,
-        $extrakey = false
+        $extrakey = false,
+        $identity = null,
+        $identity_used = false
     ) {
         global $conf, $notification;
 
@@ -1075,7 +1129,7 @@ class IMP_Smime
             $this->addAdditionalCert($result->certs, $signkey);
         } else {
             // need to add extrakeys here... TODO: add check of key to extraKeys, remove it from set or unsetkeys
-            $result = $this->addExtraPersonalKeys($result->private, $result->public, $password, $pref_name = 'smime_private_key');
+            $result = $this->addExtraPersonalKeys($result->private, $result->public, $password, $pref_name = 'smime_private_key', $identity, $identity_used);
             if ($result) {
                 $notification->push(_('S/MIME Public/Private Keypair successfully added to exra keys in keystore.'), 'horde.success');
             }

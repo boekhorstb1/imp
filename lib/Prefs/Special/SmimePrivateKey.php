@@ -38,6 +38,21 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         /* Adding js to page output */
         $page_output->addScriptPackage('IMP_Script_Package_Imp');
 
+        /* checking if identities section is being used */
+        $identities = false;
+        $identityID = null;
+        if ($ui->vars->group === 'identities') {
+            $identities = true;
+
+            /* checking the identiy name that is being used */
+            $hordeVariables = \Horde_Variables::getDefaultVariables();
+            $identityID = $hordeVariables->get('id');
+            //dd($identityID);
+            // \Horde::debug('test 1', '/dev/shm/identityID', false);
+            // \Horde::debug($identityID, '/dev/shm/identityID', false);
+        }
+
+
         /* Adding css to page output */
         $p_css = new Horde_Themes_Element('prefs.css');
         $page_output->addStylesheet($p_css->fs, $p_css->uri);
@@ -45,7 +60,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         /* an instance of IMP_smime to be able to list all keys, their ids and aliases from the DB */
         $smime = $injector->getInstance('IMP_Smime');
         try {
-            $extra_private_keys = $smime->listAllKeys();
+            $extra_private_keys = $smime->listAllKeys($prefName = 'smime_private_key', $identityID); // TODO: what about singkeys?
         } catch (Horde_Exception $e) {
             $extra_private_keys = [];
         }
@@ -56,19 +71,34 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         ]);
         $view->addHelper('Horde_Core_View_Helper_Help');
 
+        /* Set the result of the identity check to the view */
+        $view->identities = $identities;
+
         /* Loading Connection Status to View */
         if (!Horde::isConnectionSecure()) {
             $view->notsecure = true;
             return $view->render('smimeprivatekey');
         }
 
-
         /* Loading Keys that are set as Personal Certificate
          (the certificates that are actually used) */
-        $view->has_key = $prefs->getValue('smime_public_key') &&
-            $prefs->getValue('smime_private_key');
-        $view->has_sign_key = $prefs->getValue('smime_public_sign_key') &&
-            $prefs->getValue('smime_private_sign_key');
+
+        // Check if this concerns the keys of an identity.
+        // Identities are used to reply to mails with a seemingly different account.
+        // See: Preferences > Mail > Personal Information
+        if (!$identities) {
+            $view->has_key = $prefs->getValue('smime_public_key') &&
+            $prefs->getValue('smime_private_key'); // check if both private and public keys can be fetched (returns a boolean)
+            $view->has_sign_key = $prefs->getValue('smime_public_sign_key') &&
+                $prefs->getValue('smime_private_sign_key');
+        } else {
+            // if an identity is being used, only list the keys that belong to that identity
+            // fetch keys of a certain identity with identity-used = true
+            $view->has_key = $smime->getUsedKeyOfIdentity($identityName) &&
+            $smime->getUsedKeyOfIdentity($identityName, 'smime_private_key', 'public');
+            $view->has_sign_key = $smime->getUsedKeyOfIdentity($identityName) &&
+            $smime->getUsedKeyOfIdentity($identityName, 'smime_private_sign_key', 'public');
+        }
 
         /* Loading Smime bas url in order to set links to it */
         $smime_url = IMP_Basic_Smime::url();
@@ -79,6 +109,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             $page_output->addInlineScript([
                 'if ($("import_smime_personal") != undefined) $("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
                 'if ($("import_extra_smime_personal") != undefined) $("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
+                'if ($("import_extra_smime_identity") != undefined) $("import_extra_smime_identity").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['identityID' => $identityID, 'actionID' => 'import_extra_identity_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
             ], true);
         }
 
