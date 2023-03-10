@@ -594,10 +594,19 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
      * Gets the identities keys for signing and encryption
      * TODO: somehow get the keys
      */
-    public function getIdentityKeys()
+    public function getIdentityKeys($ident = null)
     {
-        // 'identitykeys'
-        return 'key';
+        if (is_null($ident)) {
+            $ident = $this->getDefault();
+        }
+
+        if (isset($this->_cached['identitykeys'][$ident])) {
+            return $this->_cached['identitykeys'][$ident];
+        }
+
+        $this->_cached['identitykeys'][$ident] = $this->getValue($this->_prefnames['identitykeys'], $ident);
+
+        return $this->_cached['identitykeys'][$ident];
     }
 
 }

@@ -13,7 +13,7 @@
 $prefGroups['identities'] = array(
     'column' => _("General"),
     'label' => _("Personal Information"),
-    'desc' => _("Change the name, address, and signature that people see when they read and reply to your email."),
+    'desc' => _("Change the name, address, signature and certificates that people see when they read and reply to your email."),
     'members' => array(
         'replyto_addr', 'alias_addr', 'tieto_addr', 'bcc_addr', 'signature',
         'sig_dashes', 'signature_html_select', 'save_sent_mail',
@@ -107,8 +107,10 @@ $_prefs['sentmailselect'] = array(
 
 // TODO: keys to send (only public keys?)
 $_prefs['identitykeys'] = array(
-    'type' => 'special',
-    'handler' => 'IMP_Prefs_Special_SmimePrivateKey',
+    //'type' => 'special',
+    //'handler' => 'IMP_Prefs_Special_IdentityKeys', // preferably: IMP_Prefs_Special_SmimePrivateKey
+    'value' => '',
+    'type' => 'textarea',
     'desc' => _("Use specific Keys for this identity?")
 );
 

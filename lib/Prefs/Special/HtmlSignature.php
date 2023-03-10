@@ -68,11 +68,10 @@ class IMP_Prefs_Special_HtmlSignature implements Horde_Core_Prefs_Ui_Special
             $notification->push($e, 'horde.error');
             return false;
         }
-
+        
         return $injector->getInstance('IMP_Identity')->setValue(
             'signature_html',
             $ui->vars->signature_html
         );
     }
-
 }

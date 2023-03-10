@@ -1,9 +1,16 @@
 <div class="prefsSmimeContainer">
     <div class="prefsSmimeHeader">
+    <?php if ($this->identities): ?>
+        <h3>
+            <?php echo _('S/MIME Personal Certificate of Identity') ?>
+            <?php echo $this->hordeHelp('imp', 'smime-overview-identities') ?>
+        </h3>
+    <?php else: ?>
         <h3>
             <?php echo _('Your S/MIME Personal Certificate') ?>
             <?php echo $this->hordeHelp('imp', 'smime-overview-personalkey') ?>
         </h3>
+    <?php endif; ?>
     </div>
 
     <?php if ($this->notsecure): ?>
@@ -162,23 +169,51 @@
     <?php endif ?>
     <!-- Import button -->
     <?php if ($this->import): ?>
-    <div>
-        <p>
-            <input type="submit" name="save" class="horde-default" id="import_smime_personal"
-                value="<?php echo _('Import Personal Certificate') ?>" />
-            <?php echo $this->hordeHelp('imp', 'smime-import-personal-certs') ?>
-        </p>
-    </div>
+
+    
+    <?php if ($this->identities): ?>
+                
+                <div>
+                    <p>
+                        <input type="submit" name="save" class="horde-default" id="import_extra_smime_identity"
+                            value="<?php echo _('Import SMIME Certificate for a new Identity') ?>" />
+                        <?php echo $this->hordeHelp('imp', 'smime-import-identity-certs') ?>
+                    </p>
+                </div>
+
+            <?php else: ?>
+                
+                <div>
+                    <p>
+                        <input type="submit" name="save" class="horde-default" id="import_smime_personal"
+                            value="<?php echo _('Import Personal Certificate') ?>" />
+                        <?php echo $this->hordeHelp('imp', 'smime-import-personal-certs') ?>
+                    </p>
+                </div>
+                
+            <?php endif; ?>
+
+
     <?php endif; ?>
 </div>
 <!-- Extra PrivateKeys from Keystore -->
 <div class="prefsSmimeContainer">
-    <div class="prefsSmimeHeader">
+    <?php if ($this->identities): ?>
+        <div class="prefsSmimeHeader">
+        <h3>
+            <?php echo _('S/MIME Personal Certificates for new Identity') ?>
+            <?php echo $this->hordeHelp('imp', 'smime-overview-identities') ?>
+        </h3>
+    </div>
+    <?php else: ?>
+        <div class="prefsSmimeHeader">
         <h3>
             <?php echo _('Extra S/MIME Personal Certificates') ?>
             <?php echo $this->hordeHelp('imp', 'smime-overview-extrakeys') ?>
         </h3>
     </div>
+    <?php endif; ?>
+    
 
     <!-- listing extra private keys -->
     <div>
@@ -238,13 +273,28 @@
 
         <!-- Import button -->
         <?php if ($this->import): ?>
-        <div>
-            <p>
-                <input type="submit" name="save" class="horde-default" id="import_extra_smime_personal"
-                    value="<?php echo _('Import Extra Personal Certificate') ?>" />
-                <?php echo $this->hordeHelp('imp', 'smime-import-personal-certs') ?>
-            </p>
-        </div>
+            
+            <?php if ($this->identities): ?>
+                
+                <div>
+                    <p>
+                        <input type="submit" name="save" class="horde-default" id="import_extra_smime_identity"
+                            value="<?php echo _('Import SMIME Certificate for a new Identity') ?>" />
+                        <?php echo $this->hordeHelp('imp', 'smime-import-identity-certs') ?>
+                    </p>
+                </div>
+
+            <?php else: ?>
+                
+                <div>
+                    <p>
+                        <input type="submit" name="save" class="horde-default" id="import_extra_smime_personal"
+                            value="<?php echo _('Import Extra Personal Certificate test') ?>" />
+                        <?php echo $this->hordeHelp('imp', 'smime-import-personal-certs') ?>
+                    </p>
+                </div>
+                
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 
