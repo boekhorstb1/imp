@@ -33,7 +33,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
      */
     public function display(Horde_Core_Prefs_Ui $ui)
     {
-        global $browser, $injector, $page_output, $prefs;
+        global $browser, $injector, $page_output, $prefs, $session;
 
         /* Adding js to page output */
         $page_output->addScriptPackage('IMP_Script_Package_Imp');
@@ -105,8 +105,15 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             $page_output->addInlineScript([
                 'if ($("import_smime_personal") != undefined) $("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
                 'if ($("import_extra_smime_personal") != undefined) $("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
-                'if ($("import_extra_smime_identity") != undefined) $("import_extra_smime_identity").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['identityID' => '0', 'actionID' => 'import_extra_identity_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
             ], true);
+
+            if ($identities) {
+                $identityID = $session->get('imp', 'identity');
+                \Horde::debug($identityID, '/dev/shm/idChecks', false);
+                $page_output->addInlineScript([
+                    'if ($("import_extra_smime_identity") != undefined) $("import_extra_smime_identity").observe("click", function(e) { reload();' . Horde::popupJs($smime_url, ['params' => ['identityID' => $identityID, 'actionID' => 'import_extra_identity_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
+                ], true);
+            }
         }
 
         /* Loading private keys from the Database that are not used as Personal Certificates */
