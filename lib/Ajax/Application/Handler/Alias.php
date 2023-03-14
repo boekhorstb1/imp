@@ -12,8 +12,9 @@
  */
 
 /**
- * Defines AJAX actions used in the IMP passphrase dialog.
+ * Defines AJAX actions used in the IMP alias dialog.
  *
+ * @author    Rafael te Boekhorst <boekhorst@b1-systems.de>
  * @author    Michael Slusarz <slusarz@horde.org>
  * @category  Horde
  * @copyright 2012-2017 Horde LLC
