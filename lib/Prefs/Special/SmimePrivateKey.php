@@ -44,12 +44,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         if ($ui->vars->group === 'identities') {
             $identities = true;
 
-            /* checking the identiy name that is being used */
-            $hordeVariables = \Horde_Variables::getDefaultVariables();
-            $identityID = $hordeVariables->get('id');
-            //dd($identityID);
-            // \Horde::debug('test 1', '/dev/shm/identityID', false);
-            // \Horde::debug($identityID, '/dev/shm/identityID', false);
+            // need to call HordeIdentitySelect in some way
+            $page_output->addScriptFile('prefs/identitykey.js');
         }
 
 
@@ -109,7 +105,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             $page_output->addInlineScript([
                 'if ($("import_smime_personal") != undefined) $("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
                 'if ($("import_extra_smime_personal") != undefined) $("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
-                'if ($("import_extra_smime_identity") != undefined) $("import_extra_smime_identity").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['identityID' => $identityID, 'actionID' => 'import_extra_identity_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
+                'if ($("import_extra_smime_identity") != undefined) $("import_extra_smime_identity").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['identityID' => '0', 'actionID' => 'import_extra_identity_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
             ], true);
         }
 
