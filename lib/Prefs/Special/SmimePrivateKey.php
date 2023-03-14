@@ -23,31 +23,82 @@
  */
 class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 {
+
+    /**
+     * View variable to share accross functions in this class, contains the ui?
+     */
+    private $view = null;
+
+    /**
+     * Identities variable: set to true if the users loads the prefs page to set identities
+     */
+    private $identities = false;
+
+    /**
+     * Smime url: generates the URL needed for the SMIME-interface in the UI
+     */
+    private $smime_url;
+
     /**
      */
     public function init(Horde_Core_Prefs_Ui $ui)
-    {
+    {   
+        /* Loading Smime bas url in order to set links to it */
+        $this->smime_url = IMP_Basic_Smime::url();
+
+    }
+
+    private function checkIdentityPageIsUsed(Horde_Core_Prefs_Ui $ui){
+        if ($ui->vars->group === 'identities') {
+            $this->identities = true;
+            return true;
+        }
+        return false;
+    }
+
+    private function setUploadScripts($ui, $identityID = null){
+        global $browser, $page_output, $session;
+
+        $view = $this->view;
+        $identities = $this->identities;
+        $smime_url = $this->smime_url;
+
+        \Horde::debug($ui->vars, '/dev/shm/vars', false);
+        
+        if ($browser->allowFileUploads()) {
+            $view->import = true;
+            $page_output->addInlineScript([
+                'if ($("import_smime_personal") != undefined) $("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
+                'if ($("import_extra_smime_personal") != undefined) $("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
+            ], true);
+
+            if ($identities) {
+                // $identityID = $session->get('imp', 'identity');
+                $page_output->addInlineScript([
+                    // 'if ($("import_extra_smime_identity") != undefined) $("import_extra_smime_identity").observe("click", function(e) { let identity = $("identity"); let id = Number($F(identity)); var params = {}; params.identityID = id; params.actionID = "import_extra_identity_certs"; HordePopup.popup({height: 450, menu: "no", name: "identity keys", noalert: true, onload: this.reload, this.params, width: 750, url: ' . base64_encode($ui->selfUrl()->setRaw(true)) . ' }); e.stop(); })'
+                    'if ($("import_extra_smime_identity") != undefined) $("import_extra_smime_identity").observe("click", function(e) { let identity = $("identity"); let id = Number($F(identity)); var params = {}; params.identityID = id; params.actionID = "import_extra_identity_certs"; HordePopup.popup({height: 450, menu: "no", name: "identity keys", noalert: true, onload: ' . base64_encode($ui->selfUrl()->setRaw(true)) . ' , params, width: 750, url: '. $smime_url .' }); e.stop(); })'
+                ], true);
+            }
+        }
     }
 
     /**
      */
     public function display(Horde_Core_Prefs_Ui $ui)
     {
-        global $browser, $injector, $page_output, $prefs, $session;
+        global $injector, $prefs, $page_output;
+
+        $this->checkIdentityPageIsUsed($ui);
+
+        $identities = $this->identities;
 
         /* Adding js to page output */
         $page_output->addScriptPackage('IMP_Script_Package_Imp');
-
         /* checking if identities section is being used */
-        $identities = false;
-        $identityID = null;
-        if ($ui->vars->group === 'identities') {
-            $identities = true;
-
+        if ($identities){
             // need to call HordeIdentitySelect in some way
             $page_output->addScriptFile('prefs/identitykey.js');
-        }
-
+        };
 
         /* Adding css to page output */
         $p_css = new Horde_Themes_Element('prefs.css');
@@ -62,7 +113,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         }
 
         /* Loading View Template and Help Template */
-        $view = new Horde_View([
+        $this->view = $view = new Horde_View([
             'templatePath' => IMP_TEMPLATES . '/prefs',
         ]);
         $view->addHelper('Horde_Core_View_Helper_Help');
@@ -96,25 +147,9 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             $smime->getUsedKeyOfIdentity($identityName, 'smime_private_sign_key', 'public');
         }
 
-        /* Loading Smime bas url in order to set links to it */
-        $smime_url = IMP_Basic_Smime::url();
-
         /* Addding to view: Browser Importoptions for uploading Certificates */
-        if ($browser->allowFileUploads()) {
-            $view->import = true;
-            $page_output->addInlineScript([
-                'if ($("import_smime_personal") != undefined) $("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
-                'if ($("import_extra_smime_personal") != undefined) $("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
-            ], true);
+        $this->setUploadScripts($ui);
 
-            if ($identities) {
-                $identityID = $session->get('imp', 'identity');
-                \Horde::debug($identityID, '/dev/shm/idChecks', false);
-                $page_output->addInlineScript([
-                    'if ($("import_extra_smime_identity") != undefined) $("import_extra_smime_identity").observe("click", function(e) { reload();' . Horde::popupJs($smime_url, ['params' => ['identityID' => $identityID, 'actionID' => 'import_extra_identity_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
-                ], true);
-            }
-        }
 
         /* Loading private keys from the Database that are not used as Personal Certificates */
         if (!empty($extra_private_keys)) {
