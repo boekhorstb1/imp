@@ -23,4 +23,12 @@ class IMP_Ajax_Application_Handler_SaveId extends Horde_Core_Ajax_Application_Ha
         $url = base64_encode($ui->selfUrl()->setRaw(true));
         return $url;
     }
+
+    /**
+     * Ajax action: get Identity keys
+     */
+    public function getIdentityKeys()
+    {
+        //listAllKeys($prefName = 'smime_private_key', $identityID); // TODO: what about singkeys?
+    }
 }

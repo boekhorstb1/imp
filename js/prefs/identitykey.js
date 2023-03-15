@@ -43,8 +43,20 @@ var ImpHtmlIdentitykeyPrefs = {
                 this.rUrl = r;
             }}
         );
+    },
+
+    reloadKeysById: function () {
+        HordeCore.doAction('getIdentityKeys',
+            {},
+            {callback: function(r){
+                console.log("ok then");
+            }}
+        );
     }
 };
+
+// on change of identity load new keys
+document.observe('HordeIdentitySelect:change', ImpHtmlIdentitykeyPrefs.reloadKeysById.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
 
 // loading this as a file instead of directly inline (compaire SmimePrivatekey.php)
 if ($("import_extra_smime_identity") != undefined) {

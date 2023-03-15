@@ -39,11 +39,21 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
     private $smime_url;
 
     /**
+     * Smime: class that holds the variable that interact with the database
+     */
+    private $smime;
+
+    /**
      */
     public function init(Horde_Core_Prefs_Ui $ui)
     {
+        global $injector;
+
         /* Loading Smime bas url in order to set links to it */
         $this->smime_url = IMP_Basic_Smime::url();
+
+        /* Loading the IMP Smime class which hods all the methods that a.o. interact wiht the DB */
+        $this->smime = $injector->getInstance('IMP_Smime');
     }
 
     private function checkIdentityPageIsUsed(Horde_Core_Prefs_Ui $ui)
@@ -78,8 +88,23 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
     }
 
     /**
+     * Function to list all extra keys
      */
-    public function display(Horde_Core_Prefs_Ui $ui)
+    private function listExtraKeys($identityID = 0)
+    {
+        try {
+            $extra_private_keys = $this->smime->listAllKeys($prefName = 'smime_private_key', $identityID); // TODO: what about singkeys?
+        } catch (Horde_Exception $e) {
+            $extra_private_keys = [];
+        }
+
+        return $extra_private_keys;
+    }
+
+    /**
+     * Displays function of Horde_Core_Prefs_Ui, called after init()
+     */
+    public function display(Horde_Core_Prefs_Ui $ui, $identityID =0)
     {
         global $injector, $prefs, $page_output, $vars;
 
@@ -87,13 +112,15 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
         $identities = $this->identities;
         $smime_url = $this->smime_url;
+        $smime = $this->smime;
 
         /* Adding js to page output */
         $page_output->addScriptPackage('IMP_Script_Package_Imp');
         /* checking if identities section is being used */
-        $identityID = 0;
+
         if ($identities) {
-            $identityID = $vars->actionID;
+            // get the id...
+            $identityID = null; // same problem again?? set the current ID! Need to put this in the ajax handler somehow
         };
 
         /* Adding css to page output */
@@ -101,12 +128,13 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         $page_output->addStylesheet($p_css->fs, $p_css->uri);
 
         /* an instance of IMP_smime to be able to list all keys, their ids and aliases from the DB */
-        $smime = $injector->getInstance('IMP_Smime');
+        //$smime = $injector->getInstance('IMP_Smime');
         try {
             $extra_private_keys = $smime->listAllKeys($prefName = 'smime_private_key', $identityID); // TODO: what about singkeys?
         } catch (Horde_Exception $e) {
             $extra_private_keys = [];
         }
+        //$this->listExtraKeys($identityID);
 
         /* Loading View Template and Help Template */
         $this->view = $view = new Horde_View([
