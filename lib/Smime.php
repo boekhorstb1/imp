@@ -163,7 +163,7 @@ class IMP_Smime
         $public_key,
         $password,
         $pref_name = 'smime_private_key',
-        $identity=null,
+        $identity=0,
         $identity_used=false
     ) {
         global $notification;
@@ -185,18 +185,10 @@ class IMP_Smime
 
 
         if (!empty($public_key) && !empty($private_key) && !empty($encryptedPassword)) {
-            // See if the keys should be added for the current user or for an identity of the user
-            if ($identity === null) {
-                $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd) VALUES (?, ?, ?, ?, ?)';
-                $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword];
-                $this->_db->insert($query, $values);
-                return true;
-            } else {
-                $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd, identity, identity_used) VALUES (?, ?, ?, ?, ?)';
-                $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword, $identity, $identity_used];
-                $this->_db->insert($query, $values);
-                return true;
-            }
+            $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd, identity, identity_used) VALUES (?, ?, ?, ?, ?, ?, ?)';
+            $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword, $identity, $identity_used];
+            $this->_db->insert($query, $values);
+            return true;
         }
     }
 
@@ -398,7 +390,7 @@ class IMP_Smime
      * @return array  All S/MIME private keys available.
      * @throws Horde_Db_Exception
      */
-    public function listAllKeys($prefName = 'smime_private_key', $identity = null)
+    public function listAllKeys($prefName = 'smime_private_key', $identity = 0)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
@@ -1107,7 +1099,7 @@ class IMP_Smime
         $pkpass = null,
         $signkey = false,
         $extrakey = false,
-        $identity = null,
+        $identity = 0,
         $identity_used = false
     ) {
         global $conf, $notification;

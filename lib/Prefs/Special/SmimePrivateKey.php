@@ -23,7 +23,6 @@
  */
 class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 {
-
     /**
      * View variable to share accross functions in this class, contains the ui?
      */
@@ -42,13 +41,13 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
     /**
      */
     public function init(Horde_Core_Prefs_Ui $ui)
-    {   
+    {
         /* Loading Smime bas url in order to set links to it */
         $this->smime_url = IMP_Basic_Smime::url();
-
     }
 
-    private function checkIdentityPageIsUsed(Horde_Core_Prefs_Ui $ui){
+    private function checkIdentityPageIsUsed(Horde_Core_Prefs_Ui $ui)
+    {
         if ($ui->vars->group === 'identities') {
             $this->identities = true;
             return true;
@@ -56,13 +55,14 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         return false;
     }
 
-    private function setUploadScripts($ui, $identityID = null){
+    private function setUploadScripts($ui, $identityID = null)
+    {
         global $browser, $page_output, $session;
 
         $view = $this->view;
         $identities = $this->identities;
         $smime_url = $this->smime_url;
-        
+
         if ($browser->allowFileUploads()) {
             $view->import = true;
             $page_output->addInlineScript([
@@ -71,11 +71,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             ], true);
 
             if ($identities) {
-                // $identityID = $session->get('imp', 'identity');
-                // $page_output->addInlineScript([
-                //     // 'if ($("import_extra_smime_identity") != undefined) $("import_extra_smime_identity").observe("click", function(e) { let identity = $("identity"); let id = Number($F(identity)); var params = {}; params.identityID = id; params.actionID = "import_extra_identity_certs"; HordePopup.popup({height: 450, menu: "no", name: "identity keys", noalert: true, onload: this.reload, this.params, width: 750, url: ' . base64_encode($ui->selfUrl()->setRaw(true)) . ' }); e.stop(); })'
-                //     'if ($("import_extra_smime_identity") != undefined) $("import_extra_smime_identity").observe("click", function(e) { let identity = $("identity"); let id = Number($F(identity)); var params = {}; params.identityID = id; params.actionID = "import_extra_identity_certs"; HordePopup.popup({height: 450, menu: "no", name: "identity keys", noalert: true, onload: ' . base64_encode($ui->selfUrl()->setRaw(true)) . ' , params, width: 750, url: '. $smime_url .' }); e.stop(); })'
-                // ], true);
+                // need to call HordeIdentitySelect in some way
+                $page_output->addScriptFile('prefs/identitykey.js');
             }
         }
     }
@@ -84,9 +81,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
      */
     public function display(Horde_Core_Prefs_Ui $ui)
     {
-        global $injector, $prefs, $page_output;
-
-        //dd(debug_backtrace());
+        global $injector, $prefs, $page_output, $vars;
 
         $this->checkIdentityPageIsUsed($ui);
 
@@ -96,9 +91,9 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         /* Adding js to page output */
         $page_output->addScriptPackage('IMP_Script_Package_Imp');
         /* checking if identities section is being used */
-        if ($identities){
-            // need to call HordeIdentitySelect in some way
-            $page_output->addScriptFile('prefs/identitykey.js');
+        $identityID = null;
+        if ($identities) {
+            $identityID = $vars->actionID;
         };
 
         /* Adding css to page output */

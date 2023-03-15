@@ -46,6 +46,7 @@ var ImpHtmlIdentitykeyPrefs = {
     }
 };
 
+// loading this as a file instead of directly inline (compaire SmimePrivatekey.php)
 if ($("import_extra_smime_identity") != undefined) {
     $("import_extra_smime_identity").observe("click", ImpHtmlIdentitykeyPrefs.loadPopup.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
 }
