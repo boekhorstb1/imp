@@ -25,6 +25,12 @@ class ImpSmimeAlias extends Horde_Db_Migration_Base
         if (!in_array('alias', array_keys($cols))) {
             $this->addColumn('imp_smime_extrakeys', 'alias', 'string', ['limit' => 50,'null' => true]);
         }
+        if (!in_array('identity', array_keys($cols))) {
+            $this->addColumn('imp_smime_extrakeys', 'identity', 'string', ['limit' => 50,'0' => true]);
+        }
+        if (!in_array('identity_used', array_keys($cols))) {
+            $this->addColumn('imp_smime_extrakeys', 'identity_used', 'bool', ['limit' => 50,'false' => true]); // how to set a default boolean?
+        }
     }
 
     /**
@@ -33,5 +39,7 @@ class ImpSmimeAlias extends Horde_Db_Migration_Base
     public function down()
     {
         $this->removeColumn('imp_smime_extrakeys', 'alias');
+        $this->removeColumn('imp_smime_extrakeys', 'identity');
+        $this->removeColumn('imp_smime_extrakeys', 'identity_used');
     }
 }
