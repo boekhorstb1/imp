@@ -396,16 +396,9 @@ class IMP_Smime
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
-        // if an identity is set take care of that identity
-        if ($identity != null) {
-            // Build the SQL query
-            $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=? AND identity=?';
-            $values = [$prefName, $user_name, $identity];
-        } else {
-            // Build the SQL query
-            $query = 'SELECT private_key_id, psrivate_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
-            $values = [$prefName, $user_name];
-        }
+        // Build the SQL query
+        $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=? AND identity=?';
+        $values = [$prefName, $user_name, $identity];
 
         // Run the SQL query
         $result = $this->_db->selectAll($query, $values); // returns an array with keys
@@ -418,17 +411,17 @@ class IMP_Smime
      * @return array  All S/MIME private keys available.
      * @throws Horde_Db_Exception
      */
-    public function listPrivateKeyIds($prefName = 'smime_private_key')
+    public function listPrivateKeyIds($prefName = 'smime_private_key', $identity = 0)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key_id FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=?';
+        $query = 'SELECT private_key_id FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=? AND identity=?';
         $values = [$prefName, $user_name];
         // Run the SQL query
-        $result = $this->_db->selectValues($query, $values); // returns an array with keys
+        $result = $this->_db->selectValues($query, $values, $identity); // returns an array with keys
         return $result;
     }
 
