@@ -294,33 +294,6 @@ class IMP_Smime
     }
 
     /**
-     * Retrieves the primary key (certificate) that is used by an identity
-     *
-     * @param string $identity: the identities name
-     * @param string $type: public or private key (private is set by default)
-     * @return string the privatekey that is used by the identity
-     */
-
-    public function getUsedKeyOfIdentity($identity, $pref_name='smime_private_key', $type='private')
-    {
-        /* Get the user_name  */
-        // TODO: is there a way to only use prefs?
-        $user_name = $GLOBALS['registry']->getAuth();
-
-        if ($type === 'public') {
-            $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE identity=? AND identity_used=true AND user_name=? AND pref_name=?';
-        } else {
-            $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE identity=? AND identity_used=true AND user_name=? AND pref_name=?';
-        }
-
-        $values = [$identity, $user_name, $pref_name];
-
-        // Run the SQL query
-        $result = $this->_db->selectOne($query, $values); // returns one key
-        return $result['private_key'];
-    }
-
-    /**
      * Get private key id of the set Personal Certificate (if it exists in the database)
      *
      * @return int id of extra private certificate in DB
@@ -338,7 +311,7 @@ class IMP_Smime
             $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE user_name=?';
             $values = [$user_name];
             // Run the SQL query
-            $result = $this->_db->selectAll($query, $values); // returns one key
+            $result = $this->_db->selectAll($query, $values, $identity); // returns one key
             if (!empty($result)) {
                 // check if privatekeys are the same
                 foreach ($result as $key => $value) {

@@ -45,22 +45,41 @@ var ImpHtmlIdentitykeyPrefs = {
         );
     },
 
-    reloadKeysById: function () {
-        HordeCore.doAction('getIdentityKeys',
-            {},
+    // shows the keys of the identity
+    showKeys: function () {
+
+        // get the identity to create the needed popup with
+        let identity = $("identity");
+        let id = Number($F(identity));
+
+        console.log('o yeah');
+        console.log(id);
+        
+        HordeCore.doAction('getIdentityKeys', // NOTE: methods from doAction cannot get any parameters! They expect $this->vars->$name
+            {
+                strangeId: id,
+                wierd: "wierdTest"
+            },
             {callback: function(r){
-                console.log("ok then");
+                console.log('Callback:');
+                console.log(r);
             }}
         );
+
     }
 };
 
 // on change of identity load new keys
-document.observe('HordeIdentitySelect:change', ImpHtmlIdentitykeyPrefs.reloadKeysById.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
+//document.observe('HordeIdentitySelect:change', ImpHtmlIdentitykeyPrefs.reloadKeysById.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
 
 // loading this as a file instead of directly inline (compaire SmimePrivatekey.php)
 if ($("import_extra_smime_identity") != undefined) {
     $("import_extra_smime_identity").observe("click", ImpHtmlIdentitykeyPrefs.loadPopup.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
+}
+
+// checking if the show keys button is clicked  
+if ($("show_smime_identity") != undefined) {
+    $("show_smime_identity").observe("click", ImpHtmlIdentitykeyPrefs.showKeys.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
 }
 
 

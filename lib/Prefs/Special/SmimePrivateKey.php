@@ -163,12 +163,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             $view->has_sign_key = $prefs->getValue('smime_public_sign_key') &&
                 $prefs->getValue('smime_private_sign_key');
         } else {
-            // if an identity is being used, only list the keys that belong to that identity
-            // fetch keys of a certain identity with identity-used = true
-            $view->has_key = $smime->getUsedKeyOfIdentity($identityName) &&
-            $smime->getUsedKeyOfIdentity($identityName, 'smime_private_key', 'public');
-            $view->has_sign_key = $smime->getUsedKeyOfIdentity($identityName) &&
-            $smime->getUsedKeyOfIdentity($identityName, 'smime_private_sign_key', 'public');
+            // TODO: somehow get the private keys from the serialized pref array in the perfs table in the database
         }
 
         /* Addding to view: Browser Importoptions for uploading Certificates */
