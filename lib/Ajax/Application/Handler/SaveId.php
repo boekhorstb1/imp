@@ -38,6 +38,8 @@ class IMP_Ajax_Application_Handler_SaveId extends Horde_Core_Ajax_Application_Ha
         $keys = $smime->listAllKeys($prefName = 'smime_private_key', $identityID); // TODO: what about singkeys?
         // \Horde::debug($keys, '/dev/shm/keys', false);
 
+        // Get clickable links for the keys and return them
+
         return $keys;
     }
 }

@@ -60,9 +60,9 @@ var ImpHtmlIdentitykeyPrefs = {
                 strangeId: id,
                 wierd: "wierdTest"
             },
-            {callback: function(r){
-                console.log('Callback:');
-                console.log(r);
+            {callback: function(response){
+                // show the response to the user
+                console.log(response);
             }}
         );
 
