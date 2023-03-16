@@ -39,7 +39,20 @@ class IMP_Ajax_Application_Handler_SaveId extends Horde_Core_Ajax_Application_Ha
         // \Horde::debug($keys, '/dev/shm/keys', false);
 
         // Get clickable links for the keys and return them
+        // Loading Smime bas url in order to set links to it
+        $smime_url = IMP_Basic_Smime::url();
+        $linkArray = [];
+        foreach ($keys as $key) {
+            $linkArray[] = $smime_url->copy()
+            ->add('actionID', 'view_personal_public_key')
+            ->link([
+                'title' => _('View Personal Public Certificate'),
+                'target' => 'view_key',
+            ])
+            . _('View') . '</a>';
+        };
+        $linkArray = json_encode($linkArray);
 
-        return $keys;
+        return $linkArray;
     }
 }

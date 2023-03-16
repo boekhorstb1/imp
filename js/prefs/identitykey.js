@@ -62,7 +62,17 @@ var ImpHtmlIdentitykeyPrefs = {
             },
             {callback: function(response){
                 // show the response to the user
-                console.log(response);
+                let data = response.evalJSON();
+                
+                const ul = document.createElement('ul');
+
+                data.forEach(element => {
+                    const li = document.createElement('li');
+                    li.innerHTML = element.trim();
+                    ul.appendChild(li);
+                });
+
+                return ul;
             }}
         );
 
