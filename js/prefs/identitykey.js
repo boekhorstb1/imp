@@ -74,6 +74,8 @@ var ImpHtmlIdentitykeyPrefs = {
                     ul.appendChild(li);
                 });
 
+                ul.setAttribute("style", "list-style-type:none;");
+
                 container.after(ul);
 
             }}
