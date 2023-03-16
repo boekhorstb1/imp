@@ -197,6 +197,8 @@
     <?php endif; ?>
 </div>
 <!-- Extra PrivateKeys from Keystore -->
+<?php if ($this->identities): //currently not showing anything, as only adding support for uploading one keypar?>
+<?php else: ?>
 <div class="prefsSmimeContainer">
     <?php if ($this->identities): ?>
         <div class="prefsSmimeHeader">
@@ -270,7 +272,7 @@
             <?php endforeach; ?>
         </table>
         <?php endif; ?>
-
+        
         <!-- Import button -->
         <?php if ($this->import): ?>
             
@@ -297,6 +299,6 @@
             <?php endif; ?>
         <?php endif; ?>
     </div>
-
+    <?php endif; ?>
 
 </div>
