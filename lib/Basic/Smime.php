@@ -155,8 +155,12 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                 $this->_importKeyDialog('extra');
                 break;
 
-            case 'import_extra_identity_certs':
+            case 'process_import_identity_certs':
                 $this->_importKeyDialog('identity');
+                break;
+
+            case 'import_extra_identity_certs':
+                $this->_importKeyDialog('extraidentity');
                 break;
 
             case 'process_import_extra_identity_certs':
@@ -172,12 +176,9 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                     if ($this->vars->actionID === 'process_import_extra_identity_certs') {
                         $identity=true;
                         $identityName = $this->_identity->getName();
-
-                        \Horde::debug('workign?', '/dev/shm/checkIdentityName', false);
                         // get the name of the identity to use
                         $hordeVariables = \Horde_Variables::getDefaultVariables();
                         $identityName = $hordeVariables->identity;
-                        \Horde::debug($identityName, '/dev/shm/checkIdentityName', false);
                     } else {
                         $extra=true;
                     }
@@ -212,6 +213,7 @@ class IMP_Basic_Smime extends IMP_Basic_Base
 
                 break;
 
+            case 'process_import_identity_certs':
             case 'process_import_personal_certs':
                 $reload = false;
                 $pkcs12_2nd = false;

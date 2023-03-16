@@ -17,7 +17,7 @@ $prefGroups['identities'] = [
     'members' => [
         'replyto_addr', 'alias_addr', 'tieto_addr', 'bcc_addr', 'signature',
         'sig_dashes', 'signature_html_select', 'save_sent_mail',
-        'sent_mail_folder', 'sentmailselect', 'pubkey', 'keypair',
+        'sent_mail_folder', 'sentmailselect', 'certificates', // 'keypair',
     ],
     'type' => 'identities',
 ];
@@ -106,10 +106,11 @@ $_prefs['sentmailselect'] = [
 ];
 
 // pubkey: Test. For now one can add only one public key to the identity
-$_prefs['pubkey'] = [
+$_prefs['certificates'] = [
     'value' => '',
-    'type' => 'textarea',
-    'desc' => _('Your Public Key:'),
+    'type' => 'special',
+    'handler' => 'IMP_Prefs_Special_CertificatesUpload',
+    'desc' => _('Your Certificates (Private and Public Key):'),
 ];
 
 // Keypars: Load Keypairs from the database in order to encrypt an identities mails with an identities keys

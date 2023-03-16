@@ -1109,7 +1109,7 @@ class IMP_Smime
         $result = $this->_smime->parsePKCS12Data($pkcs12, $params);
 
         if ($extrakey === false) {
-            $this->addPersonalPrivateKey($result->private, $signkey);
+            $this->addPersonalPrivateKey($result->private, $signkey);// add id here?
             $this->addPersonalPublicKey($result->public, $signkey);
             $this->addAdditionalCert($result->certs, $signkey);
         } else {

@@ -84,7 +84,7 @@ class IMP_Prefs_Special_SmimePublicKey implements Horde_Core_Prefs_Ui_Special
 
         if ($browser->allowFileUploads()) {
             $view->can_import = true;
-            $view->no_source = !$prefs->getValue('add_source');
+            $view->no_source = !$prefs->getValue('add_source'); // add source loads Turba source for addressbook, see config/prefs.php
             if (!$view->no_source) {
                 $page_output->addInlineScript([
                     '$("import_smime_public").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_public_key', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 275, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
