@@ -66,13 +66,16 @@ var ImpHtmlIdentitykeyPrefs = {
                 
                 const ul = document.createElement('ul');
 
+                let container = $('show_smime_identity');
+
                 data.forEach(element => {
                     const li = document.createElement('li');
                     li.innerHTML = element.trim();
                     ul.appendChild(li);
                 });
 
-                return ul;
+                container.after(ul);
+
             }}
         );
 
