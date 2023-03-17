@@ -57,14 +57,12 @@ var ImpHtmlIdentitykeyPrefs = {
         
         HordeCore.doAction('getIdentityKeys', // NOTE: methods from doAction cannot get any parameters! They expect $this->vars->$name
             {
-                strangeId: id,
-                wierd: "wierdTest"
+                strangeId: id
             },
             {callback: function(response){
 
                 // check if array alraedy exists and remove it if so
                 if (document.body.contains($('keylist'))) {
-                    console.log('tja');
                     $('keylist').remove();
                 }
 
@@ -74,18 +72,27 @@ var ImpHtmlIdentitykeyPrefs = {
                 const ul = document.createElement('ul');
                 ul.setAttribute("id", "keylist");
 
-                let container = $('import_extra_smime_identity').next();
+                let importbutton = $('import_extra_smime_identity');
+                let container = importbutton.next();
 
-                data.forEach(element => {
-                    const li = document.createElement('li');
-                    li.innerHTML = element.trim();
-                    ul.appendChild(li);
-                });
+                const li = document.createElement('li');
 
+                // if standardidentity is used, relink user to smime prefs page
+                if (data.hasOwnProperty('relink')) {
+                    console.log(data.relink);
+                    li.innerHTML = data.relink.trim();
+                    ul.append(li);
+                    importbutton.hide();
+                    container.hide();
+                } 
+                else {    
+                    const li2 = li.cloneNode(true);
+                    li.innerHTML = data.viewpublic.trim();
+                    li2.innerHTML = data.infos.trim();
+                    ul.append(li, li2);
+                }
                 ul.setAttribute("style", "list-style-type:none;");
-
                 container.after(ul);
-
             }}
         );
 
