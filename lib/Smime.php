@@ -111,13 +111,21 @@ class IMP_Smime
      *
      * @param string|array $key  The public key to add.
      * @param boolean $signkey   The secondary key for signing (optional)
+     * @param int $identityID    The identity for wich the public key should be added
      */
-    public function addPersonalPublicKey($key, $signkey = false)
+    public function addPersonalPublicKey($key, $signkey = false, $identityID=0)
     {
+        global $injector;
+
         $prefName = $signkey ? 'smime_public_sign_key' : 'smime_public_key';
         $val = is_array($key) ? implode('', $key) : $key;
         $val = HordeString::convertToUtf8($val);
 
+        // use identity to set the peronal private key to the serialized identity array
+        $identity = $injector->getInstance('IMP_Identity');
+        $identity->setValue($prefName, $val, $identityID);
+
+        // also set the identity to the normal prefs value (for continuity)
         $GLOBALS['prefs']->setValue($prefName, $val);
     }
 
@@ -127,14 +135,19 @@ class IMP_Smime
      * @param string|array $key  The private key to add.
      * @param boolean $signkey   Is this the secondary key for signing?
      * @param boolean $calledFromSetSmime to stop unneded notifications
+     * @param int $identityID    The identity for wich the private key should be added
      */
-    public function addPersonalPrivateKey($key, $signkey = false, $calledFromSetSmime = false)
+    public function addPersonalPrivateKey($key, $signkey = false, $calledFromSetSmime = false, $identityID=0)
     {
-        global $prefs;
+        global $prefs, $injector;
 
         $prefName = $signkey ? 'smime_private_sign_key' : 'smime_private_key';
         $val = is_array($key) ? implode('', $key) : $key;
         $val = HordeString::convertToUtf8($val);
+
+        // use identity to set the peronal private key to the serialized identity array
+        $identity = $injector->getInstance('IMP_Identity');
+        $identity->setValue($prefName, $val, $identityID);
 
         // check if a private key already exists
         $check  = $prefs->getValue('smime_private_key');
@@ -230,11 +243,12 @@ class IMP_Smime
     /**
      * Returns the personal private key from the prefs.
      *
-     * @param integer $signkey  One of the IMP_Sime::KEY_* constants.
+     * @param int $signkey  One of the IMP_Sime::KEY_* constants.
+     * @param int $identityID    The identity for wich the key should be gotten. TODO: this not yet implemented!
      *
      * @return string  The personal S/MIME private key.
      */
-    public function getPersonalPrivateKey($signkey = self::KEY_PRIMARY)
+    public function getPersonalPrivateKey($signkey = self::KEY_PRIMARY, $identityID=0)
     {
         global $prefs;
 
@@ -439,7 +453,7 @@ class IMP_Smime
      * @param int $keyid returns the key from the keyid
      * @param int $signkey sets a sign key, per default a personal (primary) key is set
      */
-    public function setSmimePersonal($keyid, $signkey=self::KEY_PRIMARY)
+    public function setSmimePersonal($keyid, $signkey=self::KEY_PRIMARY, $identityID)
     {
         if ($signkey == self::KEY_PRIMARY) {
             $prefName = 'smime_private_key';
@@ -463,14 +477,14 @@ class IMP_Smime
         if (!empty($check)) {
             // if there is a personal certificate, copy the personal certificate itself or the singkey (depending on wheater it is set) to the database otherwise discontinue the action
             if ($keyExists) { // if the key exists in the database just add (overwrite) the key to the prefs table
-                $this->addPersonalPrivateKey($newprivatekey, $signkey, $calledFromSetSmime);
-                $this->addPersonalPublicKey($newpublickey, $signkey);
+                $this->addPersonalPrivateKey($newprivatekey, $signkey, $calledFromSetSmime, $identityID);
+                $this->addPersonalPublicKey($newpublickey, $signkey, $identityID);
                 return;
             }
             // if the key is not in the database, first unset the key (which copies it to the database) and than add (overwrite) the new keys in the prefs table
             // Note $calledFromSetSmime: because setSmimePersonal() adds certifactes from the database, there is no need to check for a correct password, as it should be set in the database already. Setting $calledFromSetSmime = true stopps notifications from poping up.
             // TODO: the singkey stuff is very confusing, needs to be refactored
-            if ($this->unsetSmimePersonal($signkey = self::KEY_PRIMARY, $calledFromSetSmime) != false) {
+            if ($this->unsetSmimePersonal($signkey = self::KEY_PRIMARY, $calledFromSetSmime, $identityID) != false) {
                 $this->addPersonalPrivateKey($newprivatekey, $signkey, $calledFromSetSmime);
                 $this->addPersonalPublicKey($newpublickey, $signkey);
                 return;
@@ -479,8 +493,8 @@ class IMP_Smime
             return;
         }
         // if not: import it. NOte: if a newly imported but yet non-existant (in the database) key is to be added, $calledFromSetSmime is not set to true, because password checks need to happen
-        $this->addPersonalPrivateKey($newprivatekey, $signkey);
-        $this->addPersonalPublicKey($newpublickey, $signkey);
+        $this->addPersonalPrivateKey($newprivatekey, $signkey, $calledFromSetSmime=false, $identityID);
+        $this->addPersonalPublicKey($newpublickey, $signkey, $identityID);
     }
 
     /**
@@ -499,14 +513,15 @@ class IMP_Smime
      *
      * @param int $singkey defines the key to be processed. Per default it is the personal (primary) key, when e.g. set to self::KEY_SECONDARY the secondary sign key will be processed
      * @param bool $calledFromSetSmime disables notifications for unset passwords: If the function is called from setSmimePersonal there is no reason to check for a password, because the key and the password is set in the database allready.
+     * @param int $identityID    The identity for wich the key should be set
      */
-    public function unsetSmimePersonal($signkey = self::KEY_PRIMARY, $calledFromSetSmime = false)
+    public function unsetSmimePersonal($signkey = self::KEY_PRIMARY, $calledFromSetSmime = false, $identityID=0)
     {
         global $notification;
 
         // get current personal certificates
-        $privateKey = $this->getPersonalPrivateKey($signkey);
-        $publicKey = $this->getPersonalPublicKey($signkey);
+        $privateKey = $this->getPersonalPrivateKey($signkey, $identityID);
+        $publicKey = $this->getPersonalPublicKey($signkey, $identityID);
 
         // get password, hash it and save it to the table
         $password = $this->getPassphrase($signkey);
