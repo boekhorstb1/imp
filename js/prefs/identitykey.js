@@ -61,12 +61,20 @@ var ImpHtmlIdentitykeyPrefs = {
                 wierd: "wierdTest"
             },
             {callback: function(response){
-                // show the response to the user
+
+                // check if array alraedy exists and remove it if so
+                if (document.body.contains($('keylist'))) {
+                    console.log('tja');
+                    $('keylist').remove();
+                }
+
+                // load the response and parse the json to display the keys as a list
                 let data = response.evalJSON();
                 
                 const ul = document.createElement('ul');
+                ul.setAttribute("id", "keylist");
 
-                let container = $('show_smime_identity');
+                let container = $('import_extra_smime_identity').next();
 
                 data.forEach(element => {
                     const li = document.createElement('li');
@@ -85,16 +93,13 @@ var ImpHtmlIdentitykeyPrefs = {
 };
 
 // on change of identity load new keys
-//document.observe('HordeIdentitySelect:change', ImpHtmlIdentitykeyPrefs.reloadKeysById.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
+document.observe('HordeIdentitySelect:change', ImpHtmlIdentitykeyPrefs.showKeys.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
+document.observe('dom:loaded', ImpHtmlIdentitykeyPrefs.showKeys.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
 
 // loading this as a file instead of directly inline (compaire SmimePrivatekey.php)
 if ($("import_extra_smime_identity") != undefined) {
-    $("import_extra_smime_identity").observe("click", ImpHtmlIdentitykeyPrefs.loadPopup.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
+    $("import_extra_smime_identity").observe("click",    ImpHtmlIdentitykeyPrefs.loadPopup.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
 }
 
-// checking if the show keys button is clicked  
-if ($("show_smime_identity") != undefined) {
-    $("show_smime_identity").observe("click", ImpHtmlIdentitykeyPrefs.showKeys.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
-}
 
 

@@ -181,14 +181,6 @@
                     </p>
                 </div>
 
-                <!-- show keys button -->
-                <div>
-                    <p>
-                        <input type="button" name="show" class="horde-default" id="show_smime_identity"
-                            value="<?php echo _('Show Smime Identities') ?>" />
-                    </p>
-                </div>
-
 
             <?php else: ?>
                 
