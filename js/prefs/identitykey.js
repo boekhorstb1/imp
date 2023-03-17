@@ -85,11 +85,19 @@ var ImpHtmlIdentitykeyPrefs = {
                     importbutton.hide();
                     container.hide();
                 } 
-                else {    
-                    const li2 = li.cloneNode(true);
-                    li.innerHTML = data.viewpublic.trim();
-                    li2.innerHTML = data.infos.trim();
-                    ul.append(li, li2);
+                else {
+                    importbutton.show();
+                    container.show();
+
+                    // this currently loads the personal keys from pref: need to load the keys from extratable for the specific identities
+                    data.forEach(element => {
+                        const li2 = li.cloneNode(true);
+                        const li3 = li.cloneNode(true);
+                        li.innerHTML = data.viewpublic.trim();
+                        li2.innerHTML = data.viewprivate.trim();
+                        li3.innerHTML = data.infos.trim();
+                        ul.append(li, li2, li3); 
+                    });
                 }
                 ul.setAttribute("style", "list-style-type:none;");
                 container.after(ul);

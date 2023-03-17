@@ -44,6 +44,11 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
     private $smime;
 
     /**
+     * Identity: class that holds methods to get information about the identities saved in the prefs table
+     */
+    private $identity;
+
+    /**
      */
     public function init(Horde_Core_Prefs_Ui $ui)
     {
@@ -54,6 +59,9 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
         /* Loading the IMP Smime class which hods all the methods that a.o. interact wiht the DB */
         $this->smime = $injector->getInstance('IMP_Smime');
+
+        /* Get Identity Class Object */
+        $this->identity =  $injector->getInstance('IMP_Identity');
     }
 
     private function checkIdentityPageIsUsed(Horde_Core_Prefs_Ui $ui)
@@ -110,18 +118,16 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
         $this->checkIdentityPageIsUsed($ui);
 
+        $identity = $this->identity;
         $identities = $this->identities;
         $smime_url = $this->smime_url;
         $smime = $this->smime;
 
         /* Adding js to page output */
         $page_output->addScriptPackage('IMP_Script_Package_Imp');
-        /* checking if identities section is being used */
 
-        if ($identities) {
-            // get the id...
-            $identityID = null; // same problem again?? set the current ID! Need to put this in the ajax handler somehow
-        };
+        /* Get the current default Idenity ID to load the keys that belong to it */
+        $defaultIdentity = $identity->getDefault();
 
         /* Adding css to page output */
         $p_css = new Horde_Themes_Element('prefs.css');
@@ -130,7 +136,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         /* an instance of IMP_smime to be able to list all keys, their ids and aliases from the DB */
         //$smime = $injector->getInstance('IMP_Smime');
         try {
-            $extra_private_keys = $smime->listAllKeys($prefName = 'smime_private_key', $identityID); // TODO: what about singkeys?
+            $extra_private_keys = $smime->listAllKeys($prefName = 'smime_private_key', $defaultIdentity); // TODO: what about singkeys?
         } catch (Horde_Exception $e) {
             $extra_private_keys = [];
         }
@@ -219,6 +225,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 }
             }
 
+            // TODO: default identity should be gotten from the identity field in the prefs table always so switching becomes possible
             $view->{'viewpublic' . $suffix} = $smime_url->copy()
                 ->add('actionID', 'view_personal_public' . $suffix . '_key')
                 ->link([
@@ -237,8 +244,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 ])
                 . _('Details') . '</a>';
 
-            $view->{'privatekeyexits'} = $smime->getSetPrivateKeyId(); // check if private key exists and return its id value if so
-            $view->{'signkeyexits'} = $smime->getSetPrivateKeyId(1); // Note: self::KEY_SECONDARY = 1 in Smime.php...  This checks if a sigm key exists and returns the id
+            $view->{'privatekeyexits'} = $smime->getSetPrivateKeyId(0, $defaultIdentity); // check if private key exists and return its id value if so
+            $view->{'signkeyexits'} = $smime->getSetPrivateKeyId(1, $defaultIdentity); // Note: self::KEY_SECONDARY = 1 in Smime.php...  This checks if a sigm key exists and returns the id
             $view->{'aliasexists'} = $smime->getAlias($view->privatekeyexits); // gets the alias of the key by ID
             $view->{'signaliasexists'} = $smime->getAlias($view->signkeyexits); // gets the alias of the key by ID
 

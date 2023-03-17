@@ -257,15 +257,15 @@ class IMP_Smime
      *
      * TODO: need to remove the $prefName thingie for extrakeys table, makes no sense
      */
-    public function getExtraPublicKey($privateKeyId, $prefName = 'smime_private_key')
+    public function getExtraPublicKey($privateKeyId, $prefName = 'smime_private_key', $identity=0)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=?';
-        $values = [$prefName, $privateKeyId, $user_name];
+        $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=? AND identity=?';
+        $values = [$prefName, $privateKeyId, $user_name, $identity];
         // Run the SQL query
         $result = $this->_db->selectOne($query, $values); // returns one key
         return $result['public_key'];
@@ -277,7 +277,7 @@ class IMP_Smime
      * @return string  Specific S/MIME private key.
      * @throws Horde_Db_Exception
      */
-    public function getExtraPrivateKey($id, $prefName = 'smime_private_key')
+    public function getExtraPrivateKey($id, $prefName = 'smime_private_key', $identity = 0)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
@@ -285,7 +285,7 @@ class IMP_Smime
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE private_key_id=? AND user_name=?';
+        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE private_key_id=? AND user_name=? AND identity=?';
         $values = [$id, $user_name];
 
         // Run the SQL query
@@ -299,7 +299,7 @@ class IMP_Smime
      * @return int id of extra private certificate in DB
      * @throws Horde_Db_Exception
      */
-    public function getSetPrivateKeyId($signkey = self::KEY_PRIMARY)
+    public function getSetPrivateKeyId($signkey = self::KEY_PRIMARY, $identity=0)
     {
         {
             /* Get the user_name and personal certificate if existant */
