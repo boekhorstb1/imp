@@ -164,12 +164,12 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         // Identities are used to reply to mails with a seemingly different account.
         // See: Preferences > Mail > Personal Information
         if (!$identities) {
-            $view->has_key = $prefs->getValue('smime_public_key') &&
-            $prefs->getValue('smime_private_key'); // check if both private and public keys can be fetched (returns a boolean)
-            $view->has_sign_key = $prefs->getValue('smime_public_sign_key') &&
-                $prefs->getValue('smime_private_sign_key');
+            $view->has_key = $identity->getValue('privkey', $defaultIdentity) &&
+                $identity->getValue('pubkey', $defaultIdentity); // check if both private and public keys can be fetched (returns a boolean)
+            $view->has_sign_key = $identity->getValue('privsignkey', $defaultIdentity) &&
+                $identity->getValue('pubsignkey', $defaultIdentity);
         } else {
-            // TODO: somehow get the private keys from the serialized pref array in the perfs table in the database
+            // TODO: if we are in the identities prefs ui... well... do we do anyting here? need to check
         }
 
         /* Addding to view: Browser Importoptions for uploading Certificates */
@@ -210,7 +210,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 continue;
             }
 
-            $cert = $smime->parseCert($smime->getPersonalPublicKey($secondary));
+            $cert = $smime->parseCert($smime->getPersonalPublicKey($secondary, $defaultIdentity));
 
             // Checking for validity date if set
             if (!empty($cert['validity']['notafter'])) {
@@ -243,6 +243,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                     'target' => 'info_key',
                 ])
                 . _('Details') . '</a>';
+
+            //dd($defaultIdentity);
 
             $view->{'privatekeyexits'} = $smime->getSetPrivateKeyId(0, $defaultIdentity); // check if private key exists and return its id value if so
             $view->{'signkeyexits'} = $smime->getSetPrivateKeyId(1, $defaultIdentity); // Note: self::KEY_SECONDARY = 1 in Smime.php...  This checks if a sigm key exists and returns the id
