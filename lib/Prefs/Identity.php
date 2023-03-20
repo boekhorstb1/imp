@@ -44,7 +44,7 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
      */
     protected $_impPrefs = [
         'replyto_addr', 'alias_addr', 'tieto_addr', 'bcc_addr', 'signature',
-        'signature_html', 'save_sent_mail', IMP_Mailbox::MBOX_SENT, 'pubkey', 'keypair',
+        'signature_html', 'save_sent_mail', IMP_Mailbox::MBOX_SENT, 'privkey', 'pubkey',
     ];
 
     /**
@@ -540,6 +540,12 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
                 $GLOBALS['injector']->getInstance('IMP_Mailbox_SessionCache')
                     ->expire(IMP_Mailbox_SessionCache::CACHE_SPECIALMBOXES);
                 $val = IMP_Mailbox::prefTo($val);
+                break;
+            case 'pubkey':
+            case 'privkey':
+                // if (!is_string($val)){
+                //     $val = "".$val."";
+                // }
                 break;
         }
 

@@ -123,10 +123,11 @@ class IMP_Smime
 
         // use identity to set the peronal private key to the serialized identity array
         $identity = $injector->getInstance('IMP_Identity');
-        $identity->setValue($prefName, $val, $identityID);
 
         // also set the identity to the normal prefs value (for continuity)
         $GLOBALS['prefs']->setValue($prefName, $val);
+        $identity->setValue('pubkey', $val, $identityID);
+        $identity->save();
     }
 
     /**
@@ -147,7 +148,6 @@ class IMP_Smime
 
         // use identity to set the peronal private key to the serialized identity array
         $identity = $injector->getInstance('IMP_Identity');
-        $identity->setValue($prefName, $val, $identityID);
 
         // check if a private key already exists
         $check  = $prefs->getValue('smime_private_key');
@@ -155,9 +155,13 @@ class IMP_Smime
         // it there is a private key, these will be unset first and then the new one will be loaded
         if (empty($check)) {
             $GLOBALS['prefs']->setValue($prefName, $val);
+            $identity->setValue('privkey', $val, $identityID);
+            $identity->save();
         } else {
             $this->unsetSmimePersonal($signkey, $calledFromSetSmime);
             $GLOBALS['prefs']->setValue($prefName, $val);
+            $identity->setValue('privkey', $val, $identityID);
+            $identity->save();
         }
     }
 
@@ -226,7 +230,7 @@ class IMP_Smime
      *
      * @return string  The personal S/MIME public key.
      */
-    public function getPersonalPublicKey($signkey = self::KEY_PRIMARY)
+    public function getPersonalPublicKey($signkey = self::KEY_PRIMARY, $identityID = 0)
     {
         global $prefs;
 

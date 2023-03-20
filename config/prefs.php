@@ -17,7 +17,7 @@ $prefGroups['identities'] = [
     'members' => [
         'replyto_addr', 'alias_addr', 'tieto_addr', 'bcc_addr', 'signature',
         'sig_dashes', 'signature_html_select', 'save_sent_mail',
-        'sent_mail_folder', 'sentmailselect', 'pubkey', 'keypair',
+        'sent_mail_folder', 'sentmailselect', 'privkey', 'pubkey',
     ],
     'type' => 'identities',
 ];
@@ -105,18 +105,15 @@ $_prefs['sentmailselect'] = [
     'requires_nolock' => ['sent_mail_folder'],
 ];
 
-// pubkey: Test. For now one can add only one public key to the identity
-$_prefs['pubkey'] = [
-    'value' => '',
-    'type' => 'textarea',
-    'desc' => _('Your Public Key:'),
-];
-
 // Keypars: Load Keypairs from the database in order to encrypt an identities mails with an identities keys
-$_prefs['keypair'] = [
+$_prefs['privkey'] = [
     'type' => 'special',
     'handler' => 'IMP_Prefs_Special_SmimePrivateKey',
     'desc' => _('Set your keypair from the database:'),
+];
+
+$_prefs['pubkey'] = [
+    'value' => '',
 ];
 
 // *** ACL Preferences ***
