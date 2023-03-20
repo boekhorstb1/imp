@@ -115,9 +115,9 @@ class IMP_Smime
      */
     public function addPersonalPublicKey($key, $signkey = false, $identityID=0)
     {
-        global $injector;
+        global $injector, $prefs;
 
-        $prefName = $signkey ? 'smime_public_sign_key' : 'smime_public_key';
+        // clean the recieved key
         $val = is_array($key) ? implode('', $key) : $key;
         $val = HordeString::convertToUtf8($val);
 
@@ -125,8 +125,14 @@ class IMP_Smime
         $identity = $injector->getInstance('IMP_Identity');
 
         // also set the identity to the normal prefs value (for continuity)
-        $GLOBALS['prefs']->setValue($prefName, $val);
-        $identity->setValue('pubkey', $val, $identityID);
+        if ($signkey === self::KEY_SECONDARY) {
+            $prefName = 'smime_public_sign_key';
+            $identity->setValue('pubsignkey', $val, $identityID);
+        } else {
+            $prefName = 'smime_public_key';
+            $identity->setValue('pubkey', $val, $identityID);
+        }
+        $prefs->setValue($prefName, $val);
         $identity->save();
     }
 
@@ -142,7 +148,7 @@ class IMP_Smime
     {
         global $prefs, $injector;
 
-        $prefName = $signkey ? 'smime_private_sign_key' : 'smime_private_key';
+        // clean key
         $val = is_array($key) ? implode('', $key) : $key;
         $val = HordeString::convertToUtf8($val);
 
@@ -153,16 +159,18 @@ class IMP_Smime
         $check  = $prefs->getValue('smime_private_key');
 
         // it there is a private key, these will be unset first and then the new one will be loaded
-        if (empty($check)) {
-            $GLOBALS['prefs']->setValue($prefName, $val);
-            $identity->setValue('privkey', $val, $identityID);
-            $identity->save();
-        } else {
-            $this->unsetSmimePersonal($signkey, $calledFromSetSmime);
-            $GLOBALS['prefs']->setValue($prefName, $val);
-            $identity->setValue('privkey', $val, $identityID);
-            $identity->save();
+        if (!empty($check)) {
+            $this->unsetSmimePersonal($signkey, $calledFromSetSmime, $identityID);
         }
+        if ($signkey === self::KEY_SECONDARY) {
+            $prefName = 'smime_public_sign_key';
+            $identity->setValue('privsignkey', $val, $identityID);
+        } else {
+            $prefName = 'smime_private_key';
+            $identity->setValue('privkey', $val, $identityID);
+        }
+        $GLOBALS['prefs']->setValue($prefName, $val);
+        $identity->save();
     }
 
     /**
@@ -199,6 +207,8 @@ class IMP_Smime
             $notification->push(_('Key is allready in the Database'), 'horde.success');
             return false;
         }
+
+        dd($identity);
 
 
         if (!empty($public_key) && !empty($private_key) && !empty($encryptedPassword)) {
@@ -318,19 +328,19 @@ class IMP_Smime
      * @return int id of extra private certificate in DB
      * @throws Horde_Db_Exception
      */
-    public function getSetPrivateKeyId($signkey = self::KEY_PRIMARY, $identity=0)
+    public function getSetPrivateKeyId($signkey = self::KEY_PRIMARY, $identityID=0)
     {
         {
             /* Get the user_name and personal certificate if existant */
             // TODO: is there a way to only use prefs?
             $user_name = $GLOBALS['registry']->getAuth();
-            $personalCertificate = $this->getPersonalPrivateKey($signkey);
+            $personalCertificate = $this->getPersonalPrivateKey($signkey, $identityID);
 
             // Build the SQL query
-            $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE user_name=?';
-            $values = [$user_name];
+            $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE user_name=? AND identity=?';
+            $values = [$user_name, $identityID];
             // Run the SQL query
-            $result = $this->_db->selectAll($query, $values, $identity); // returns one key
+            $result = $this->_db->selectAll($query, $values); // returns one key
             if (!empty($result)) {
                 // check if privatekeys are the same
                 foreach ($result as $key => $value) {
@@ -544,7 +554,7 @@ class IMP_Smime
 
         // push these to the extra keys table
         if (!empty($privateKey) && !empty($publicKey) && !empty($password)) {
-            if ($this->addExtraPersonalKeys($privateKey, $publicKey, $password)) {
+            if ($this->addExtraPersonalKeys($privateKey, $publicKey, $password, 'smime_private_key', $identityID)) {
                 try {
                     $this->deletePersonalKeys($signkey);
                     $notification->push(
@@ -1085,7 +1095,7 @@ class IMP_Smime
         $pkpass = null,
         $signkey = false,
         $extrakey = false,
-        $identity = 0,
+        $identityID = 0,
         $identity_used = false
     ) {
         global $conf, $notification;
@@ -1102,12 +1112,12 @@ class IMP_Smime
         $result = $this->_smime->parsePKCS12Data($pkcs12, $params);
 
         if ($extrakey === false) {
-            $this->addPersonalPrivateKey($result->private, $signkey);
-            $this->addPersonalPublicKey($result->public, $signkey);
-            $this->addAdditionalCert($result->certs, $signkey);
+            $this->addPersonalPrivateKey($result->private, $signkey, $calledFromSetSmime = false, $identityID);
+            $this->addPersonalPublicKey($result->public, $signkey, $identityID);
+            $this->addAdditionalCert($result->certs, $signkey, $identityID);
         } else {
             // need to add extrakeys here... TODO: add check of key to extraKeys, remove it from set or unsetkeys
-            $result = $this->addExtraPersonalKeys($result->private, $result->public, $password, $pref_name = 'smime_private_key', $identity, $identity_used);
+            $result = $this->addExtraPersonalKeys($result->private, $result->public, $password, $pref_name = 'smime_private_key', $identityID, $identity_used);
             if ($result) {
                 $notification->push(_('S/MIME Public/Private Keypair successfully added to exra keys in keystore.'), 'horde.success');
             }

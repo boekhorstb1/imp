@@ -43,11 +43,6 @@ class IMP_Basic_Smime extends IMP_Basic_Base
         $this->_smime = $injector->getInstance('IMP_Smime');
         $this->_identity = $injector->getInstance('IMP_Identity');
         $selected_identity = $this->_identity->getDefault();
-        //\Horde::debug($selected_identity, '/dev/shm/checkIdentityName', false);
-
-        // $hordeVariables = \Horde_Variables::getDefaultVariables();
-        //                 $identityName = $hordeVariables;
-        //                 \Horde::debug($identityName, '/dev/shm/checkIdentityName', false);
 
         /* Run through the action handlers */
         switch ($this->vars->actionID) {
@@ -167,22 +162,15 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                     // check if identity or personal certs are added
                     $identity = false;
                     $extra = false;
-                    $identityName = null;
                     $identity_used =false;
                     if ($this->vars->actionID === 'process_import_extra_identity_certs') {
                         $identity=true;
-                        $identityName = $this->_identity->getName();
-
-                        \Horde::debug('workign?', '/dev/shm/checkIdentityName', false);
-                        // get the name of the identity to use
-                        $hordeVariables = \Horde_Variables::getDefaultVariables();
-                        $identityName = $hordeVariables->identity;
-                        \Horde::debug($identityName, '/dev/shm/checkIdentityName', false);
+                        $identityID = $this->_identity->getDefault();
                     } else {
                         $extra=true;
                     }
                     $pkcs12 = $this->_getImportKey('upload_key');
-                    $this->_smime->addFromPKCS12($pkcs12, $this->vars->upload_key_pass, $this->vars->upload_key_pk_pass, null, $extra, $identityName, $identity_used);
+                    $this->_smime->addFromPKCS12($pkcs12, $this->vars->upload_key_pass, $this->vars->upload_key_pk_pass, null, $extra, $identityID, $identity_used);
                     // notifications on success or failure are in addFromPKCS12()
                     if ($pkcs12_2nd = $this->_getSecondaryKey()) {
                         // TODO: fix setup for secondary sign keys and such
@@ -215,12 +203,15 @@ class IMP_Basic_Smime extends IMP_Basic_Base
             case 'process_import_personal_certs':
                 $reload = false;
                 $pkcs12_2nd = false;
+                $signkey = false; // because 'process_import_personal_sign_certs' should take care of that
+                $extrakey = false; // because these are not extra keys
+                $identityID = $this->_identity->getDefault(); // keys are added in dependence of their identity
                 try {
                     $pkcs12 = $this->_getImportKey('upload_key');
-                    $this->_smime->addFromPKCS12($pkcs12, $this->vars->upload_key_pass, $this->vars->upload_key_pk_pass);
+                    $this->_smime->addFromPKCS12($pkcs12, $this->vars->upload_key_pass, $this->vars->upload_key_pk_pass, $signkey, $extrakey, $identityID);
                     $notification->push(_('S/MIME Public/Private Keypair successfully added.'), 'horde.success');
                     if ($pkcs12_2nd = $this->_getSecondaryKey()) {
-                        $this->_smime->addFromPKCS12($pkcs12, $this->vars->upload_key_pass2, $this->vars->upload_key_pk_pass2, true);
+                        $this->_smime->addFromPKCS12($pkcs12, $this->vars->upload_key_pass2, $this->vars->upload_key_pk_pass2, $signkey=true, $extrakey, $identityID);
                         $notification->push(_('Secondary S/MIME Public/Private Keypair successfully added.'), 'horde.success');
                     }
                     $reload = true;
@@ -234,11 +225,11 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                 }
                 if (!$reload &&
                     ($pkcs12_2nd || ($pkcs12_2nd = $this->_getSecondaryKey()))) {
-                    if (!$this->_smime->getPersonalPublicKey()) {
+                    if (!$this->_smime->getPersonalPublicKey(0, $identityID)) {
                         $notification->push(_('Cannot import secondary personal S/MIME certificates without primary certificates.'), 'horde.error');
                     } else {
                         try {
-                            $this->_smime->addFromPKCS12($pkcs12_2nd, $this->vars->upload_key_pass2, $this->vars->upload_key_pk_pass2, true);
+                            $this->_smime->addFromPKCS12($pkcs12_2nd, $this->vars->upload_key_pass2, $this->vars->upload_key_pk_pass2, $signkey=true, $extrakey, $identityID);
                             $notification->push(_('Secondary S/MIME Public/Private Keypair successfully added.'), 'horde.success');
                             $reload = true;
                         } catch (Horde_Exception $e) {
