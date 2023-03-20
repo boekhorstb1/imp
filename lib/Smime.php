@@ -915,22 +915,26 @@ class IMP_Smime
      */
     public function getPassphrase($signkey = self::KEY_PRIMARY, $differentKey = null)
     {
-        global $prefs, $session;
+        global $prefs, $session, $injector;
+
+        // TODO: call identity here or ask for it as a parameter of the function?
+        $identity = $injector->getInstance('IMP_Identity');
+        $identityID = $identity->getDefault();
 
         if ($differentKey === null) {
             if ($signkey == self::KEY_SECONDARY_OR_PRIMARY || $signkey == self::KEY_SECONDARY) {
-                if ($private_key = $this->getPersonalPrivateKey(self::KEY_SECONDARY)) {
+                if ($private_key = $this->getPersonalPrivateKey(self::KEY_SECONDARY, $identityID)) {
                     $signkey = self::KEY_SECONDARY;
                 } else {
-                    $private_key = $this->getPersonalPrivateKey();
+                    $private_key = $this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID);
                     $signkey = self::KEY_PRIMARY;
                 }
             } else {
-                $private_key = $this->getPersonalPrivateKey($signkey);
+                $private_key = $this->getPersonalPrivateKey($signkey, $identityID);
             }
         } else {
             // TODO: take care of secondary keys in extratables
-            $private_key = $this->getExtraPrivateKey($differentKey);
+            $private_key = $this->getExtraPrivateKey($differentKey, $identityID);
         }
 
         if (empty($private_key)) {
@@ -958,8 +962,8 @@ class IMP_Smime
             // get passphrase for specific key in the extra tables
 
             // Build the SQL query
-            $query = 'SELECT privatekey_passwd FROM imp_smime_extrakeys WHERE private_key_id=?';
-            $values = [$differentKey];
+            $query = 'SELECT privatekey_passwd FROM imp_smime_extrakeys WHERE private_key_id=? AND IDENTITY=?';
+            $values = [$differentKey, $identityID];
             // Run the SQL query
             $result = $this->_db->selectValue($query, $values);
 
@@ -982,17 +986,21 @@ class IMP_Smime
      */
     public function storePassphrase($passphrase, $signkey = self::KEY_PRIMARY)
     {
-        global $session;
+        global $session, $injector;
+
+        // TODO: call identity here or ask for it as a parameter of the function?
+        $identity = $injector->getInstance('IMP_Identity');
+        $identityID = $identity->getDefault();
 
         if ($signkey == self::KEY_SECONDARY_OR_PRIMARY) {
-            if ($key = $this->getPersonalPrivateKey(self::KEY_SECONDARY)) {
+            if ($key = $this->getPersonalPrivateKey(self::KEY_SECONDARY, $identityID)) {
                 $signkey = self::KEY_SECONDARY;
             } else {
-                $key = $this->getPersonalPrivateKey();
+                $key = $this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID);
                 $signkey = self::KEY_PRIMARY;
             }
         } else {
-            $key = $this->getPersonalPrivateKey($signkey);
+            $key = $this->getPersonalPrivateKey($signkey, $identityID);
         }
         if ($this->_smime->verifyPassphrase($key, $passphrase) !== false) {
             $session->set(
