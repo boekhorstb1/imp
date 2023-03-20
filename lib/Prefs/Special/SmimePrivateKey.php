@@ -353,11 +353,13 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
     {
         global $injector, $notification;
 
+        $identityID = $this->identity->getDefault();
 
         if (isset($ui->vars->delete_smime_personal) || // delete personal certificates
             isset($ui->vars->delete_smime_personal_sign)) {
-            $injector->getInstance('IMP_Smime')->deletePersonalKeys(
-                $ui->vars->delete_smime_personal_sign
+            $injector->getInstance('IMP_Smime')->deletePersonalKeys( // for deletion this needs to get the identity id...
+                $ui->vars->delete_smime_personal_sign,
+                $identityID
             );
             $notification->push(
                 isset($ui->vars->delete_smime_personal_sign)
@@ -367,7 +369,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             );
         } elseif (isset($ui->vars->delete_smime_extra)) { // delete extra certificates
             $injector->getInstance('IMP_Smime')->deleteExtraKey(
-                $ui->vars->delete_smime_extra
+                $ui->vars->delete_smime_extra,
+                $identityID
             );
             $notification->push(
                 isset($ui->vars->delete_smime_extra_secondary) // TODO: fix deletion of additional extra secondary keys?

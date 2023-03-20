@@ -556,7 +556,7 @@ class IMP_Smime
         if (!empty($privateKey) && !empty($publicKey) && !empty($password)) {
             if ($this->addExtraPersonalKeys($privateKey, $publicKey, $password, 'smime_private_key', $identityID)) {
                 try {
-                    $this->deletePersonalKeys($signkey);
+                    $this->deletePersonalKeys($signkey, $identityID);
                     $notification->push(
                         _('S/MIME Certificate unset and successfully transfered to extra keys.'),
                         'horde.success'
@@ -571,7 +571,7 @@ class IMP_Smime
                 }
             } else {
                 // unsetting can be done because certificate is in the database anyway
-                $this->deletePersonalKeys($signkey);
+                $this->deletePersonalKeys($signkey, $identityID);
             }
         }
     }
@@ -610,20 +610,29 @@ class IMP_Smime
      *
      * @param boolean $signkey  Return the secondary key for signing?
      */
-    public function deletePersonalKeys($signkey = false)
+    public function deletePersonalKeys($signkey = false, $identityID=0)
     {
-        global $prefs;
+        global $prefs, $injector;
 
         // We always delete the secondary keys because we cannot have them
         // without primary keys.
         $prefs->setValue('smime_public_sign_key', '');
         $prefs->setValue('smime_private_sign_key', '');
         $prefs->setValue('smime_additional_sign_cert', '');
+        // also delete the ids set in the identity prefs array
+        $identity = $injector->getInstance('IMP_Identity');
+        $identity->setValue('privsignkey', '', $identityID);
+        $identity->setValue('pubsignkey', '', $identityID);
+
         if (!$signkey) {
             $prefs->setValue('smime_public_key', '');
             $prefs->setValue('smime_private_key', '');
             $prefs->setValue('smime_additional_cert', '');
+            // also delete the ids set in the identity prefs array
+            $identity->setValue('pubkey', '', $identityID);
+            $identity->setValue('privkey', '', $identityID);
         }
+        $identity->save();
         $this->unsetPassphrase($signkey);
     }
 
