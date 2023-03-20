@@ -208,9 +208,6 @@ class IMP_Smime
             return false;
         }
 
-        dd($identity);
-
-
         if (!empty($public_key) && !empty($private_key) && !empty($encryptedPassword)) {
             $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd, identity, identity_used) VALUES (?, ?, ?, ?, ?, ?, ?)';
             $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword, $identity, $identity_used];

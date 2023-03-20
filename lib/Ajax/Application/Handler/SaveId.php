@@ -40,7 +40,7 @@ class IMP_Ajax_Application_Handler_SaveId extends Horde_Core_Ajax_Application_Ha
         // if current identity is the identity with ID 0, warn the user to use the smime prefs url for id management?
         // Note: if one changes the default identity, currently the smime page does not show the keys for that idenity...
         // TODO: if one changes the default idenity all the keys on the smimepage have to change as well!!
-        // OR: Dissallow changing the default identity?  
+        // OR: Dissallow changing the default identity?
         if ($identityID == $defaultIdentityID) {
             $relinkUrl = 'https://horde.dev.local/horde/services/prefs.php?app=imp&group=smime'; // TODO: generate this url dynamically
         }
@@ -57,20 +57,19 @@ class IMP_Ajax_Application_Handler_SaveId extends Horde_Core_Ajax_Application_Ha
         if (isset($relinkUrl)) {
             $linkArray['relink'] = '<a href="'.$relinkUrl.'">Please use the SMIME Preferences Page to manage the keys of your standard identity</a>';
         } else {
+            foreach ($keys as $val) {
+                $title = 'View Identity Keys';
+                $privatelink = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $identityID]);
+                $publiclink = $smime_url->copy()->add(['actionID' => 'view_extra_public_keys', 'pkID' => $identityID]);
+                $publicInfoLink = $smime_url->copy()->add(['actionID' => 'view_extra_public_info', 'pkID' => $identityID]);
+                $linkArray['viewpublic'] = Horde::link($publiclink, $title, null, 'view_key');
+                $linkArray['infos'] = Horde::link($publicInfoLink, $title, null, 'info_key');
+                $linkArray['viewprivate'] = Horde::link($privatelink, $title, null, 'view_key');
+            }
 
-            
-        foreach ($keys as $val) {
-            $title = 'View Identity Keys';
-            $privatelink = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $identityID]);
-            $publiclink = $smime_url->copy()->add(['actionID' => 'view_extra_public_keys', 'pkID' => $identityID]);
-            $publicInfoLink = $smime_url->copy()->add(['actionID' => 'view_extra_public_info', 'pkID' => $identityID]); 
-            $linkArray['viewpublic'] = Horde::link($publiclink, $title, null, 'view_key');   
-            $linkArray['infos'] = Horde::link($publicInfoLink, $title, null, 'info_key');
-            $linkArray['viewprivate'] = Horde::link($privatelink, $title, null, 'view_key');
+            $linkArray = json_encode($linkArray);
+
+            return $linkArray;
         }
-
-        $linkArray = json_encode($linkArray);
-
-        return $linkArray;
     }
 }
