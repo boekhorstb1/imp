@@ -17,7 +17,7 @@ $prefGroups['identities'] = [
     'members' => [
         'replyto_addr', 'alias_addr', 'tieto_addr', 'bcc_addr', 'signature',
         'sig_dashes', 'signature_html_select', 'save_sent_mail',
-        'sent_mail_folder', 'sentmailselect', 'privkey', 'pubkey',
+        'sent_mail_folder', 'sentmailselect', 'privkey', 'pubkey', 'privsignkey', 'privpubkey',
     ],
     'type' => 'identities',
 ];
@@ -113,6 +113,14 @@ $_prefs['privkey'] = [
 ];
 
 $_prefs['pubkey'] = [
+    'value' => '',
+];
+
+$_prefs['privsignkey'] = [
+    'value' => '',
+];
+
+$_prefs['pubsignkey'] = [
     'value' => '',
 ];
 

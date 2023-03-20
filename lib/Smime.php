@@ -232,13 +232,14 @@ class IMP_Smime
      */
     public function getPersonalPublicKey($signkey = self::KEY_PRIMARY, $identityID = 0)
     {
-        global $prefs;
+        global $injector;
 
-        $key = $prefs->getValue(
-            $signkey ? 'smime_public_sign_key' : 'smime_public_key'
-        );
-        if (!$key && $signkey == self::KEY_SECONDARY_OR_PRIMARY) {
-            $key = $prefs->getValue('smime_public_key');
+        $identity = $injector->getInstance('IMP_Identity');
+
+        if ($signkey === self::KEY_SECONDARY) {
+            $key = $identity->getValue('pubsignkey', $identityID);
+        } else {
+            $key = $identity->getValue('pubkey', $identityID);
         }
 
         return $key;
@@ -254,16 +255,16 @@ class IMP_Smime
      */
     public function getPersonalPrivateKey($signkey = self::KEY_PRIMARY, $identityID=0)
     {
-        global $prefs;
+        global $injector;
 
-        $prefName = $signkey ? 'smime_private_sign_key' : 'smime_private_key';
-        $key = $prefs->getValue(
-            $prefName
-        );
+        $identity = $injector->getInstance('IMP_Identity');
 
-        if (!$key && $signkey == self::KEY_SECONDARY_OR_PRIMARY) {
-            $key = $prefs->getValue('smime_private_key');
+        if ($signkey === self::KEY_SECONDARY) {
+            $key = $identity->getValue('privsignkey', $identityID);
+        } else {
+            $key = $identity->getValue('privkey', $identityID);
         }
+
         return $key;
     }
 
