@@ -34,9 +34,14 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
     private $identities = false;
 
     /**
-     * Smime url: generates the URL needed for the SMIME-interface in the UI
+     * Smime url: generates the URL needed for the links to the SMIME keys
      */
     private $smime_url;
+
+    /**
+     * Smime prefs url: generate the url for the prefs for smime
+     */
+    private $smime_prefs_url;
 
     /**
      * Smime: class that holds the variable that interact with the database
@@ -56,6 +61,9 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
         /* Loading Smime bas url in order to set links to it */
         $this->smime_url = IMP_Basic_Smime::url();
+
+        /* Page base url */
+        $this->smime_prefs_url = Horde::url($GLOBALS['registry']->getServiceLink('prefs', 'imp'), true)->add('group', 'smime');
 
         /* Loading the IMP Smime class which hods all the methods that a.o. interact wiht the DB */
         $this->smime = $injector->getInstance('IMP_Smime');
@@ -87,11 +95,6 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 'if ($("import_smime_personal") != undefined) $("import_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
                 'if ($("import_extra_smime_personal") != undefined) $("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
             ], true);
-
-            if ($identities) {
-                // need to call HordeIdentitySelect in some way
-                $page_output->addScriptFile('prefs/identitykey.js');
-            }
         }
     }
 
@@ -169,7 +172,9 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             $view->has_sign_key = $identity->getValue('privsignkey', $defaultIdentity) &&
                 $identity->getValue('pubsignkey', $defaultIdentity);
         } else {
-            // TODO: if we are in the identities prefs ui... well... do we do anyting here? need to check
+            // Ask user to go the smime page to set the keys for each identity
+            $view->relink =  Horde::link($this->smime_prefs_url)
+            . _('Please set the default Identity and change SMIME preferences here') . '</a>';
         }
 
         /* Addding to view: Browser Importoptions for uploading Certificates */

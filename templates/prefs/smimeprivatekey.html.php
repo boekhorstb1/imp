@@ -5,6 +5,14 @@
             <?php echo _('S/MIME Personal Certificate of Identity') ?>
             <?php echo $this->hordeHelp('imp', 'smime-overview-identities') ?>
         </h3>
+
+        
+        <div id="SmimeRelink">
+            <!-- please set your smime identity on the smime page -->
+            <?php echo $this->relink ?>
+        </div>
+
+
     <?php else: ?>
         <h3>
             <?php echo _('Your S/MIME Personal Certificate') ?>
@@ -12,6 +20,9 @@
         </h3>
     <?php endif; ?>
     </div>
+
+    <?php if ($this->identities): ?>
+    <?php else: ?>
 
     <?php if ($this->notsecure): ?>
     <div>
@@ -170,19 +181,6 @@
     <!-- Import button -->
     <?php if ($this->import): ?>
 
-    
-    <?php if ($this->identities): ?>
-                
-                <div>
-                    <p>
-                        <input type="submit" name="save" class="horde-default" id="import_extra_smime_identity"
-                            value="<?php echo _('Import SMIME Certificate for a new Identity') ?>" />
-                        <?php echo $this->hordeHelp('imp', 'smime-import-identity-certs') ?>
-                    </p>
-                </div>
-
-
-            <?php else: ?>
                 
                 <div>
                     <p>
@@ -192,30 +190,22 @@
                     </p>
                 </div>
                 
-            <?php endif; ?>
+            
 
 
     <?php endif; ?>
+    <?php endif; ?>
 </div>
 <!-- Extra PrivateKeys from Keystore -->
-<?php if ($this->identities): //currently not showing anything, as only adding support for uploading one keypar?>
+<?php if ($this->identities): //currently not showing anything: user is refered to add smime on smime-preferences page?>
 <?php else: ?>
 <div class="prefsSmimeContainer">
-    <?php if ($this->identities): ?>
-        <div class="prefsSmimeHeader">
-        <h3>
-            <?php echo _('S/MIME Personal Certificates for new Identity') ?>
-            <?php echo $this->hordeHelp('imp', 'smime-overview-identities') ?>
-        </h3>
-    </div>
-    <?php else: ?>
         <div class="prefsSmimeHeader">
         <h3>
             <?php echo _('Extra S/MIME Personal Certificates') ?>
             <?php echo $this->hordeHelp('imp', 'smime-overview-extrakeys') ?>
         </h3>
     </div>
-    <?php endif; ?>
     
 
     <!-- listing extra private keys -->
