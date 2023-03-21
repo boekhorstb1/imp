@@ -52,15 +52,16 @@ var ImpHtmlIdentitykeyPrefs = {
         let identity = $("identity");
         let id = Number($F(identity));
 
-        console.log('o yeah');
-        console.log(id);
+        // get the default identity
+        let default_identity = $("default_identity");
+        let defaultId = Number($F(default_identity));
         
         HordeCore.doAction('getIdentityKeys', // NOTE: methods from doAction cannot get any parameters! They expect $this->vars->$name
             {
+                defaultId: defaultId,
                 strangeId: id
             },
             {callback: function(response){
-
                 // check if array alraedy exists and remove it if so
                 if (document.body.contains($('keylist'))) {
                     $('keylist').remove();
@@ -75,10 +76,10 @@ var ImpHtmlIdentitykeyPrefs = {
                 let importbutton = $('import_extra_smime_identity');
                 let container = importbutton.next();
 
-                const li = document.createElement('li');
-
                 // if standardidentity is used, relink user to smime prefs page
                 if (data.hasOwnProperty('relink')) {
+                    console.log('test');
+                    const li = document.createElement('li');
                     console.log(data.relink);
                     li.innerHTML = data.relink.trim();
                     ul.append(li);
@@ -88,17 +89,14 @@ var ImpHtmlIdentitykeyPrefs = {
                 else {
                     importbutton.show();
                     container.show();
-
                     // this currently loads the personal keys from pref: need to load the keys from extratable for the specific identities
-                    data.forEach(element => {
-                        const li2 = li.cloneNode(true);
-                        const li3 = li.cloneNode(true);
-                        li.innerHTML = data.viewpublic.trim();
-                        li2.innerHTML = data.viewprivate.trim();
-                        li3.innerHTML = data.infos.trim();
-                        ul.append(li, li2, li3); 
-                    });
+                    for(const [key, value] of Object.entries(data)) {
+                        let li = document.createElement('li');
+                        li.innerHTML = value;
+                        ul.append(li); 
+                    };
                 }
+                console.log(ul);
                 ul.setAttribute("style", "list-style-type:none;");
                 container.after(ul);
             }}
@@ -110,6 +108,11 @@ var ImpHtmlIdentitykeyPrefs = {
 // on change of identity load new keys
 document.observe('HordeIdentitySelect:change', ImpHtmlIdentitykeyPrefs.showKeys.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
 document.observe('dom:loaded', ImpHtmlIdentitykeyPrefs.showKeys.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
+
+// also need to trigger showKeys when the default_identity is changed
+if ($("default_identity") != undefined) {
+    $("default_identity").observe("click",    ImpHtmlIdentitykeyPrefs.showKeys.bindAsEventListener(ImpHtmlIdentitykeyPrefs));
+}
 
 // loading this as a file instead of directly inline (compaire SmimePrivatekey.php)
 if ($("import_extra_smime_identity") != undefined) {

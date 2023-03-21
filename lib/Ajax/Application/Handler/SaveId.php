@@ -33,6 +33,10 @@ class IMP_Ajax_Application_Handler_SaveId extends Horde_Core_Ajax_Application_Ha
 
         // gets the identityID as set by identitykey.js in the second json-argument of horde.doAction
         $identityID = $this->vars->strangeId;
+        $defaultIdentityID = $this->vars->defaultId;
+
+        \Horde::debug($defaultIdentityID, '/dev/shm/defaultID', false);
+        \Horde::debug($identityID, '/dev/shm/defaultID', false);
 
         // get Smime class object
         $smime = $injector->getInstance('IMP_Smime');
@@ -47,7 +51,6 @@ class IMP_Ajax_Application_Handler_SaveId extends Horde_Core_Ajax_Application_Ha
 
         // TODO: this lists extra keys from the extra table (should I add the personal keys to this array? They are not in there, because they are in the prefs table...)
         $keys = $smime->listAllKeys($prefName = 'smime_private_key', $identityID); // TODO: what about singkeys?
-        // \Horde::debug($keys, '/dev/shm/keys', false);
 
         // Get clickable links for the personal keys saved in the prefs table and return them
         // Loading Smime bas url in order to set links to it
@@ -62,14 +65,12 @@ class IMP_Ajax_Application_Handler_SaveId extends Horde_Core_Ajax_Application_Ha
                 $privatelink = $smime_url->copy()->add(['actionID' => 'view_extra_private_keys', 'pkID' => $identityID]);
                 $publiclink = $smime_url->copy()->add(['actionID' => 'view_extra_public_keys', 'pkID' => $identityID]);
                 $publicInfoLink = $smime_url->copy()->add(['actionID' => 'view_extra_public_info', 'pkID' => $identityID]);
-                $linkArray['viewpublic'] = Horde::link($publiclink, $title, null, 'view_key');
-                $linkArray['infos'] = Horde::link($publicInfoLink, $title, null, 'info_key');
-                $linkArray['viewprivate'] = Horde::link($privatelink, $title, null, 'view_key');
+                $linkArray['viewpublic'] = '['.Horde::link($publiclink, $title, null, 'view_key').'link</a>]';
+                $linkArray['infos'] = '['.Horde::link($publicInfoLink, $title, null, 'info_key').'link</a>]';
+                $linkArray['viewprivate'] = '['.Horde::link($privatelink, $title, null, 'view_key').'link</a>]';
             }
-
-            $linkArray = json_encode($linkArray);
-
-            return $linkArray;
         }
+        $linkArray = json_encode($linkArray);
+        return $linkArray;
     }
 }
