@@ -11,6 +11,8 @@
  * @package   IMP
  */
 
+use Horde\Util\HordeString;
+
 /**
  * This class provides an IMP-specific interface to all identities a
  * user might have. Its methods take care of any site-specific
@@ -543,9 +545,6 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
                 break;
             case 'pubkey':
             case 'privkey':
-                // if (!is_string($val)){
-                //     $val = "".$val."";
-                // }
                 break;
         }
 

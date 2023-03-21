@@ -210,7 +210,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 continue;
             }
 
-            $cert = $smime->parseCert($smime->getPersonalPublicKey($secondary, $defaultIdentity));
+            $pubkey = $smime->getPersonalPublicKey($secondary, $defaultIdentity);
+            $cert = $smime->parseCert($pubkey);
 
             // Checking for validity date if set
             if (!empty($cert['validity']['notafter'])) {
@@ -388,12 +389,14 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 'horde.success'
             );
         } elseif (isset($ui->vars->unset_smime_personal)) { // unsetting personal certificate and transfering it to the db
-            $injector->getInstance('IMP_Smime')->unsetSmimePersonal();
+            $injector->getInstance('IMP_Smime')->unsetSmimePersonal(0, false, $identityID);
         } elseif (isset($ui->vars->unset_smime_secondary)) { // unsetting secondary certificate and transfering it to the db
-            $injector->getInstance('IMP_Smime')->unsetSmimeSecondary();
+            $injector->getInstance('IMP_Smime')->unsetSmimeSecondary(1, $identityID);
         } elseif (isset($ui->vars->set_smime_personal)) { // setting personal certificate... first have to unset?
             $injector->getInstance('IMP_Smime')->setSmimePersonal(
-                $ui->vars->set_smime_personal
+                $ui->vars->set_smime_personal,
+                0,
+                $identityID
             );
             $notification->push(
                 _('S/MIME Certificate set and successfully transfered previous certificate to extra keys.'),
@@ -401,7 +404,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
             );
         } elseif (isset($ui->vars->set_smime_secondary)) { // setting secondary certificate
             $injector->getInstance('IMP_Smime')->setSmimeSecondary(
-                $ui->vars->set_smime_secondary
+                $ui->vars->set_smime_secondary,
+                $identityID
             );
             $notification->push(
                 _('S/MIME Singing Certificate set and successfully transfered previous signing certificate to extra keys.'),

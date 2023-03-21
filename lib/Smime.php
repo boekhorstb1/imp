@@ -38,6 +38,9 @@ class IMP_Smime
     public const KEY_SECONDARY = 1;
     public const KEY_SECONDARY_OR_PRIMARY = 2;
 
+    /* The default identity that is set */
+    public $defaultIdentity;
+
     /**
      * S/MIME object.
      *
@@ -73,8 +76,10 @@ class IMP_Smime
      */
     public function __construct(Horde_Crypt_Smime $smime, $db)
     {
+        //global $injector;
         $this->_smime = $smime;
         $this->_db = $db;
+        //$this->defaultIdentity = $injector->getInstance('IMP_Identity')->getDefault();
     }
 
     /**
@@ -87,6 +92,9 @@ class IMP_Smime
     {
         global $injector, $registry;
 
+        $identity = $injector->getInstance('IMP_Identity');
+        $identityID = $identity->getDefault();
+
         $ret = [];
 
         if ($registry->hasMethod('contacts/getField') ||
@@ -96,7 +104,7 @@ class IMP_Smime
             ];
         }
 
-        if ($this->getPersonalPrivateKey()) {
+        if ($this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID)) {
             $ret += [
                 self::SIGN => _('S/MIME Sign Message'),
                 self::SIGNENC => _('S/MIME Sign/Encrypt Message'),
@@ -116,7 +124,6 @@ class IMP_Smime
     public function addPersonalPublicKey($key, $signkey = false, $identityID=0)
     {
         global $injector, $prefs;
-
         // clean the recieved key
         $val = is_array($key) ? implode('', $key) : $key;
         $val = HordeString::convertToUtf8($val);
@@ -147,10 +154,10 @@ class IMP_Smime
     public function addPersonalPrivateKey($key, $signkey = false, $calledFromSetSmime = false, $identityID=0)
     {
         global $prefs, $injector;
-
         // clean key
         $val = is_array($key) ? implode('', $key) : $key;
         $val = HordeString::convertToUtf8($val);
+
 
         // use identity to set the peronal private key to the serialized identity array
         $identity = $injector->getInstance('IMP_Identity');
@@ -188,7 +195,7 @@ class IMP_Smime
         $public_key,
         $password,
         $pref_name = 'smime_private_key',
-        $identity=0,
+        $identityID=0,
         $identity_used=false
     ) {
         global $notification;
@@ -203,14 +210,14 @@ class IMP_Smime
         $encryptedPassword = base64_encode($encryptedPassword);
 
         // TODO: add check if certificate already exists give warning
-        if ($this->privateKeyExists($private_key)) {
+        if ($this->privateKeyExists($private_key, $identityID)) {
             $notification->push(_('Key is allready in the Database'), 'horde.success');
             return false;
         }
 
         if (!empty($public_key) && !empty($private_key) && !empty($encryptedPassword)) {
             $query = 'INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd, identity, identity_used) VALUES (?, ?, ?, ?, ?, ?, ?)';
-            $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword, $identity, $identity_used];
+            $values = [$pref_name, $user_name, $private_key, $public_key, $encryptedPassword, $identityID, $identity_used];
             $this->_db->insert($query, $values);
             return true;
         }
@@ -265,7 +272,6 @@ class IMP_Smime
         global $injector;
 
         $identity = $injector->getInstance('IMP_Identity');
-
         if ($signkey === self::KEY_SECONDARY) {
             $key = $identity->getValue('privsignkey', $identityID);
         } else {
@@ -278,12 +284,16 @@ class IMP_Smime
     /**
      * Retrieves a specific public key from the extrakeys table or throws an exception.
      *
-     * @return string  Specific S/MIME private key.
+     * @param int       $privateKeyId: get the public key of of the privatekey (its id)
+     * @param string    $prefName: indicates that a key is for sining
+     * @param int       $identityID:
+     *
+     * @return string   Specific S/MIME private key.
      * @throws Horde_Db_Exception
      *
      * TODO: need to remove the $prefName thingie for extrakeys table, makes no sense
      */
-    public function getExtraPublicKey($privateKeyId, $prefName = 'smime_private_key', $identity=0)
+    public function getExtraPublicKey($privateKeyId, $prefName = 'smime_private_key', $identityID=0)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
@@ -291,7 +301,7 @@ class IMP_Smime
 
         // Build the SQL query
         $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=? AND identity=?';
-        $values = [$prefName, $privateKeyId, $user_name, $identity];
+        $values = [$prefName, $privateKeyId, $user_name, $identityID];
         // Run the SQL query
         $result = $this->_db->selectOne($query, $values); // returns one key
         return $result['public_key'];
@@ -300,10 +310,14 @@ class IMP_Smime
     /**
      * Retrieves a specific private key from the extrakeys table.
      *
-     * @return string  Specific S/MIME private key.
+     * @param int       $id: id of the key to search for
+     * @param string    $prefname: currently set to discern between sing keys and normal keys
+     * @param int       $identityID: the identity to look for
+     *
+     * @return string   Specific S/MIME private key.
      * @throws Horde_Db_Exception
      */
-    public function getExtraPrivateKey($id, $prefName = 'smime_private_key', $identity = 0)
+    public function getExtraPrivateKey($id, $prefName = 'smime_private_key', $identityID = 0)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
@@ -312,7 +326,7 @@ class IMP_Smime
 
         // Build the SQL query
         $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE private_key_id=? AND user_name=? AND identity=?';
-        $values = [$id, $user_name];
+        $values = [$id, $user_name, $identityID];
 
         // Run the SQL query
         $result = $this->_db->selectOne($query, $values); // returns one key
@@ -355,18 +369,20 @@ class IMP_Smime
      * Check if the private keys allready exist.
      * Example: if the key already exists, there is no need to load it into the database again
      *
-     * @return bool if private key is there or not
+     * @param   string    $personalCertificate: the personal certificate to look for
+     * @param   int       $idenitytId: the id of the identity to look for
+     * @return  bool      if private key is there or not
      * @throws Horde_Db_Exception
      */
-    public function privateKeyExists($personalCertificate)
+    public function privateKeyExists($personalCertificate, $identityID)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key FROM imp_smime_extrakeys WHERE user_name=?';
-        $values = [$user_name];
+        $query = 'SELECT private_key FROM imp_smime_extrakeys WHERE user_name=? AND identity=?';
+        $values = [$user_name, $identityID];
 
         // Run the SQL query
         $result = $this->_db->selectValues($query, $values); // returns an array with keys
@@ -465,7 +481,7 @@ class IMP_Smime
      * @param int $keyid returns the key from the keyid
      * @param int $signkey sets a sign key, per default a personal (primary) key is set
      */
-    public function setSmimePersonal($keyid, $signkey=self::KEY_PRIMARY, $identityID)
+    public function setSmimePersonal($keyid, $signkey=self::KEY_PRIMARY, $identityID=0)
     {
         if ($signkey == self::KEY_PRIMARY) {
             $prefName = 'smime_private_key';
@@ -475,15 +491,14 @@ class IMP_Smime
 
         // Warns unsetSmime functions that no notifications are needed
         $calledFromSetSmime = true;
-
         // find the private key that has been selected (NB: do not care if the key is a sign key or not, so no prefname?)
-        $newprivatekey = $this->getExtraPrivateKey($keyid);
-        $newpublickey = $this->getExtraPublicKey($keyid);
+        $newprivatekey = $this->getExtraPrivateKey($keyid, $prefName, $identityID);
+        $newpublickey = $this->getExtraPublicKey($keyid, $prefName = 'smime_private_key', $identityID); // bug over here: need to remove singkey stuff in parameters
 
         // check if a personal certificate is set
         $check = null;
-        $check = $this->getPersonalPrivateKey();
-        $keyExists = $this->privateKeyExists($check);
+        $check = $this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID);
+        $keyExists = $this->privateKeyExists($check, $identityID);
 
         // check if there is a personal Certificate set
         if (!empty($check)) {
@@ -514,9 +529,9 @@ class IMP_Smime
      *
      * @param int $keyid to inform which key should be set as a secondary signkey
      */
-    public function setSmimeSecondary($keyid)
+    public function setSmimeSecondary($keyid, $identityID)
     {
-        $this->setSmimePersonal($keyid, self::KEY_SECONDARY);
+        $this->setSmimePersonal($keyid, self::KEY_SECONDARY, $identityID);
     }
 
     /**
@@ -537,7 +552,6 @@ class IMP_Smime
 
         // get password, hash it and save it to the table
         $password = $this->getPassphrase($signkey);
-
         if ($password == false || is_null($password) || empty($password)) {
             // check if unsetSmimePersonal is called from setSmime, where passwords are set in the DB allready, and there is no need to push any notifications
             if ($calledFromSetSmime == false) {
@@ -576,9 +590,9 @@ class IMP_Smime
     /**
      * Unsetting a Certificate for Singing and transerfing it to extra tables
      */
-    public function unsetSmimeSecondary()
+    public function unsetSmimeSecondary($calledFromSetSmime, $identityID=0)
     {
-        $this->unsetSmimePersonal(self::KEY_SECONDARY);
+        $this->unsetSmimePersonal(self::KEY_SECONDARY, $calledFromSetSmime, $identityID);
     }
 
     /**
@@ -834,23 +848,27 @@ class IMP_Smime
      */
     protected function _signParameters()
     {
+        //TODO: use a roto variable of the class instead of calling this over and over again
+        global $injector;
+        $identity = $injector->getInstance('IMP_Identity');
+        $identityID = $identity->getDefault();
         $pubkey = $this->getPersonalPublicKey(true);
         $additional = [];
         if ($pubkey) {
-            $additional[] = $this->getPersonalPublicKey();
+            $additional[] = $this->getPersonalPublicKey(self::KEY_PRIMARY, $identityID);
             $secondary = true;
         } else {
-            $pubkey = $this->getPersonalPublicKey();
+            $pubkey = $this->getPersonalPublicKey(self::KEY_PRIMARY, $identityID);
             $secondary = false;
         }
-        $additional[] = $this->getAdditionalCert($secondary);
+        $additional[] = $this->getAdditionalCert($secondary, $identityID);
         if ($secondary) {
             $additional[] = $this->getAdditionalCert();
         }
         return [
             'type' => 'signature',
             'pubkey' => $pubkey,
-            'privkey' => $this->getPersonalPrivateKey($secondary),
+            'privkey' => $this->getPersonalPrivateKey($secondary, $identityID),
             'passphrase' => $this->getPassphrase($secondary),
             'sigtype' => 'detach',
             'certs' => implode("\n", $additional),
@@ -887,18 +905,22 @@ class IMP_Smime
      */
     public function decryptMessage($text, $differentKey = null)
     {
+        global $injector;
+        // TODO:
+        $identity = $injector->getInstance('IMP_Identity');
+        $identityID = $identity->getDefault();
         if ($differentKey === null) {
             return $this->_smime->decrypt($text, [
                 'type' => 'message',
-                'pubkey' => $this->getPersonalPublicKey(),
-                'privkey' => $this->getPersonalPrivateKey(),
+                'pubkey' => $this->getPersonalPublicKey(self::KEY_PRIMARY, $identityID),
+                'privkey' => $this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID),
                 'passphrase' => $this->getPassphrase(),
             ]);
         } else {
             return $this->_smime->decrypt($text, [
                 'type' => 'message',
-                'pubkey' => $this->getExtraPublicKey($differentKey),
-                'privkey' => $this->getExtraPrivateKey($differentKey),
+                'pubkey' => $this->getExtraPublicKey($differentKey, $identityID),
+                'privkey' => $this->getExtraPrivateKey($differentKey, $identityID),
                 'passphrase' => $this->getPassphrase(null, $differentKey), // create get pasExtraKeyPassphrase()?
             ]);
         }
