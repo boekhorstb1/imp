@@ -431,7 +431,7 @@ $prefGroups['smime'] = [
 // These preferences MUST appear on the same page.
 $_prefs['smimemanagement'] = [
     'value' => [
-        'use_smime', 'use_smime_text', 'smime_verify', 'smimepublickey',
+        'use_smime', 'use_smime_text', 'smime_verify', 'smimeidentity', 'smimepublickey',
         'smimeprivatekey',
     ],
     'type' => 'container',
@@ -455,6 +455,13 @@ $_prefs['smime_verify'] = [
     'type' => 'checkbox',
     'desc' => _('Should S/MIME signed messages be automatically verified when viewed?'),
     'help' => 'smime-option-verify',
+    'requires' => ['use_smime'],
+];
+
+// S/MIME identity management widget
+$_prefs['smimeidentity'] = [
+    'type' => 'special',
+    'handler' => 'IMP_Prefs_Special_SmimeIdentities',
     'requires' => ['use_smime'],
 ];
 
