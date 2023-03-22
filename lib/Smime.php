@@ -158,7 +158,6 @@ class IMP_Smime
         $val = is_array($key) ? implode('', $key) : $key;
         $val = HordeString::convertToUtf8($val);
 
-
         // use identity to set the peronal private key to the serialized identity array
         $identity = $injector->getInstance('IMP_Identity');
 
@@ -170,7 +169,7 @@ class IMP_Smime
             $this->unsetSmimePersonal($signkey, $calledFromSetSmime, $identityID);
         }
         if ($signkey === self::KEY_SECONDARY) {
-            $prefName = 'smime_public_sign_key';
+            $prefName = 'smime_private_sign_key';
             $identity->setValue('privsignkey', $val, $identityID);
         } else {
             $prefName = 'smime_private_key';
@@ -599,18 +598,31 @@ class IMP_Smime
      * Returns any additional certificates from the prefs.
      *
      * @param integer $signkey  One of the IMP_Sime::KEY_* constants.
+     * @param integer $identityID the id of the identity to get the key from
      *
      * @return string  Additional signing certs for inclusion.
      */
-    public function getAdditionalCert($signkey = self::KEY_PRIMARY)
+    public function getAdditionalCert($signkey = self::KEY_PRIMARY, $identityID=0)
     {
-        global $prefs;
+        // global $prefs;
 
-        $key = $prefs->getValue(
-            $signkey ? 'smime_additional_sign_cert' : 'smime_additional_cert'
-        );
-        if (!$key && $signkey == self::KEY_SECONDARY_OR_PRIMARY) {
-            $key = $prefs->getValue('smime_additional_cert');
+        // $key = $prefs->getValue(
+        //     $signkey ? 'smime_additional_sign_cert' : 'smime_additional_cert'
+        // );
+        // if (!$key && $signkey == self::KEY_SECONDARY_OR_PRIMARY) {
+        //     $key = $prefs->getValue('smime_additional_cert');
+        // }
+
+        // return $key;
+
+        global $injector;
+
+        $identity = $injector->getInstance('IMP_Identity');
+
+        if ($signkey == self::KEY_PRIMARY || $signkey == self::KEY_SECONDARY_OR_PRIMARY) {
+            $key = $identity->getValue('pubsignkey', $identityID);
+        } else {
+            $key = $identity->getValue('pubkey', $identityID);
         }
 
         return $key;
@@ -852,7 +864,7 @@ class IMP_Smime
         global $injector;
         $identity = $injector->getInstance('IMP_Identity');
         $identityID = $identity->getDefault();
-        $pubkey = $this->getPersonalPublicKey(true);
+        $pubkey = $this->getPersonalPublicKey(true, $identityID);
         $additional = [];
         if ($pubkey) {
             $additional[] = $this->getPersonalPublicKey(self::KEY_PRIMARY, $identityID);
