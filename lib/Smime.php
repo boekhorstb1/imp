@@ -795,7 +795,12 @@ class IMP_Smime
             );
         } catch (Horde_Exception $e) {
             /* See if the address points to the user's public key. */
-            $personal_pubkey = $this->getPersonalPublicKey();
+
+            global $injector;
+            $identity = $injector->getInstance('IMP_Identity');
+            $identityID = $identity->getDefault();
+
+            $personal_pubkey = $this->getPersonalPublicKey(self::KEY_SECONDARY_OR_PRIMARY, $identityID);
             if (!empty($personal_pubkey) &&
                 $injector->getInstance('IMP_Identity')->hasAddress($address)) {
                 return $personal_pubkey;
