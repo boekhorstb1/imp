@@ -42,11 +42,11 @@ class IMP_Prefs_Special_SmimeIdentities implements Horde_Core_Prefs_Ui_Special
         $view->addHelper('Horde_Core_View_Helper_Help');
         $view->addHelper('Text');
 
-        $page_output->addScriptFile('identityselect.js', 'horde');
-
         $identity = $injector->getInstance('IMP_Identity');
         $identityID = $identity->getDefault();
-        $view->identitieslist = $identity->getSelectList();
+        $view->defaultIdentity = $identity->getFullname($identityID);
+        $view->defaultAdres = $identity->getEmail($identityID);
+        $view->linkMailIdentity = Horde::url($GLOBALS['registry']->getServiceLink('prefs', 'imp'), true)->add('group', 'identities');
 
         return $view->render('smimeidentities');
     }

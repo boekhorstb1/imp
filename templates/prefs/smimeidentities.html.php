@@ -2,17 +2,14 @@
 <div class="prefsContainer item"> 
  
  <div> 
-  Your identities: 
+  Your currently set (default) identity: 
  </div> 
   
- <div> 
- <select id="default_identity" name="default_identity"> 
- <?php foreach ($this->identitieslist as $key => $value): ?>
-  
-   <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
-  
-   <?php endforeach ?>
+ <div id="default_identity">  
+  <b><?php echo $this->defaultIdentity.' ( '.$this->defaultAdres.' )'; ?></b>
+  <p>
+  If you want to set the keys for different identity, please change your default-identity <a href="<?php echo $this->linktoidentmailprefs ?>">here</a> first.
+</p> 
+ </div> 
 
-  </select> 
- </div> 
   

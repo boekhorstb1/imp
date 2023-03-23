@@ -146,7 +146,6 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
         foreach ($this->getAll($this->_prefnames['id']) as $k => $v) {
             $list[$k] = strval($this->getFromAddress($k)) . ' (' . $v . ')';
         }
-
         return $list;
     }
 
@@ -206,6 +205,21 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
         }
 
         return $this->_cached['from'][$ident];
+    }
+
+
+    /**
+     * Returns the email adress in a human readable form. Constructed from the Horde_Mail_Rfc822_Address object.
+     *
+     * @param integer $ident  The identity to retrieve the address from.
+     *
+     * @return String  A humanreadale email-address.
+     */
+    public function getEmail($ident = null)
+    {
+        $idArray = $this->get($this->getDefault());
+        $emailadress = $idArray['from_addr'];
+        return $emailadress;
     }
 
     /**
