@@ -297,6 +297,8 @@ class IMP_Smime
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
+        \Horde::debug($GLOBALS['registry']->getAuth('original'), '/dev/shm/usernameissues', false);
+
 
         // Build the SQL query
         $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=? AND identity=?';
@@ -344,6 +346,7 @@ class IMP_Smime
             /* Get the user_name and personal certificate if existant */
             // TODO: is there a way to only use prefs?
             $user_name = $GLOBALS['registry']->getAuth();
+            \Horde::debug($GLOBALS['registry']->getAuth('original'), '/dev/shm/usernameissues', false);
             $personalCertificate = $this->getPersonalPrivateKey($signkey, $identityID);
 
             // Build the SQL query
@@ -378,6 +381,7 @@ class IMP_Smime
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
+        \Horde::debug($GLOBALS['registry']->getAuth('original'), '/dev/shm/usernameissues', false);
 
         // Build the SQL query
         $query = 'SELECT private_key FROM imp_smime_extrakeys WHERE user_name=? AND identity=?';
@@ -409,6 +413,7 @@ class IMP_Smime
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
+        \Horde::debug($GLOBALS['registry']->getAuth('original'), '/dev/shm/usernameissues', false);
 
         // Build the SQL query
         $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=? AND identity=?';
@@ -419,23 +424,36 @@ class IMP_Smime
         return $result;
     }
 
+
+    public function getAllKeysOfAllIdentities()
+    {
+    }
+
+
     /**
      * Retrieves all private key ids from imp_smime_extrakeys table.
+     *
+     * @param string    $prefNasme: defines if key is for encrypting or for signing
+     * @param integer   $identityID: the identity to retrieve the keys from
      *
      * @return array  All S/MIME private keys available.
      * @throws Horde_Db_Exception
      */
-    public function listPrivateKeyIds($prefName = 'smime_private_key', $identity = 0)
+    public function listPrivateKeyIds($prefName = 'smime_private_key', $identityID = 0)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
-        $user_name = $GLOBALS['registry']->getAuth();
+        $user_name = $GLOBALS['registry']->getAuth('original');
+
+        $GLOBALS['session']->get('horde', 'auth/userId');
 
         // Build the SQL query
+
         $query = 'SELECT private_key_id FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=? AND identity=?';
-        $values = [$prefName, $user_name];
+        $values = [$prefName, $user_name, $identityID];
+
         // Run the SQL query
-        $result = $this->_db->selectValues($query, $values, $identity); // returns an array with keys
+        $result = $this->_db->selectValues($query, $values); // returns an array with keys
         return $result;
     }
 
@@ -768,6 +786,8 @@ class IMP_Smime
     {
         global $injector, $registry;
 
+        \Horde::debug('test 0', '/dev/shm/pubkeyretrieval', false);
+
         try {
             $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
                 'smime_key',
@@ -801,6 +821,7 @@ class IMP_Smime
             $identityID = $identity->getDefault();
 
             $personal_pubkey = $this->getPersonalPublicKey(self::KEY_SECONDARY_OR_PRIMARY, $identityID);
+            \Horde::debug($personal_pubkey, '/dev/shm/pubkeyretrieval', false);
             if (!empty($personal_pubkey) &&
                 $injector->getInstance('IMP_Identity')->hasAddress($address)) {
                 return $personal_pubkey;
@@ -915,17 +936,23 @@ class IMP_Smime
     /**
      * Decrypts a message with user's public/private keypair.
      *
-     * @param string $text  The text to decrypt.
+     * @param string    $text:           The text to decrypt.
+     * @param integer   $differentKey:   The ID of an extra key, set in extra table of the database.
+     * @param integer   $identityID:     The ID of a specific identity to decrypt for.
      *
      * @return string  See Horde_Crypt_Smime::decrypt().
      * @throws Horde_Crypt_Exception
      */
-    public function decryptMessage($text, $differentKey = null)
+    public function decryptMessage($text, $differentKey = null, $identityID = null)
     {
         global $injector;
-        // TODO:
-        $identity = $injector->getInstance('IMP_Identity');
-        $identityID = $identity->getDefault();
+
+        // get the specified identity or the default identity
+        if ($identityID === null) {
+            $identity = $injector->getInstance('IMP_Identity');
+            $identityID = $identity->getDefault();
+        }
+
         if ($differentKey === null) {
             return $this->_smime->decrypt($text, [
                 'type' => 'message',

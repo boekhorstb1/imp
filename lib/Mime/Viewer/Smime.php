@@ -204,26 +204,47 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
             // try only with default personal certificates
             $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL));
         } catch (Horde_Exception $e) {
-            // try with extra personal certificates
+            // get the identityID to retrieve the extra personal keys
+            $identity = $GLOBALS['injector']->getInstance('IMP_Identity');
+            $identityID = $identity->getDefault();
             $decrypted_data = null;
-            $keyslist = $this->_impsmime->listPrivateKeyIds();
 
-            foreach ($keyslist as $key => $otherkey) {
-                try {
-                    $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), $otherkey);
-                } catch (Horde_Exception $f) {
-                    //throw $th;
-                }
+            /* Try with other identities of the same user */
+            $identities = $identity->getAll('id');
+            foreach ($identities as $key => $value) {
+                $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), null, $key);
                 if (!is_null($decrypted_data)) {
                     break;
                 }
             }
 
+            /* try with extra personal certificates */
+            if (is_null($decrypted_data)) {
+                // because this is about decryption, the private key is needed.
+                $keyslist = $this->_impsmime->listPrivateKeyIds('smime_private_key', $identityID);
+
+                // check if privatekeys can be retrieved
+                if (!empty($keyslist) && isset($keyslist)) {
+                    foreach ($keyslist as $key => $otherkey) {
+                        $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), $otherkey);
+                        if (!is_null($decrypted_data)) {
+                            break;
+                        }
+                    }
+                } else {
+                    $decrypted_data = null;
+                }
+            }
+
+            /* if still nothing worked: return an error specifying why decryption did not work */
             if (is_null($decrypted_data)) {
                 // in case all of the certificates failed to decrypt, throw an error
-                if ($f->getMessage() == $e->getMessage()) {
+                if (isset($f) && $f->getMessage() == $e->getMessage()) {
                     $status->addText($e->getMessage().' This happend for all keys used.');
+                } else {
+                    $status->addText($e->getMessage().' Please check your keys and identies. ');
                 }
+
                 return null;
             }
         }
