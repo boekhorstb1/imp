@@ -17,7 +17,7 @@ $prefGroups['identities'] = [
     'members' => [
         'replyto_addr', 'alias_addr', 'tieto_addr', 'bcc_addr', 'signature',
         'sig_dashes', 'signature_html_select', 'save_sent_mail',
-        'sent_mail_folder', 'sentmailselect', 'privkey', 'pubkey', 'privsignkey', 'privpubkey',
+        'sent_mail_folder', 'sentmailselect', 'smimeselect', 'privkey', 'pubkey', 'privsignkey', 'privpubkey',
     ],
     'type' => 'identities',
 ];
@@ -105,7 +105,7 @@ $_prefs['sentmailselect'] = [
     'requires_nolock' => ['sent_mail_folder'],
 ];
 
-// Keypars: Load Keypairs from the database in order to encrypt an identities mails with an identities keys
+// Keypars: Load Keypairs from the database in order to encrypt an identity's mails with an identity's keys
 $_prefs['privkey'] = [
     'type' => 'special',
     'handler' => 'IMP_Prefs_Special_SmimePrivateKey',
@@ -122,6 +122,13 @@ $_prefs['privsignkey'] = [
 
 $_prefs['pubsignkey'] = [
     'value' => '',
+];
+
+// allows option to chose weather to encrypt with a complete key-managed smime identity or by only using a public key from the addressbook
+$_prefs['smimeselect'] = [
+    'value' => '',
+    'type' => 'checkbox',
+    'desc' => 'Check if you would like to use SMIME-keypairs for identities',
 ];
 
 // *** ACL Preferences ***

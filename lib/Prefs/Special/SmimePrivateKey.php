@@ -96,6 +96,10 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 'if ($("import_extra_smime_personal") != undefined) $("import_extra_smime_personal").observe("click", function(e) { ' . Horde::popupJs($smime_url, ['params' => ['actionID' => 'import_extra_personal_certs', 'reload' => base64_encode($ui->selfUrl()->setRaw(true))], 'height' => 450, 'width' => 750, 'urlencode' => true]) . '; e.stop(); })',
             ], true);
         }
+
+        if ($identities) {
+            $page_output->addScriptFile('prefs/switchencryptionoptions.js');
+        }
     }
 
     /**
