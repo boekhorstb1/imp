@@ -297,8 +297,6 @@ class IMP_Smime
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
-        \Horde::debug($GLOBALS['registry']->getAuth('original'), '/dev/shm/usernameissues', false);
-
 
         // Build the SQL query
         $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=? AND identity=?';
@@ -346,7 +344,6 @@ class IMP_Smime
             /* Get the user_name and personal certificate if existant */
             // TODO: is there a way to only use prefs?
             $user_name = $GLOBALS['registry']->getAuth();
-            \Horde::debug($GLOBALS['registry']->getAuth('original'), '/dev/shm/usernameissues', false);
             $personalCertificate = $this->getPersonalPrivateKey($signkey, $identityID);
 
             // Build the SQL query
@@ -381,7 +378,6 @@ class IMP_Smime
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
-        \Horde::debug($GLOBALS['registry']->getAuth('original'), '/dev/shm/usernameissues', false);
 
         // Build the SQL query
         $query = 'SELECT private_key FROM imp_smime_extrakeys WHERE user_name=? AND identity=?';
@@ -413,7 +409,6 @@ class IMP_Smime
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
-        \Horde::debug($GLOBALS['registry']->getAuth('original'), '/dev/shm/usernameissues', false);
 
         // Build the SQL query
         $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=? AND identity=?';
@@ -786,8 +781,7 @@ class IMP_Smime
     {
         global $injector, $registry;
 
-        \Horde::debug('test 0', '/dev/shm/pubkeyretrieval', false);
-
+        // get keys by help of specified hooks settings
         try {
             $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
                 'smime_key',
@@ -800,34 +794,86 @@ class IMP_Smime
         } catch (Horde_Exception_HookNotSet $e) {
         }
 
-        $contacts = $injector->getInstance('IMP_Contacts');
+        // TODO:
+        // getPublicKey can be used for getting public keys of:
+        // - identities
+        // - contacts
+        // need to make sure, for which of these we need to get the keys
+        //
+        // Current solution: check if passed address is in identitylist.
+        // If not: only let de default identity get its keys in both ways
+        //
+        // Question: can a defaultidentity have a key other then null? (need to find out)
 
-        try {
-            $key = $registry->call(
-                'contacts/getField',
-                [
-                    $address,
-                    self::PUBKEY_FIELD,
-                    $contacts->sources,
-                    true,
-                    true,
-                ]
-            );
-        } catch (Horde_Exception $e) {
-            /* See if the address points to the user's public key. */
+        // check if this method is used to get keys of an identity
+        $identity = $injector->getInstance('IMP_Identity');
+        $identityID = $identity->getDefault();
 
-            global $injector;
-            $identity = $injector->getInstance('IMP_Identity');
-            $identityID = $identity->getDefault();
+        // get identities-list of the user
+        $allIdentitiesAdresses = $identity->getEmailsOfIds();
 
-            $personal_pubkey = $this->getPersonalPublicKey(self::KEY_SECONDARY_OR_PRIMARY, $identityID);
-            \Horde::debug($personal_pubkey, '/dev/shm/pubkeyretrieval', false);
-            if (!empty($personal_pubkey) &&
-                $injector->getInstance('IMP_Identity')->hasAddress($address)) {
-                return $personal_pubkey;
+        // check if the passed address is in the idenity-list
+        $isIdentity = in_array($address, $allIdentitiesAdresses);
+
+        if ($isIdentity) {
+            // check if identity prefers SMIME-keys or Adressbook keys for encryption
+            $identityEncryptionPreference = $identity->getValue('smimeselect', $identityID);
+
+            if ($identityEncryptionPreference) {
+                // smime is selected
+                $personal_pubkey = $this->getPersonalPublicKey(self::KEY_SECONDARY_OR_PRIMARY, $identityID);
+                if (!empty($personal_pubkey) &&
+                    $identity->hasAddress($address)) {
+                    return $personal_pubkey;
+                }
+            } else {
+                // addressbook is selected
+                $contacts = $injector->getInstance('IMP_Contacts');
+
+                try {
+                    $key = $registry->call(
+                        'contacts/getField',
+                        [
+                            $address,
+                            self::PUBKEY_FIELD,
+                            $contacts->sources,
+                            true,
+                            true,
+                        ]
+                    );
+                } catch (Horde_Exception $e) {
+                    /* If the default identity is used: See if the address points to the user's public key. */
+
+                    $idOfPassedAdress = $identity->getMatchingIdentity($address);
+
+                    if ($identityID == $idOfPassedAdress) {
+                        $personal_pubkey = $this->getPersonalPublicKey(self::KEY_SECONDARY_OR_PRIMARY, $identityID);
+                        if (!empty($personal_pubkey) &&
+                        $injector->getInstance('IMP_Identity')->hasAddress($address)) {
+                            return $personal_pubkey;
+                        }
+                    }
+
+                    throw $e;
+                }
             }
+        } else { // no identity is used and keys are selected from addressbook
+            $contacts = $injector->getInstance('IMP_Contacts');
 
-            throw $e;
+            try {
+                $key = $registry->call(
+                    'contacts/getField',
+                    [
+                        $address,
+                        self::PUBKEY_FIELD,
+                        $contacts->sources,
+                        true,
+                        true,
+                    ]
+                );
+            } catch (Horde_Exception $e) {
+                throw $e;
+            }
         }
 
         /* If more than one public key is returned, just return the first in

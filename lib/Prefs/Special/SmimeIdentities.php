@@ -55,18 +55,6 @@ class IMP_Prefs_Special_SmimeIdentities implements Horde_Core_Prefs_Ui_Special
      */
     public function update(Horde_Core_Prefs_Ui $ui)
     {
-        global $injector, $notification;
-
-        //dd($ui->vars);
-
-        if (isset($ui->vars->delete_smime_pubkey)) {
-            try {
-                echo 'do something here';
-            } catch (Horde_Exception $e) {
-                $notification->push($e);
-            }
-        }
-
         return false;
     }
 }

@@ -42,7 +42,7 @@ class IMP_Basic_Smime extends IMP_Basic_Base
 
         $this->_smime = $injector->getInstance('IMP_Smime');
         $this->_identity = $injector->getInstance('IMP_Identity');
-        $selected_identity = $this->_identity->getDefault();
+        $identityID = $this->_identity->getDefault();
 
         /* Run through the action handlers */
         switch ($this->vars->actionID) {
@@ -71,7 +71,7 @@ class IMP_Basic_Smime extends IMP_Basic_Base
             case 'view_public_key':
             case 'info_public_key':
                 try {
-                    $key = $this->_smime->getPublicKey($this->vars->email);
+                    $key = $this->_smime->getPublicKey($this->vars->email); // here the method is never used to get the keys of an identity
                 } catch (Horde_Exception $e) {
                     $key = $e->getMessage();
                 }
@@ -86,7 +86,8 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                 $this->_textWindowOutput(
                     'S/MIME Personal Public Key',
                     $this->_smime->getPersonalPublicKey(
-                        $this->vars->actionID == 'view_personal_public_sign_key'
+                        $this->vars->actionID == 'view_personal_public_sign_key',
+                        $identityID
                     )
                 );
                 break;
@@ -95,7 +96,8 @@ class IMP_Basic_Smime extends IMP_Basic_Base
             case 'info_personal_public_sign_key':
                 $this->_printCertInfo(
                     $this->_smime->getPersonalPublicKey(
-                        $this->vars->actionID == 'info_personal_public_sign_key'
+                        $this->vars->actionID == 'info_personal_public_sign_key',
+                        $identityID
                     )
                 );
                 break;
@@ -105,7 +107,8 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                     $this->_smime->getExtraPublicKey(
                         $this->vars->pkID,
                         // if actionID euquals value, add it, otherwise load defaul value of function
-                        $this->vars->actionID == 'view_personal_public_sign_info'
+                        $this->vars->actionID == 'view_personal_public_sign_info',
+                        $identityID
                     )
                 );
                 break;
@@ -115,7 +118,8 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                 $this->_textWindowOutput(
                     'S/MIME Personal Private Key',
                     $this->_smime->getPersonalPrivateKey(
-                        $this->vars->actionID == 'view_personal_private_sign_key'
+                        $this->vars->actionID == 'view_personal_private_sign_key',
+                        $identityID
                     )
                 );
                 break;
@@ -126,7 +130,8 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                     $this->_smime->getExtraPrivateKey(
                         $this->vars->pkID,
                         // if actionID euquals value, add it, otherwise load defaul value of function
-                        $this->vars->actionID == 'view_personal_private_sign_key'
+                        $this->vars->actionID == 'view_personal_private_sign_key',
+                        $identityID
                     )
                 );
                 break;
@@ -137,7 +142,8 @@ class IMP_Basic_Smime extends IMP_Basic_Base
                     $this->_smime->getExtraPublicKey(
                         $this->vars->pkID,
                         // if actionID euquals value, add it, otherwise load defaul value of function
-                        $this->vars->actionID == 'view_personal_public_sign_key'
+                        $this->vars->actionID == 'view_personal_public_sign_key',
+                        $identityID
                     )
                 );
                 break;

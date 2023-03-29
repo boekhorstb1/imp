@@ -385,7 +385,7 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
 
                     foreach ($sig_result->email as $single_email) {
                         try {
-                            $this->_impsmime->getPublicKey($single_email);
+                            $this->_impsmime->getPublicKey($single_email); // this is used to check if a public keys exists, if not: ask if user wants to save it in the adresbook
                         } catch (Horde_Exception $e) {
                             $imple = $GLOBALS['injector']
                                 ->getInstance('Horde_Core_Factory_Imple')

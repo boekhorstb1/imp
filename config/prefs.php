@@ -126,7 +126,7 @@ $_prefs['pubsignkey'] = [
 
 // allows option to chose weather to encrypt with a complete key-managed smime identity or by only using a public key from the addressbook
 $_prefs['smimeselect'] = [
-    'value' => '',
+    'value' => 0, // default value will choose the adresbook, note: default identity will still be checked
     'type' => 'checkbox',
     'desc' => 'Check if you would like to use SMIME-keypairs for identities',
 ];

@@ -223,6 +223,22 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
     }
 
     /**
+     * Returns all email adress in a human readable form. Constructed from the Horde_Mail_Rfc822_Address object.
+     *
+     *
+     * @return Array  An array of humanreadale email-addresses (strings).
+     */
+    public function getEmailsOfIds()
+    {
+        $list = [];
+
+        foreach ($this->getAll($this->_prefnames['id']) as $k => $v) {
+            $list[$k] = strval($this->getEmail($k));
+        }
+        return $list;
+    }
+
+    /**
      * Returns all aliases based on the chosen identity.
      *
      * @param integer $ident  The identity to retrieve the aliases from.
