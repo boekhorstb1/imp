@@ -141,13 +141,11 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         $page_output->addStylesheet($p_css->fs, $p_css->uri);
 
         /* an instance of IMP_smime to be able to list all keys, their ids and aliases from the DB */
-        //$smime = $injector->getInstance('IMP_Smime');
         try {
             $extra_private_keys = $smime->listAllKeys($prefName = 'smime_private_key', $defaultIdentity); // TODO: what about singkeys?
         } catch (Horde_Exception $e) {
             $extra_private_keys = [];
         }
-        //$this->listExtraKeys($identityID);
 
         /* Loading View Template and Help Template */
         $this->view = $view = new Horde_View([
@@ -254,10 +252,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
                 ])
                 . _('Details') . '</a>';
 
-            //dd($defaultIdentity);
-
             $view->{'privatekeyexits'} = $smime->getSetPrivateKeyId(0, $defaultIdentity); // check if private key exists and return its id value if so
-            $view->{'signkeyexits'} = $smime->getSetPrivateKeyId(1, $defaultIdentity); // Note: self::KEY_SECONDARY = 1 in Smime.php...  This checks if a sigm key exists and returns the id
+            $view->{'signkeyexits'} = $smime->getSetPrivateKeyId(1, $defaultIdentity); // Note: self::KEY_SECONDARY = 1 in Smime.php...  This checks if a sign ey exists and returns the id
             $view->{'aliasexists'} = $smime->getAlias($view->privatekeyexits); // gets the alias of the key by ID
             $view->{'signaliasexists'} = $smime->getAlias($view->signkeyexits); // gets the alias of the key by ID
 

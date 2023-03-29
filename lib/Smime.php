@@ -76,10 +76,8 @@ class IMP_Smime
      */
     public function __construct(Horde_Crypt_Smime $smime, $db)
     {
-        //global $injector;
         $this->_smime = $smime;
         $this->_db = $db;
-        //$this->defaultIdentity = $injector->getInstance('IMP_Identity')->getDefault();
     }
 
     /**
@@ -146,10 +144,10 @@ class IMP_Smime
     /**
      * Adds the personal private key to the prefs.
      *
-     * @param string|array $key  The private key to add.
-     * @param boolean $signkey   Is this the secondary key for signing?
-     * @param boolean $calledFromSetSmime to stop unneded notifications
-     * @param int $identityID    The identity for wich the private key should be added
+     * @param string|array  $key                The private key to add.
+     * @param boolean       $signkey            Set this to indicate the secondary key for signing
+     * @param boolean       $calledFromSetSmime This is to stop unneded notifications
+     * @param int           $identityID         The identity for wich the private key should be added
      */
     public function addPersonalPrivateKey($key, $signkey = false, $calledFromSetSmime = false, $identityID=0)
     {
@@ -182,12 +180,12 @@ class IMP_Smime
     /**
      * Adds extra personal keys to the extra keys table.
      *
-     * @param string|array $key  The private key to add.
-     * @param string|array $key  The public key to add.
-     * @param string $password  The password for the private key to add.
-     * @param string $pref_name To be removed... TODO.@param string|array
-     * @param string $identity The name of the identity to save the keys for
-     * @param bool $identity_used Marks the keys as the one that is being used
+     * @param string|array  $key            The private key to add.
+     * @param string|array  $key            The public key to add.
+     * @param string        $password       The password for the private key to add.
+     * @param string        $pref_name      To be removed... TODO.@param string|array
+     * @param string        $identity       The name of the identity to save the keys for
+     * @param bool          $identity_used  Marks the keys as the one that is being used
      */
     public function addExtraPersonalKeys(
         $private_key,
@@ -208,7 +206,6 @@ class IMP_Smime
         $encryptedPassword = $blowfish->encrypt($password);
         $encryptedPassword = base64_encode($encryptedPassword);
 
-        // TODO: add check if certificate already exists give warning
         if ($this->privateKeyExists($private_key, $identityID)) {
             $notification->push(_('Key is allready in the Database'), 'horde.success');
             return false;
@@ -225,8 +222,8 @@ class IMP_Smime
     /**
      * Adds a list of additional certs to the prefs.
      *
-     * @param string|array $key  The additional certifcate(s) to add.
-     * @param boolean $signkey   Is this the secondary key for signing?
+     * @param string|array  $key       The additional certifcate(s) to add.
+     * @param boolean       $signkey   Is this the secondary key for signing?
      */
     public function addAdditionalCert($key, $signkey = false)
     {
@@ -239,7 +236,8 @@ class IMP_Smime
     /**
      * Returns the personal public key from the prefs.
      *
-     * @param integer $signkey  One of the IMP_Sime::KEY_* constants.
+     * @param integer   $signkey:    One of the IMP_Sime::KEY_* constants.
+     * @param integer   $identityID: The Identity to retrieve the personal public key from.
      *
      * @return string  The personal S/MIME public key.
      */
@@ -261,8 +259,8 @@ class IMP_Smime
     /**
      * Returns the personal private key from the prefs.
      *
-     * @param int $signkey  One of the IMP_Sime::KEY_* constants.
-     * @param int $identityID    The identity for wich the key should be gotten. TODO: this not yet implemented!
+     * @param int $signkey:       One of the IMP_Sime::KEY_* constants.
+     * @param int $identityID:    The identity for wich the key should be gotten. TODO: this not yet implemented!
      *
      * @return string  The personal S/MIME private key.
      */
@@ -285,7 +283,7 @@ class IMP_Smime
      *
      * @param int       $privateKeyId: get the public key of of the privatekey (its id)
      * @param string    $prefName: indicates that a key is for sining
-     * @param int       $identityID:
+     * @param int       $identityID: The identity ID to retrieve the extra key for
      *
      * @return string   Specific S/MIME private key.
      * @throws Horde_Db_Exception
@@ -320,7 +318,6 @@ class IMP_Smime
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
-        // TODO: delete the prefName variable?
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
@@ -334,6 +331,9 @@ class IMP_Smime
 
     /**
      * Get private key id of the set Personal Certificate (if it exists in the database)
+     *
+     * @param string    $prefname: currently set to discern between sing keys and normal keys
+     * @param int       $identityID: the identity to look for
      *
      * @return int id of extra private certificate in DB
      * @throws Horde_Db_Exception
@@ -370,6 +370,7 @@ class IMP_Smime
      *
      * @param   string    $personalCertificate: the personal certificate to look for
      * @param   int       $idenitytId: the id of the identity to look for
+     *
      * @return  bool      if private key is there or not
      * @throws Horde_Db_Exception
      */
@@ -401,6 +402,9 @@ class IMP_Smime
     /**
      * Retrieves all public and private keys and their aliases from imp_smime_extrakeys table.
      *
+     * @param string    $prefname:      To discern between sing keys and normal keys
+     * @param int       $identityID:    The identity to look for
+     *
      * @return array  All S/MIME private keys available.
      * @throws Horde_Db_Exception
      */
@@ -417,11 +421,6 @@ class IMP_Smime
         // Run the SQL query
         $result = $this->_db->selectAll($query, $values); // returns an array with keys
         return $result;
-    }
-
-
-    public function getAllKeysOfAllIdentities()
-    {
     }
 
 
@@ -454,9 +453,11 @@ class IMP_Smime
 
     /**
      * Setting an alias in the database
-     * @return bool|error returns eiter true, false or an error concerning the insertion of an alias in the database
      *
-     * @param int $keyid to set the alias to the key with specific id     *
+     * @param int       $keyid to set the alias to the key with specific id
+     * @param string    $alias to set
+     *
+     * @return bool|error returns either true, false or an error if database insertion failed
      */
     public function updateAlias($keyid, $alias)
     {
@@ -469,6 +470,7 @@ class IMP_Smime
      * Getting an alias from the database
      *
      * @param int $keyid to find the alias belong to the key
+     *
      * @return string|bool returns an alias (name) of the certification or false if nothing is returned
      */
     public function getAlias($keyid)
@@ -490,8 +492,10 @@ class IMP_Smime
      * Setting a new Personal Certificate and belonging Public Certificate:
      * Transfers a Certificate and belonging Public Certificate from the Extra Keys table to Horde_Prefs
      *
-     * @param int $keyid returns the key from the keyid
-     * @param int $signkey sets a sign key, per default a personal (primary) key is set
+     * @param int       $keyid:         Returns the key from the keyid
+     * @param int       $signkey:       Sets a sign key, per default a personal (primary) key is set
+     * @param int       $identityID:    The identity to look for
+     *
      */
     public function setSmimePersonal($keyid, $signkey=self::KEY_PRIMARY, $identityID=0)
     {
@@ -503,9 +507,9 @@ class IMP_Smime
 
         // Warns unsetSmime functions that no notifications are needed
         $calledFromSetSmime = true;
-        // find the private key that has been selected (NB: do not care if the key is a sign key or not, so no prefname?)
+        // find the private key that has been selected (NB: do not care if the key is a sign key or not TODO: so no prefname needed?)
         $newprivatekey = $this->getExtraPrivateKey($keyid, $prefName, $identityID);
-        $newpublickey = $this->getExtraPublicKey($keyid, $prefName = 'smime_private_key', $identityID); // bug over here: need to remove singkey stuff in parameters
+        $newpublickey = $this->getExtraPublicKey($keyid, $prefName = 'smime_private_key', $identityID); // buggy over here: need to remove singkey stuff in parameters
 
         // check if a personal certificate is set
         $check = null;
@@ -521,8 +525,12 @@ class IMP_Smime
                 return;
             }
             // if the key is not in the database, first unset the key (which copies it to the database) and than add (overwrite) the new keys in the prefs table
-            // Note $calledFromSetSmime: because setSmimePersonal() adds certifactes from the database, there is no need to check for a correct password, as it should be set in the database already. Setting $calledFromSetSmime = true stopps notifications from poping up.
-            // TODO: the singkey stuff is very confusing, needs to be refactored
+            // Note:
+            // - $calledFromSetSmime: This variable is used because setSmimePersonal() adds certifactes from the database allready.
+            //   So there is no need to check for a correct password, as it should allready have locked the certificates in the database.
+            // - Setting $calledFromSetSmime = true stopps notifications from poping up.
+            // TODO:
+            // - the singkey stuff is very confusing, needs to be refactored
             if ($this->unsetSmimePersonal($signkey = self::KEY_PRIMARY, $calledFromSetSmime, $identityID) != false) {
                 $this->addPersonalPrivateKey($newprivatekey, $signkey, $calledFromSetSmime);
                 $this->addPersonalPublicKey($newpublickey, $signkey);
@@ -531,7 +539,7 @@ class IMP_Smime
             // otherwise do nothing
             return;
         }
-        // if not: import it. NOte: if a newly imported but yet non-existant (in the database) key is to be added, $calledFromSetSmime is not set to true, because password checks need to happen
+        // if not: import it. Note: if a newly imported but yet non-existant key is to be added, $calledFromSetSmime is not set to true, because password checks need to happen
         $this->addPersonalPrivateKey($newprivatekey, $signkey, $calledFromSetSmime=false, $identityID);
         $this->addPersonalPublicKey($newpublickey, $signkey, $identityID);
     }
@@ -539,7 +547,8 @@ class IMP_Smime
     /**
      * Setting a new certificate for signing SMIME mails
      *
-     * @param int $keyid to inform which key should be set as a secondary signkey
+     * @param int $keyid:       To inform which key should be set as a secondary signkey
+     * @param int $identityID:  The identity to look for
      */
     public function setSmimeSecondary($keyid, $identityID)
     {
@@ -550,9 +559,9 @@ class IMP_Smime
      * Unsetting a Personal Certificate and belonging Public Certificate:
      * Transfers a Personal Certificate and belonging Public Certificate to the Extra Keys table in the DB
      *
-     * @param int $singkey defines the key to be processed. Per default it is the personal (primary) key, when e.g. set to self::KEY_SECONDARY the secondary sign key will be processed
-     * @param bool $calledFromSetSmime disables notifications for unset passwords: If the function is called from setSmimePersonal there is no reason to check for a password, because the key and the password is set in the database allready.
-     * @param int $identityID    The identity for wich the key should be set
+     * @param int   $singkey:               Defines the key to be processed. Per default it is the personal (primary) key, when e.g. set to self::KEY_SECONDARY the secondary sign key will be processed
+     * @param bool  $calledFromSetSmime:    Disables notifications for unset passwords: If the function is called from setSmimePersonal there is no reason to check for a password, because the key and the password is set in the database allready.
+     * @param int   $identityID:            The identity for wich the key should be set
      */
     public function unsetSmimePersonal($signkey = self::KEY_PRIMARY, $calledFromSetSmime = false, $identityID=0)
     {
@@ -601,6 +610,9 @@ class IMP_Smime
 
     /**
      * Unsetting a Certificate for Singing and transerfing it to extra tables
+     *
+     * @param bool  $calledFromSetSmime:    To inform the method that it does not need to check for a password again.
+     * @param int   $identityID:            The identity to look for.
      */
     public function unsetSmimeSecondary($calledFromSetSmime, $identityID=0)
     {
@@ -611,23 +623,12 @@ class IMP_Smime
      * Returns any additional certificates from the prefs.
      *
      * @param integer $signkey  One of the IMP_Sime::KEY_* constants.
-     * @param integer $identityID the id of the identity to get the key from
+     * @param integer $identityID the id of the identity to get the key from.
      *
      * @return string  Additional signing certs for inclusion.
      */
     public function getAdditionalCert($signkey = self::KEY_PRIMARY, $identityID=0)
     {
-        // global $prefs;
-
-        // $key = $prefs->getValue(
-        //     $signkey ? 'smime_additional_sign_cert' : 'smime_additional_cert'
-        // );
-        // if (!$key && $signkey == self::KEY_SECONDARY_OR_PRIMARY) {
-        //     $key = $prefs->getValue('smime_additional_cert');
-        // }
-
-        // return $key;
-
         global $injector;
 
         $identity = $injector->getInstance('IMP_Identity');
@@ -644,7 +645,8 @@ class IMP_Smime
     /**
      * Deletes the specified personal keys from the prefs.
      *
-     * @param boolean $signkey  Return the secondary key for signing?
+     * @param boolean   $signkey:     Return the secondary key for signing?
+     * @param int       $identityID:  The identity to look for.
      */
     public function deletePersonalKeys($signkey = false, $identityID=0)
     {
@@ -675,7 +677,8 @@ class IMP_Smime
     /**
      * Deletes the specified extra keys from the extra-keys-table.
      *
-     * @param boolean $signkey  Return the secondary key for signing?
+     * @param int     $private_key_id:  The ID of the privatekey to look for.
+     * @param boolean $signkey:         Return the secondary key for signing?
      */
     public function deleteExtraKey($private_key_id, $signkey = false)
     {
@@ -1019,7 +1022,8 @@ class IMP_Smime
     /**
      * Returns the user's passphrase from the session cache.
      *
-     * @param integer $signkey  One of the IMP_Sime::KEY_* constants.
+     * @param integer       $signkey      One of the IMP_Sime::KEY_* constants.
+     * @param integer|null  $differentkey If set, this integer will be used to find a privatekey id from the extrakeys table in the database.
      *
      * @return mixed  The passphrase, if set.  Returns false if the passphrase
      *                has not been loaded yet.  Returns null if no passphrase
@@ -1045,7 +1049,7 @@ class IMP_Smime
                 $private_key = $this->getPersonalPrivateKey($signkey, $identityID);
             }
         } else {
-            // TODO: take care of secondary keys in extratables
+            // TODO: Check if it is necessary to take care of secondary keys in extratables
             $private_key = $this->getExtraPrivateKey($differentKey, $identityID);
         }
 
@@ -1207,11 +1211,12 @@ class IMP_Smime
      *
      * TODO: Should keys be added to the extra table per default?
      *
-     * @param string $pkcs12    The PKCS 12 data.
-     * @param string $password  The password of the PKCS 12 file.
-     * @param string $pkpass    The password to use to encrypt the private key.
-     * @param boolean $signkey  Is this the secondary key for signing?
-     * @param boolean $extrakey Specifies if the key should be added to the extrakeys table
+     * @param string $pkcs12        The PKCS 12 data.
+     * @param string $password      The password of the PKCS 12 file.
+     * @param string $pkpass        The password to use to encrypt the private key.
+     * @param boolean $signkey      Is this the secondary key for signing?
+     * @param boolean $extrakey     Specifies if the key should be added to the extrakeys table
+     * @param integer $identityID   The identity to look for.
      *
      * @throws Horde_Crypt_Exception
      */

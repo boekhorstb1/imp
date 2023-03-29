@@ -12,8 +12,7 @@
  */
 
 /**
- * Special prefs handling for the 'smimepublickey' preference, the list of
- * public certificates from the user's address book(s).
+ * Special prefs handling to give information on which identity is currenlty set. This is for the SMIME prefs section.
  *
  * @author    Rafael te Boekhorst <boekhorst@b1-systems.de>
  * @author    Michael Slusarz <slusarz@horde.org>
@@ -55,6 +54,7 @@ class IMP_Prefs_Special_SmimeIdentities implements Horde_Core_Prefs_Ui_Special
      */
     public function update(Horde_Core_Prefs_Ui $ui)
     {
+        // this can eventually be updated to allow the user to switch identities within the smime prefs section. Could be more convenient.
         return false;
     }
 }

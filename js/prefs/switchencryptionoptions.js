@@ -37,6 +37,7 @@ var switchEncryption = {
 
                     let div = $$('div.prefsSmimeContainer')[0];
 
+                    // ajax reloads things for three times for some reason, so make sure that nothing appears additionally. Remove extra appearances.
                     if (div.previous('ul#addressbookpubkey')){
                         $('addressbookpubkey').remove();
                         $('addressbookonlyinfos').remove();
@@ -47,6 +48,7 @@ var switchEncryption = {
                         $('addressbookonlyinfos').remove();
                     }
                     
+                    // if smime is not selected, some information on the keys in the adressbook shows
                     if ($('smimeselect').checked === false) {
 
                         let ul = new Element('ul', {
@@ -76,9 +78,6 @@ var switchEncryption = {
                         });
                         infodiv.update(text);
                         ul.insert({before: infodiv});
-                
-
-
                     }
                 }
             }
