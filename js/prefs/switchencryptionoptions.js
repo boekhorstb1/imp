@@ -36,9 +36,18 @@ var switchEncryption = {
                     // check for keys in the adressbook for the identity and show them
 
                     let div = $$('div.prefsSmimeContainer')[0];
-                    let ul = div.previous('ul#addressbookpubkey');
 
-                    if (!ul && $('smimeselect').checked === false) {
+                    if (div.previous('ul#addressbookpubkey')){
+                        $('addressbookpubkey').remove();
+                        $('addressbookonlyinfos').remove();
+                    }
+
+                    if ($('smimeselect').checked === true){
+                        $('addressbookpubkey').remove();
+                        $('addressbookonlyinfos').remove();
+                    }
+                    
+                    if ($('smimeselect').checked === false) {
 
                         let ul = new Element('ul', {
                             id: "addressbookpubkey"

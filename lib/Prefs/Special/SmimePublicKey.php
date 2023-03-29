@@ -79,6 +79,7 @@ class IMP_Prefs_Special_SmimePublicKey implements Horde_Core_Prefs_Ui_Special
                     'delete' => Horde::link($self_url->copy()->add(['delete_smime_pubkey' => 1, 'email' => $val['email']]), sprintf(_('Delete %s Public Key'), $val['name']), null, null, "window.confirm('" . addslashes(_('Are you sure you want to delete this public key?')) . "')"),
                 ];
             }
+
             $view->pubkey_list = $plist;
         }
 

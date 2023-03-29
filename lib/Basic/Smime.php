@@ -71,7 +71,7 @@ class IMP_Basic_Smime extends IMP_Basic_Base
             case 'view_public_key':
             case 'info_public_key':
                 try {
-                    $key = $this->_smime->getPublicKey($this->vars->email); // here the method is never used to get the keys of an identity
+                    $key = $this->_smime->getPublicKey($this->vars->email, $identityID); // here the method is never used to get the keys of an identity
                 } catch (Horde_Exception $e) {
                     $key = $e->getMessage();
                 }

@@ -38,20 +38,19 @@ class IMP_Ajax_Application_Handler_SwitchEncryption extends Horde_Core_Ajax_Appl
         $email = $identity->getEmail($identityID);
         $name = $identity->getName($identityID);
 
+        $smime_url = IMP_Basic_Smime::url();
         $self_url = Horde::url($GLOBALS['registry']->getServiceLink('prefs', 'imp'), false);
-        // $smime = $injector->getInstance('IMP_Smime');
-        // $publicKeyFromAdressbook = $smime->getPublicKey($email);
 
-        $linksToKey = [
-        'view' => Horde::link($self_url->copy()->add(['actionID' => 'view_public_key', 'email' => $email])),
-        'info' => Horde::link($self_url->copy()->add(['actionID' => 'info_public_key', 'email' => $email])),
-        ];
+        try {
+            $linksToKey = [
+                'view' => Horde::link($smime_url->copy()->add(['actionID' => 'view_public_key', 'email' => $email]), sprintf(_('View %s Public Key'), $name), null, 'view_key'),
+                'info' => Horde::link($smime_url->copy()->add(['actionID' => 'info_public_key', 'email' => $email]), sprintf(_('View %s Public Info'), $name), null, 'info_key'),
+                ];
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+
 
         return $linksToKey;
-
-
-        // return ($result && $this->vars->reload)
-        //     ? new Horde_Core_Ajax_Response_HordeCore_Reload($this->vars->reload)
-        //     : $result;
     }
 }
