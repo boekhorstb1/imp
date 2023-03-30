@@ -95,7 +95,7 @@ const switchEncryption = {
   document.addEventListener('HordeIdentitySelect:change', switchEncryption.checkSMIMEOption.bind(switchEncryption));
   document.addEventListener('DOMContentLoaded', switchEncryption.checkSMIMEOption.bind(switchEncryption));
   const smimeselect = document.getElementById('smimeselect');
-  if (smimeselect !== null) {
+  if (smimeselect) {
     smimeselect.addEventListener('click', switchEncryption.checkSMIMEOption.bind(switchEncryption));
   }
   
