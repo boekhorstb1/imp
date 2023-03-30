@@ -8,8 +8,19 @@
  * @license   http://www.horde.org/licenses/gpl GPL
  * @package   IMP
  */
+use Horde_Registry;
+use Horde_Injector;
+
 class IMP_Prefs_SwitchHandler
 {
+    private $injector;
+    private $registry;
+
+    public function __construct(Horde_Injector $injector){
+        $this->injector = $injector;
+        $this->registry = new Horde_Registry();
+    }
+
 
     /**
      * gets the keys form the address book for the prefs identity frontend
@@ -18,9 +29,11 @@ class IMP_Prefs_SwitchHandler
      * 
      * @return array returns an array containing links to the keys
      */
-    public function getPublicKeysForPrefsIdentities($identityID){
-        global $injector, $registry;
+    public function getPublicKeysForPrefsIdentities( $identityID){
 
+        $injector = $this->injector;
+        $registry = $this->registry;
+        
         $identity = $injector->getInstance('IMP_Identity');
         $email = $identity->getEmail($identityID);
         $name = $identity->getName($identityID);

@@ -34,7 +34,7 @@ class IMP_Ajax_Application_Handler_SwitchEncryption extends Horde_Core_Ajax_Appl
         // get ID of identity and email
         $identityID = $this->vars->identityID;
 
-        $handler = new SwitchHandler();
+        $handler = new SwitchHandler($GLOBALS['injector']);
         return $handler->getPublicKeysForPrefsIdentities($identityID);
     }
 }
