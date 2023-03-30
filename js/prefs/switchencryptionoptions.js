@@ -6,92 +6,96 @@
  * @license    GPL-2 (http://www.horde.org/licenses/gpl)
  */
 
-var switchEncryption = {
-
-    // checks wheather the smime checkbox is clicked and shows/hides
-    checkSMIMEOption: function () {
-        // get checkbox info
-        if ($('smimeselect').checked === true) {
-            $$('.prefsSmimeContainer').invoke('show');
-        } else if ($('smimeselect').checked === false) {
-            $$('.prefsSmimeContainer').invoke('hide');
-            this.showKeys();
-        }
-
+const switchEncryption = {
+    // checks whether the smime checkbox is clicked and shows/hides
+    checkSMIMEOption() {
+      // get checkbox info
+      const smimeSelect = document.getElementById('smimeselect');
+      if (smimeSelect.checked) {
+        const prefsSmimeContainer = document.querySelectorAll('.prefsSmimeContainer');
+        prefsSmimeContainer.forEach((container) => {
+          container.style.display = 'block';
+        });
+      } else {
+        const prefsSmimeContainer = document.querySelectorAll('.prefsSmimeContainer');
+        prefsSmimeContainer.forEach((container) => {
+          container.style.display = 'none';
+        });
+        this.showKeys();
+      }
     },
-
+  
     // shows the keys of the identity
-    showKeys: function () {
-
-        // get the identityID
-        let identity = $("identity");
-        let identityID = Number($F(identity));
-
-        HordeCore.doAction('getIdentityPubKey', // NOTE: methods from doAction cannot get any parameters! They expect $this->vars->$name
-            {
-                identityID: identityID,
-            },
-            {
-                callback: function (response) {
-                    // check for keys in the adressbook for the identity and show them
-
-                    let div = $$('div.prefsSmimeContainer')[0];
-
-                    // ajax reloads things for three times for some reason, so make sure that nothing appears additionally. Remove extra appearances.
-                    if (div.previous('ul#addressbookpubkey')){
-                        $('addressbookpubkey').remove();
-                        $('addressbookonlyinfos').remove();
-                    }
-
-                    if ($('smimeselect').checked === true){
-                        $('addressbookpubkey').remove();
-                        $('addressbookonlyinfos').remove();
-                    }
-                    
-                    // if smime is not selected, some information on the keys in the adressbook shows
-                    if ($('smimeselect').checked === false) {
-
-                        let ul = new Element('ul', {
-                            id: "addressbookpubkey"
-                        });
-
-                        for (let key in response) {
-                            if (response.hasOwnProperty(key)) {
-
-                                let li = new Element('li').setStyle({'list-style-type':'none'});
-                                let a = new Element('a', {
-                                    href: response[key]
-                                })
-                                a.update(key);
-                                li.insert(a);
-                                ul.insert(li);
-                            }
-                        }
-
-                        div.insert({before: ul});
-
-                        // create a text to inform the user
-                        let text = "The following key from the addressbook is used for this identity if you want to use the addressbook only (without SMIME-keys):";
-                        
-                        let infodiv = new Element('div', {
-                            id: "addressbookonlyinfos"
-                        });
-                        infodiv.update(text);
-                        ul.insert({before: infodiv});
-                    }
-                }
+    showKeys() {
+      // get the identityID
+      const identity = document.getElementById('identity');
+      const identityID = Number(identity.value);
+  
+      // doAction method from HordeCore
+      HordeCore.doAction(
+        'getIdentityPubKey',
+        {
+          identityID: identityID,
+        },
+        {
+          callback: (response) => {
+            // check for keys in the address book for the identity and show them
+            const div = document.querySelectorAll('div.prefsSmimeContainer')[0];
+  
+            // ajax reloads things for three times for some reason, so make sure that nothing appears additionally. Remove extra appearances.
+            if (div.previousElementSibling.id === 'addressbookpubkey') {
+              div.previousElementSibling.remove();
+              div.previousElementSibling.remove();
             }
-        );
-
-    }
-};
-
-// on change of identity show chosen options for SMIME manament or Adressbook keys management
-document.observe('HordeIdentitySelect:change', switchEncryption.checkSMIMEOption.bindAsEventListener(switchEncryption));
-document.observe('dom:loaded', switchEncryption.checkSMIMEOption.bindAsEventListener(switchEncryption));
-if ($("smimeselect") != undefined) {
-    $("smimeselect").observe("click", switchEncryption.checkSMIMEOption.bindAsEventListener(switchEncryption));
-}
-
-
-
+  
+            if (document.getElementById('smimeselect').checked) {
+              const addressbookpubkey = document.getElementById('addressbookpubkey');
+              if (addressbookpubkey) {
+                addressbookpubkey.remove();
+              }
+              const addressbookonlyinfos = document.getElementById('addressbookonlyinfos');
+              if (addressbookonlyinfos) {
+                addressbookonlyinfos.remove();
+              }
+            }
+  
+            // if smime is not selected, some information on the keys in the address book shows
+            if (!document.getElementById('smimeselect').checked) {
+              const ul = document.createElement('ul');
+              ul.setAttribute('id', 'addressbookpubkey');
+  
+              for (const key in response) {
+                if (response.hasOwnProperty(key)) {
+                  const li = document.createElement('li');
+                  li.style.listStyleType = 'none';
+                  const a = document.createElement('a');
+                  a.setAttribute('href', response[key]);
+                  a.textContent = key;
+                  li.appendChild(a);
+                  ul.appendChild(li);
+                }
+              }
+  
+              div.parentNode.insertBefore(ul, div);
+  
+              // create a text to inform the user
+              const text = 'The following key from the address book is used for this identity if you want to use the address book only (without SMIME-keys):';
+              const infodiv = document.createElement('div');
+              infodiv.setAttribute('id', 'addressbookonlyinfos');
+              infodiv.textContent = text;
+              ul.parentNode.insertBefore(infodiv, ul);
+            }
+          },
+        },
+      );
+    },
+  };
+  
+  // on change of identity show chosen options for SMIME management or Addressbook keys management
+  document.addEventListener('HordeIdentitySelect:change', switchEncryption.checkSMIMEOption.bind(switchEncryption));
+  document.addEventListener('DOMContentLoaded', switchEncryption.checkSMIMEOption.bind(switchEncryption));
+  const smimeselect = document.getElementById('smimeselect');
+  if (smimeselect !== null) {
+    smimeselect.addEventListener('click', switchEncryption.checkSMIMEOption.bind(switchEncryption));
+  }
+  
