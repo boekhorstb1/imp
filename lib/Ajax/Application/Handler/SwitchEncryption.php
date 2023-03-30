@@ -20,6 +20,7 @@ use IMP_Prefs_SwitchHandler as SwitchHandler;
  * @license   http://www.horde.org/licenses/gpl GPL
  * @package   IMP
  */
+
 class IMP_Ajax_Application_Handler_SwitchEncryption extends Horde_Core_Ajax_Application_Handler
 {
 
@@ -30,11 +31,16 @@ class IMP_Ajax_Application_Handler_SwitchEncryption extends Horde_Core_Ajax_Appl
      * @return array  Array with keys of identity.
      */
     public function getIdentityPubKey()
-    {
+    {   global $injector;
+    
         // get ID of identity and email
         $identityID = $this->vars->identityID;
 
-        $handler = new SwitchHandler($GLOBALS['injector']);
-        return $handler->getPublicKeysForPrefsIdentities($identityID);
+        // get identity
+        $identity = $injector->getInstance('IMP_Identity');
+
+
+        $handler = new SwitchHandler();
+        return $handler->getPublicKeysForPrefsIdentities($identity, $identityID);
     }
 }

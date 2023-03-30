@@ -8,19 +8,11 @@
  * @license   http://www.horde.org/licenses/gpl GPL
  * @package   IMP
  */
-use Horde_Registry;
-use Horde_Injector;
+
+use IMP_Prefs_Identity;
 
 class IMP_Prefs_SwitchHandler
 {
-    private $injector;
-    private $registry;
-
-    public function __construct(Horde_Injector $injector){
-        $this->injector = $injector;
-        $this->registry = new Horde_Registry();
-    }
-
 
     /**
      * gets the keys form the address book for the prefs identity frontend
@@ -29,22 +21,17 @@ class IMP_Prefs_SwitchHandler
      * 
      * @return array returns an array containing links to the keys
      */
-    public function getPublicKeysForPrefsIdentities( $identityID){
-
-        $injector = $this->injector;
-        $registry = $this->registry;
+    public function getPublicKeysForPrefsIdentities($identity, $identityID){
         
-        $identity = $injector->getInstance('IMP_Identity');
         $email = $identity->getEmail($identityID);
         $name = $identity->getName($identityID);
 
-        $smime_url = IMP_Basic_Smime::url();
-        $self_url = Horde::url($registry->getServiceLink('prefs', 'imp'), false);
+        $smime_url = Horde::url('../imp/basic.php')->add('page', 'smime');
 
         try {
             $linksToKey = [
-                'view' => Horde::link($smime_url->copy()->add(['actionID' => 'view_public_key', 'email' => $email]), sprintf(_('View %s Public Key'), $name), null, 'view_key'),
-                'info' => Horde::link($smime_url->copy()->add(['actionID' => 'info_public_key', 'email' => $email]), sprintf(_('View %s Public Info'), $name), null, 'info_key'),
+                'view' => Horde::link($smime_url->copy()->add(['actionID' => 'view_public_key', 'email' => $email]), sprintf(_('View %s Public Key'), $name), null, 'view_key')."key</a>",
+                'info' => Horde::link($smime_url->copy()->add(['actionID' => 'info_public_key', 'email' => $email]), sprintf(_('View %s Public Info'), $name), null, 'info_key')."info</a>",
                 ];
         } catch (\Throwable $th) {
             throw $th;

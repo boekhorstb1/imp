@@ -40,7 +40,7 @@ const switchEncryption = {
         {
           callback: (response) => {
             // check for keys in the address book for the identity and show them
-            const div = document.querySelectorAll('div.prefsSmimeContainer')[0];
+            let div = document.querySelectorAll('div.prefsSmimeContainer')[0];
   
             // ajax reloads things for three times for some reason, so make sure that nothing appears additionally. Remove extra appearances.
             if (div.previousElementSibling.id === 'addressbookpubkey') {
@@ -49,11 +49,11 @@ const switchEncryption = {
             }
   
             if (document.getElementById('smimeselect').checked) {
-              const addressbookpubkey = document.getElementById('addressbookpubkey');
+              let addressbookpubkey = document.getElementById('addressbookpubkey');
               if (addressbookpubkey) {
                 addressbookpubkey.remove();
               }
-              const addressbookonlyinfos = document.getElementById('addressbookonlyinfos');
+              let addressbookonlyinfos = document.getElementById('addressbookonlyinfos');
               if (addressbookonlyinfos) {
                 addressbookonlyinfos.remove();
               }
@@ -61,17 +61,14 @@ const switchEncryption = {
   
             // if smime is not selected, some information on the keys in the address book shows
             if (!document.getElementById('smimeselect').checked) {
-              const ul = document.createElement('ul');
+              let ul = document.createElement('ul');
               ul.setAttribute('id', 'addressbookpubkey');
   
-              for (const key in response) {
+              for (let key in response) {
                 if (response.hasOwnProperty(key)) {
-                  const li = document.createElement('li');
+                  let li = document.createElement('li');
                   li.style.listStyleType = 'none';
-                  const a = document.createElement('a');
-                  a.setAttribute('href', response[key]);
-                  a.textContent = key;
-                  li.appendChild(a);
+                  li.innerHTML = String(response[key]);
                   ul.appendChild(li);
                 }
               }
@@ -79,8 +76,8 @@ const switchEncryption = {
               div.parentNode.insertBefore(ul, div);
   
               // create a text to inform the user
-              const text = 'The following key from the address book is used for this identity if you want to use the address book only (without SMIME-keys):';
-              const infodiv = document.createElement('div');
+              let text = 'The following key from the address book is used for this identity if you want to use the address book only (without SMIME-keys):';
+              let infodiv = document.createElement('div');
               infodiv.setAttribute('id', 'addressbookonlyinfos');
               infodiv.textContent = text;
               ul.parentNode.insertBefore(infodiv, ul);
