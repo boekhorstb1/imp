@@ -29,6 +29,8 @@ class ImpSMIME extends Horde_Db_Migration_Base
             $t->column('public_key', 'binary', ['null' => true]);
             $t->column('privatekey_passwd', 'string', ['limit' => 50,'null' => true]);
             $t->column('alias', 'string', ['limit' => 50,'null' => true]);
+            $t->column('identity', 'string', ['limit' => 50,'0' => true]);
+            $t->column('identity_used', 'bool', ['limit' => 50,'false' => true]); // how to set a default boolean?
             $t->end();
         }
     }
