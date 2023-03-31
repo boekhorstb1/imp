@@ -454,15 +454,16 @@ class IMP_Smime
     /**
      * Setting an alias in the database
      *
-     * @param int       $keyid to set the alias to the key with specific id
-     * @param string    $alias to set
+     * @param int       $keyid:      Id of privatekey to set the alias for
+     * @param string    $alias:      Alias to set
+     * @param int       $identityID: The identity for which the alias should be set
      *
      * @return bool|error returns either true, false or an error if database insertion failed
      */
-    public function updateAlias($keyid, $alias)
+    public function updateAlias($keyid, $alias, $identityID)
     {
-        $query = 'UPDATE imp_smime_extrakeys SET alias = ? WHERE private_key_id = ?';
-        $values = [$alias, $keyid];
+        $query = 'UPDATE imp_smime_extrakeys SET alias = ? WHERE private_key_id = ? AND identity = ?';
+        $values = [$alias, $keyid, $identityID];
         $this->_db->insert($query, $values);
     }
 
@@ -473,11 +474,11 @@ class IMP_Smime
      *
      * @return string|bool returns an alias (name) of the certification or false if nothing is returned
      */
-    public function getAlias($keyid)
+    public function getAlias($keyid, $identityID)
     {
-        $query = 'SELECT alias FROM imp_smime_extrakeys WHERE private_key_id=?';
-        $values = [$keyid];
-        $result = $this->_db->selectValue($query, $values);
+        $query = 'SELECT alias FROM imp_smime_extrakeys WHERE private_key_id=? AND identity=?';
+        $values = [$keyid,  $identityID];
+        $result = $this->_db->selectValue($query, $values, $identityID);
 
         // checking if $result is empty
         if (empty($result)) {

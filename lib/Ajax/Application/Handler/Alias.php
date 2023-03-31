@@ -36,28 +36,20 @@ class IMP_Ajax_Application_Handler_Alias extends Horde_Core_Ajax_Application_Han
      */
     public function checkAlias()
     {
-        global $injector, $notification;
-
-        $result = false;
-
-        if (!$this->vars->dialog_input) {
-            $notification->push(_('No alias entered.'), 'horde.error');
-            return $result;
-        }
+        global $injector;
 
         $alias = $this->vars->dialog_input;
         $keyid = $this->vars->keyid;
 
-        try {
-            $injector->getInstance('IMP_Smime')->updateAlias($keyid, $alias);
-            $result = true;
-            $notification->push(_('Alias has been set.'), 'horde.success');
-        } catch (Horde_Exception $e) {
-            $notification->push($e, 'horde.error');
-        }
+        $identity = $injector->getInstance('IMP_Identity');
+        $identityID = $identity->getDefault();
+
+        $result = new IMP_Prefs_Special_SmimeAliasHandler();
+        $result = $result->handle($keyid, $alias, $identityID);
 
         return ($result && $this->vars->reload)
             ? new Horde_Core_Ajax_Response_HordeCore_Reload($this->vars->reload)
             : $result;
+        
     }
 }

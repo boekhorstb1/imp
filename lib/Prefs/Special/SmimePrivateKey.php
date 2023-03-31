@@ -254,8 +254,8 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
 
             $view->{'privatekeyexits'} = $smime->getSetPrivateKeyId(0, $defaultIdentity); // check if private key exists and return its id value if so
             $view->{'signkeyexits'} = $smime->getSetPrivateKeyId(1, $defaultIdentity); // Note: self::KEY_SECONDARY = 1 in Smime.php...  This checks if a sign ey exists and returns the id
-            $view->{'aliasexists'} = $smime->getAlias($view->privatekeyexits); // gets the alias of the key by ID
-            $view->{'signaliasexists'} = $smime->getAlias($view->signkeyexits); // gets the alias of the key by ID
+            $view->{'aliasexists'} = $smime->getAlias($view->privatekeyexits, $defaultIdentity); // gets the alias of the key by ID
+            $view->{'signaliasexists'} = $smime->getAlias($view->signkeyexits, $defaultIdentity); // gets the alias of the key by ID
 
             // set alias
             if ($secondary === true) {
