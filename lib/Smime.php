@@ -130,7 +130,7 @@ class IMP_Smime
         $identity = $injector->getInstance('IMP_Identity');
 
         // also set the identity to the normal prefs value (for continuity)
-        if ($signkey === self::KEY_SECONDARY) {
+        if ($signkey === true || $signkey == self::KEY_SECONDARY) {
             $prefName = 'smime_public_sign_key';
             $identity->setValue('pubsignkey', $val, $identityID);
         } else {
@@ -163,10 +163,10 @@ class IMP_Smime
         $check  = $prefs->getValue('smime_private_key');
 
         // it there is a private key, these will be unset first and then the new one will be loaded
-        if (!empty($check)) {
+        if (!empty($check) && $signkey == false) {
             $this->unsetSmimePersonal($signkey, $calledFromSetSmime, $identityID);
         }
-        if ($signkey === self::KEY_SECONDARY) {
+        if ($signkey === true || $signkey == self::KEY_SECONDARY) {
             $prefName = 'smime_private_sign_key';
             $identity->setValue('privsignkey', $val, $identityID);
         } else {
