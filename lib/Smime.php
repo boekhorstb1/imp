@@ -296,9 +296,12 @@ class IMP_Smime
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
+        // TODO: there is no use for prefName! it has to be removed from all calls to this functino
+        // reason: the keyid is given and the username, no need for anything else
+
         // Build the SQL query
-        $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE pref_name=? AND private_key_id=? AND user_name=? AND identity=?';
-        $values = [$prefName, $privateKeyId, $user_name, $identityID];
+        $query = 'SELECT private_key_id, public_key FROM imp_smime_extrakeys WHERE private_key_id=?';
+        $values = [$privateKeyId];
         // Run the SQL query
         $result = $this->_db->selectOne($query, $values); // returns one key
         return $result['public_key'];
@@ -321,8 +324,8 @@ class IMP_Smime
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE private_key_id=? AND user_name=? AND identity=?';
-        $values = [$id, $user_name, $identityID];
+        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE private_key_id=?';
+        $values = [$id];
 
         // Run the SQL query
         $result = $this->_db->selectOne($query, $values); // returns one key
@@ -412,11 +415,12 @@ class IMP_Smime
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
+        // TODO: prefname can be removed here from this function call as well
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE pref_name=? AND user_name=? AND identity=?';
-        $values = [$prefName, $user_name, $identity];
+        $query = 'SELECT private_key_id, private_key, public_key, alias FROM imp_smime_extrakeys WHERE user_name=? AND identity=?';
+        $values = [$user_name, $identity];
 
         // Run the SQL query
         $result = $this->_db->selectAll($query, $values); // returns an array with keys
@@ -509,8 +513,8 @@ class IMP_Smime
         // Warns unsetSmime functions that no notifications are needed
         $calledFromSetSmime = true;
         // find the private key that has been selected (NB: do not care if the key is a sign key or not TODO: so no prefname needed?)
-        $newprivatekey = $this->getExtraPrivateKey($keyid, $prefName, $identityID);
-        $newpublickey = $this->getExtraPublicKey($keyid, $prefName = 'smime_private_key', $identityID); // buggy over here: need to remove singkey stuff in parameters
+        $newprivatekey = $this->getExtraPrivateKey($keyid);
+        $newpublickey = $this->getExtraPublicKey($keyid); // buggy over here: need to remove singkey stuff in parameters
 
         // check if a personal certificate is set
         $check = null;
@@ -783,108 +787,54 @@ class IMP_Smime
      */
     public function getPublicKey($address)
     {
-        global $injector, $registry;
+    global $injector, $registry;
 
-        // get keys by help of specified hooks settings
-        try {
-            $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
-                'smime_key',
-                'imp',
-                [$address]
-            );
-            if ($key) {
-                return $key;
-            }
-        } catch (Horde_Exception_HookNotSet $e) {
+    try {
+        $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
+            'smime_key',
+            'imp',
+            [$address]
+        );
+        if ($key) {
+            return $key;
         }
+    } catch (Horde_Exception_HookNotSet $e) {
+    }
 
-        // TODO:
-        // getPublicKey can be used for getting public keys of:
-        // - identities
-        // - contacts
-        // need to make sure, for which of these we need to get the keys
-        //
-        // Current solution: check if passed address is in identitylist.
-        // If not: only let de default identity get its keys in both ways
-        //
-        // Question: can a defaultidentity have a key other then null? (need to find out)
+    $contacts = $injector->getInstance('IMP_Contacts');
 
+    try {
+        $key = $registry->call(
+            'contacts/getField',
+            [
+                $address,
+                self::PUBKEY_FIELD,
+                $contacts->sources,
+                true,
+                true,
+            ]
+        );
+    } catch (Horde_Exception $e) {
+        /* See if the address points to the user's public key. */
         // check if this method is used to get keys of an identity
         $identity = $injector->getInstance('IMP_Identity');
         $identityID = $identity->getDefault();
 
-        // get identities-list of the user
-        $allIdentitiesAdresses = $identity->getEmailsOfIds();
+        $personal_pubkey = $this->getPersonalPublicKey(self::KEY_SECONDARY_OR_PRIMARY, $identityID);
 
-        // check if the passed address is in the idenity-list
-        $isIdentity = in_array($address, $allIdentitiesAdresses);
-
-        if ($isIdentity) {
-            // check if identity prefers SMIME-keys or Adressbook keys for encryption
-            $identityEncryptionPreference = $identity->getValue('smimeselect', $identityID);
-
-            if ($identityEncryptionPreference) {
-                // smime is selected
-                $personal_pubkey = $this->getPersonalPublicKey(self::KEY_SECONDARY_OR_PRIMARY, $identityID);
-                if (!empty($personal_pubkey) &&
-                    $identity->hasAddress($address)) {
-                    return $personal_pubkey;
-                }
-            } else {
-                // addressbook is selected
-                $contacts = $injector->getInstance('IMP_Contacts');
-
-                try {
-                    $key = $registry->call(
-                        'contacts/getField',
-                        [
-                            $address,
-                            self::PUBKEY_FIELD,
-                            $contacts->sources,
-                            true,
-                            true,
-                        ]
-                    );
-                } catch (Horde_Exception $e) {
-                    /* If the default identity is used: See if the address points to the user's public key. */
-
-                    $idOfPassedAdress = $identity->getMatchingIdentity($address);
-
-                    if ($identityID == $idOfPassedAdress) {
-                        $personal_pubkey = $this->getPersonalPublicKey(self::KEY_SECONDARY_OR_PRIMARY, $identityID);
-                        if (!empty($personal_pubkey) &&
-                        $injector->getInstance('IMP_Identity')->hasAddress($address)) {
-                            return $personal_pubkey;
-                        }
-                    }
-
-                    throw $e;
-                }
-            }
-        } else { // no identity is used and keys are selected from addressbook
-            $contacts = $injector->getInstance('IMP_Contacts');
-
-            try {
-                $key = $registry->call(
-                    'contacts/getField',
-                    [
-                        $address,
-                        self::PUBKEY_FIELD,
-                        $contacts->sources,
-                        true,
-                        true,
-                    ]
-                );
-            } catch (Horde_Exception $e) {
-                throw $e;
-            }
+        if (!empty($personal_pubkey) &&
+            $injector->getInstance('IMP_Identity')->hasAddress($address)) {
+            return $personal_pubkey;
         }
 
-        /* If more than one public key is returned, just return the first in
-         * the array. There is no way of knowing which is the "preferred" key,
-         * if the keys are different. */
-        return is_array($key) ? reset($key) : $key;
+        throw $e;
     }
+
+    /* If more than one public key is returned, just return the first in
+     * the array. There is no way of knowing which is the "preferred" key,
+     * if the keys are different. */
+    return is_array($key) ? reset($key) : $key;
+}
 
     /**
      * Retrieves all public keys from a user's address book(s).
@@ -1002,21 +952,24 @@ class IMP_Smime
             $identity = $injector->getInstance('IMP_Identity');
             $identityID = $identity->getDefault();
         }
-
+        
         if ($differentKey === null) {
-            return $this->_smime->decrypt($text, [
+            $value = $this->_smime->decrypt($text, [
                 'type' => 'message',
                 'pubkey' => $this->getPersonalPublicKey(self::KEY_PRIMARY, $identityID),
                 'privkey' => $this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID),
                 'passphrase' => $this->getPassphrase(),
             ]);
+            return $value;
         } else {
-            return $this->_smime->decrypt($text, [
+            $value = $this->_smime->decrypt($text, [
                 'type' => 'message',
                 'pubkey' => $this->getExtraPublicKey($differentKey, $identityID),
                 'privkey' => $this->getExtraPrivateKey($differentKey, $identityID),
                 'passphrase' => $this->getPassphrase(null, $differentKey), // create get pasExtraKeyPassphrase()?
             ]);
+            return $value;
+
         }
     }
 

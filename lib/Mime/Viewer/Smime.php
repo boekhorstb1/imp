@@ -210,9 +210,15 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
             $decrypted_data = null;
 
             /* Try with other identities of the same user */
+            // need to get the right key from the prefs-identites serialzed array!
+            // TODO: only set a reference in the serialized array. Reference should go to extra-keys-table
             $identities = $identity->getAll('id');
             foreach ($identities as $key => $value) {
-                $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), null, $key);
+                try {
+                    $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), null, $key);
+                } catch (\Throwable $th) {
+                    //throw $th;
+                }
                 if (!is_null($decrypted_data)) {
                     break;
                 }
@@ -221,12 +227,20 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
             /* try with extra personal certificates */
             if (is_null($decrypted_data)) {
                 // because this is about decryption, the private key is needed.
-                $keyslist = $this->_impsmime->listPrivateKeyIds('smime_private_key', $identityID);
+                // here the keys of all other identities need to be added!
+                $keyslist = [];
+                foreach ($identities as $key => $value) {
+                    $keyslist = array_merge($keyslist, $this->_impsmime->listPrivateKeyIds('smime_private_key', $key));
+                }
 
                 // check if privatekeys can be retrieved
                 if (!empty($keyslist) && isset($keyslist)) {
                     foreach ($keyslist as $key => $otherkey) {
-                        $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), $otherkey);
+                        try {
+                            $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), $otherkey);
+                        } catch (\Throwable $th) {
+                            //throw $th;
+                        }
                         if (!is_null($decrypted_data)) {
                             break;
                         }
