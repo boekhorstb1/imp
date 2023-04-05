@@ -275,6 +275,10 @@ class IMP_Smime
             $key = $identity->getValue('privkey', $identityID);
         }
 
+        // TODO: add a function that gets the smime private key from the previous prefs-saving-spot 
+        // and save it to the extra tables ...
+        // Problem: current users will have their keys on that spot and will loose them! Need a migrate script!
+
         return $key;
     }
 
