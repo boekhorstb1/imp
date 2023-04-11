@@ -151,6 +151,8 @@ class IMP_Smime
      */
     public function addPersonalPrivateKey($key, $signkey = false, $calledFromSetSmime = false, $identityID=0)
     {
+        // TODO: find way to only add an id to the array of prefs..
+        
         global $prefs, $injector;
         // clean key
         $val = is_array($key) ? implode('', $key) : $key;
@@ -168,7 +170,8 @@ class IMP_Smime
             $this->unsetSmimePersonal($signkey, $calledFromSetSmime, $identityID);
         }
         // setting to extra tables and retrieving id
-        // code ...
+        // code ... here
+        //$this->addExtraPersonalKeys();
 
         // setting id to prefstables
         if ($signkey === true || $signkey == self::KEY_SECONDARY) {
@@ -280,7 +283,7 @@ class IMP_Smime
             $key = $identity->getValue('privkey', $identityID);
         }
 
-        // TODO: add a function that gets the smime private key from the previous prefs-saving-spot 
+        // TODO: add a function that gets the smime private key from the previous prefs-saving-spot
         // and save it to the extra tables ...
         // Problem: current users will have their keys on that spot and will loose them! Need a migrate script!
 
@@ -382,30 +385,40 @@ class IMP_Smime
      *
      * @param   string    $personalCertificate: the personal certificate to look for
      * @param   int       $idenitytId: the id of the identity to look for
+     * @param   bool      $returnID: returns the id of the private key that was found
+     * @param   bool      $returnLastIdInTable: returns the last ID that was set in the table
      *
-     * @return  bool      if private key is there or not
+     * @return  bool|int      if private key is there or not, if an ID should be returned
      * @throws Horde_Db_Exception
      */
-    public function privateKeyExists($personalCertificate, $identityID)
+    public function privateKeyExists($personalCertificate, $identityID, $returnID=false, $returnLastIdInTable=false)
     {
         /* Get the user_name  */
         // TODO: is there a way to only use prefs?
         $user_name = $GLOBALS['registry']->getAuth();
 
         // Build the SQL query
-        $query = 'SELECT private_key FROM imp_smime_extrakeys WHERE user_name=? AND identity=?';
+        $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE user_name=? AND identity=?';
         $values = [$user_name, $identityID];
 
         // Run the SQL query
-        $result = $this->_db->selectValues($query, $values); // returns an array with keys
+        $result = $this->_db->selectAll($query, $values); // returns an array with keys
         if (!empty($result)) {
             // check if privatekeys are the same
             foreach ($result as $key => $value) {
-                if ($value == $personalCertificate || strcmp($value, $personalCertificate) == 0) {
+                if ($value['private_key'] == $personalCertificate || strcmp($value, $personalCertificate) == 0) {
+                    if ($returnID === true) {
+                        return $value['private_key_id'];
+                    }
                     return true;
                 }
             }
         } else {
+            if ($returnLastIdInTable){
+                // return last id in the table, else if table is empty return the index 0
+                !empty($result) ? $result = array_key_last($result) : $result = 0;
+                return $result;
+            }
             return false;
         }
     }
@@ -796,61 +809,61 @@ class IMP_Smime
      */
     public function getPublicKey($address)
     {
-    global $injector, $registry;
+        global $injector, $registry;
 
-    try {
-        $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
-            'smime_key',
-            'imp',
-            [$address]
-        );
-        if ($key) {
-            return $key;
-        }
-    } catch (Horde_Exception_HookNotSet $e) {
-    }
-
-    $contacts = $injector->getInstance('IMP_Contacts');
-
-    try {
-        $key = $registry->call(
-            'contacts/getField',
-            [
-                $address,
-                self::PUBKEY_FIELD,
-                $contacts->sources,
-                true,
-                true,
-            ]
-        );
-    } catch (Horde_Exception $e) {
-        /* See if the address points to the user's public key. */
-        // check if this method is used to get keys of an identity
-        $identity = $injector->getInstance('IMP_Identity');
-        $identityID = $identity->getDefault();
-
-        $personal_pubkey = $this->getPersonalPublicKey(self::KEY_SECONDARY_OR_PRIMARY, $identityID);
-
-        if (!empty($personal_pubkey) &&
-            $injector->getInstance('IMP_Identity')->hasAddress($address)) {
-            return $personal_pubkey;
+        try {
+            $key = $injector->getInstance('Horde_Core_Hooks')->callHook(
+                'smime_key',
+                'imp',
+                [$address]
+            );
+            if ($key) {
+                return $key;
+            }
+        } catch (Horde_Exception_HookNotSet $e) {
         }
 
-        throw $e;
-    }
+        $contacts = $injector->getInstance('IMP_Contacts');
 
-    /* If more than one public key is returned, just return the first in
-     * the array. There is no way of knowing which is the "preferred" key,
-     * if the keys are different. */
-    return is_array($key) ? reset($key) : $key;
-}
+        try {
+            $key = $registry->call(
+                'contacts/getField',
+                [
+                    $address,
+                    self::PUBKEY_FIELD,
+                    $contacts->sources,
+                    true,
+                    true,
+                ]
+            );
+        } catch (Horde_Exception $e) {
+            /* See if the address points to the user's public key. */
+            // check if this method is used to get keys of an identity
+            $identity = $injector->getInstance('IMP_Identity');
+            $identityID = $identity->getDefault();
+
+            $personal_pubkey = $this->getPersonalPublicKey(self::KEY_SECONDARY_OR_PRIMARY, $identityID);
+
+            if (!empty($personal_pubkey) &&
+                $injector->getInstance('IMP_Identity')->hasAddress($address)) {
+                return $personal_pubkey;
+            }
+
+            throw $e;
+        }
+
+        /* If more than one public key is returned, just return the first in
+         * the array. There is no way of knowing which is the "preferred" key,
+         * if the keys are different. */
+        return is_array($key) ? reset($key) : $key;
+    }
 
     /**
-     * Retrieves all public keys from a user's address book(s).
-     *
-     * @return array  All S/MIME public keys available.
-     * @throws Horde_Crypt_Exception
-     */
+         * Retrieves all public keys from a user's address book(s).
+         *
+         * @return array  All S/MIME public keys available.
+         * @throws Horde_Crypt_Exception
+         */
     public function listPublicKeys()
     {
         global $injector, $registry;
@@ -961,7 +974,7 @@ class IMP_Smime
             $identity = $injector->getInstance('IMP_Identity');
             $identityID = $identity->getDefault();
         }
-        
+
         if ($differentKey === null) {
             $value = $this->_smime->decrypt($text, [
                 'type' => 'message',
@@ -1203,19 +1216,29 @@ class IMP_Smime
             $params['newpassword'] = $pkpass;
         }
 
-        $result = $this->_smime->parsePKCS12Data($pkcs12, $params);
+        $keysinfos = $this->_smime->parsePKCS12Data($pkcs12, $params);
+
+        // add keys to extra table
+        $result = $this->addExtraPersonalKeys($keysinfos->private, $keysinfos->public, $password, $pref_name = 'smime_private_key', $identityID, $identity_used);
+
+        if ($result) {
+            $notification->push(_('S/MIME Public/Private Keypair successfully added to exra keys in keystore.'), 'horde.success');
+        }
 
         if ($extrakey === false) {
-            $this->addPersonalPrivateKey($result->private, $signkey, $calledFromSetSmime = false, $identityID);
-            $this->addPersonalPublicKey($result->public, $signkey, $identityID);
-            $this->addAdditionalCert($result->certs, $signkey, $identityID);
-        } else {
-            // need to add extrakeys here... TODO: add check of key to extraKeys, remove it from set or unsetkeys
-            $result = $this->addExtraPersonalKeys($result->private, $result->public, $password, $pref_name = 'smime_private_key', $identityID, $identity_used);
-            if ($result) {
-                $notification->push(_('S/MIME Public/Private Keypair successfully added to exra keys in keystore.'), 'horde.success');
-            }
+            // get id of newly added key
+            // if the private key does not exists, get newest id to add (see method parameters of privateKeyExists)
+            $id = $this->privateKeyExists($keysinfos->private, $identityId, true, true);
+
+            // add id to the identities (serialized array) in prefs
+            $this->addPersonalPrivateKey($id, $signkey, $calledFromSetSmime = false, $identityID);
+            $this->addPersonalPublicKey($id, $signkey, $identityID);
+            //TODO: This has to be checked again... not sure the method is needed anymore at all
+            //$this->addAdditionalCert($keysinfos->certs, $signkey, $identityID);
         }
+
+
+
     }
 
     /**
