@@ -162,10 +162,15 @@ class IMP_Smime
         // check if a private key already exists
         $check  = $prefs->getValue('smime_private_key');
 
-        // it there is a private key, these will be unset first and then the new one will be loaded
+        // it there is a private key, these will be unset first and then the new one will be added to the database and its id will be added to the prefs array
+        // unsetting
         if (!empty($check) && $signkey == false) {
             $this->unsetSmimePersonal($signkey, $calledFromSetSmime, $identityID);
         }
+        // setting to extra tables and retrieving id
+        // code ...
+
+        // setting id to prefstables
         if ($signkey === true || $signkey == self::KEY_SECONDARY) {
             $prefName = 'smime_private_sign_key';
             $identity->setValue('privsignkey', $val, $identityID);
