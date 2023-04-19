@@ -1,8 +1,12 @@
 <?php
 
-use PHPUnit\Framework\TestCase as PHPunitTest;
+use IMP_Smime;
 
-class TestCase extends PHPunitTest
+class TestCase extends PHPUnit\Framework\TestCase
 {
+    protected function getLibSmimeClass(){
+        $hordeCryptSmime = $this->createMock(IMP_Smime::class);
+        return $hordeCryptSmime;
+    }
 
 }
