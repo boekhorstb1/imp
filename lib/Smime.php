@@ -406,7 +406,8 @@ class IMP_Smime
         if (!empty($result)) {
             // check if privatekeys are the same
             foreach ($result as $key => $value) {
-                if ($value['private_key'] == $personalCertificate || strcmp($value, $personalCertificate) == 0) {
+                $diff = strcmp($value, $personalCertificate);
+                if ($value['private_key'] === $personalCertificate || isset($diff) && $diff == 0) {
                     if ($returnID === true) {
                         return $value['private_key_id'];
                     }
