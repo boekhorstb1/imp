@@ -256,10 +256,13 @@ class IMP_Smime
         $identity = $injector->getInstance('IMP_Identity');
 
         if ($signkey === self::KEY_SECONDARY) {
-            $key = $identity->getValue('pubsignkey', $identityID);
+            $keyID = $identity->getValue('pubsignkey', $identityID);
         } else {
-            $key = $identity->getValue('pubkey', $identityID);
+            $keyID = $identity->getValue('pubkey', $identityID);
         }
+
+        // with keyID get key from extratables
+        $key = $this->getExtraPublicKey($keyID);
 
         return $key;
     }
@@ -278,14 +281,15 @@ class IMP_Smime
 
         $identity = $injector->getInstance('IMP_Identity');
         if ($signkey === self::KEY_SECONDARY) {
-            $key = $identity->getValue('privsignkey', $identityID);
+            $keyID = $identity->getValue('privsignkey', $identityID);
         } else {
-            $key = $identity->getValue('privkey', $identityID);
+            $keyID = $identity->getValue('privkey', $identityID);
         }
 
-        // TODO: add a function that gets the smime private key from the previous prefs-saving-spot
-        // and save it to the extra tables ...
-        // Problem: current users will have their keys on that spot and will loose them! Need a migrate script!
+        
+        // with keyID get key from extratables
+        $key = $this->getExtraPrivateKey($keyID);
+        // TODO: Problem: current users will have their keys on that spot and will loose them! Need a migrate script!
 
         return $key;
     }
