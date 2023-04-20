@@ -125,24 +125,27 @@ class IMP_Smime
         // clean key if it is a string otherwise, if it is an ID (which it should be) keep it
         $val = is_array($key) ? implode('', $key) : $key;
         $val = HordeString::convertToUtf8($val);
-
+        
         // get the keyid to set it to the identites array in prefs
+        // PROBLEM: Need to have the privatekeyid but the key that is put in here has no privatekey (only a public one)
         $keyID = $this->privateKeyExists($key, $identityID, true, true);
+
 
         // use identity to set the peronal private key to the serialized identity array
         $identity = $injector->getInstance('IMP_Identity');
 
         // setting id to prefstables, only if $key is an integer
         if (!empty($keyID)) {
+            dd('testtest');
             if ($signkey === true || $signkey == self::KEY_SECONDARY) {
                 $prefName = 'smime_public_sign_key';
-                $identity->setValue('pubsignkey', $val, $identityID);
+                $identity->setValue('pubsignkey', $keyID, $identityID);
             } else {
                 $prefName = 'smime_public_key';
-                $identity->setValue('pubkey', $val, $identityID);
+                $identity->setValue('pubkey', $keyID, $identityID);
             }
             // TODO: also set the identity to the normal prefs value (for continuity)??
-            $prefs->setValue($prefName, $val);
+            $GLOBALS['prefs']->setValue($prefName, $val);
             $identity->save();
         }
     }
@@ -184,10 +187,10 @@ class IMP_Smime
         if (!empty($keyID)) {
             if ($signkey === true || $signkey == self::KEY_SECONDARY) {
                 $prefName = 'smime_private_sign_key';
-                $identity->setValue('privsignkey', $val, $identityID);
+                $identity->setValue('privsignkey', $keyID, $identityID);
             } else {
                 $prefName = 'smime_private_key';
-                $identity->setValue('privkey', $val, $identityID);
+                $identity->setValue('privkey', $keyID, $identityID);
             }
             $GLOBALS['prefs']->setValue($prefName, $val);
             $identity->save();
@@ -540,7 +543,6 @@ class IMP_Smime
         $check = $this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID); // this is not gonna work or is it?
 
         $keyExists = $this->privateKeyExists($check, $identityID);
-
 
         // check if there is a personal Certificate set
         if (!empty($check)) {

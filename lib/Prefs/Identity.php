@@ -46,7 +46,7 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
      */
     protected $_impPrefs = [
         'replyto_addr', 'alias_addr', 'tieto_addr', 'bcc_addr', 'signature',
-        'signature_html', 'save_sent_mail', IMP_Mailbox::MBOX_SENT, 'smimeselect', 'privkey', 'pubkey', 'privsignkey', 'pubsignkey',
+        'signature_html', 'save_sent_mail', IMP_Mailbox::MBOX_SENT, 'smimeselect', 'privkey', 'privsignkey', 'pubkey', 'pubsignkey',
     ];
 
     /**
