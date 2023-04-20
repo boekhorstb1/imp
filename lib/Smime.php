@@ -267,11 +267,8 @@ class IMP_Smime
         }
 
         // with keyID get key from extratables
-        if (is_int($keyID)) {
-            $key = $this->getExtraPublicKey($keyID);
-            return $key;
-        }
-        return false;
+        $key = $this->getExtraPublicKey($keyID);
+        return $key;
     }
 
     /**
@@ -293,17 +290,13 @@ class IMP_Smime
             $keyID = $identity->getValue('privkey', $identityID);
         }
 
-
         // with keyID get key from extratables
         $key = $this->getExtraPrivateKey($keyID);
+        return $key;
+
         // TODO: Problem: current users will have their keys on that spot and will loose them! Need a migrate script!
 
-        // with keyID get key from extratables
-        if (is_int($keyID)) {
-            $key = $this->getExtraPrivateKey($keyID);
-            return $key;
-        }
-        return false;
+        
     }
 
     /**
@@ -328,11 +321,6 @@ class IMP_Smime
         $values = [$privateKeyId];
         // Run the SQL query
         $result = $this->_db->selectOne($query, $values); // returns one key
-
-        // \Horde::debug($privateKeyId, '/dev/shm/backend', false);
-        // \Horde::debug($result, '/dev/shm/backend', false);
-        // \Horde::debug(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), '/dev/shm/backend', false);
-
         return $result['public_key'];
     }
 
@@ -548,7 +536,9 @@ class IMP_Smime
         // check if a personal certificate is set
         $check = null;
         $check = $this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID);
+        
         $keyExists = $this->privateKeyExists($check, $identityID);
+        
 
         // check if there is a personal Certificate set
         if (!empty($check)) {
