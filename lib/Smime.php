@@ -254,10 +254,11 @@ class IMP_Smime
 
         $identity = $injector->getInstance('IMP_Identity');
 
+        // note: this is getting the privatekeyid from the identities array as this id suffices (no extra pub-id-key needed)
         if ($signkey === self::KEY_SECONDARY) {
-            $keyID = $identity->getValue('pubsignkey', $identityID);
+            $keyID = $identity->getValue('privsignkey', $identityID);
         } else {
-            $keyID = $identity->getValue('pubkey', $identityID);
+            $keyID = $identity->getValue('privkey', $identityID);
         }
 
         // with keyID get key from extratables
