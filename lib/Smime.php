@@ -127,7 +127,7 @@ class IMP_Smime
         $val = HordeString::convertToUtf8($val);
 
         // NOTE: the public key does not need a field, because it will be the same as for the private key anyway
-        
+
         if ($signkey === true || $signkey == self::KEY_SECONDARY) {
             $prefName = 'smime_public_sign_key';
         } else {
@@ -356,9 +356,9 @@ class IMP_Smime
             $personalCertificate = $this->getPersonalPrivateKey($signkey, $identityID);
 
             //check the database and if keys are the same
-            $returnvalue = $this->privateKeyExists($personalCertificate, $identityID, $returnID=false, $returnLastIdInTable=false);
+            $returnvalue = $this->privateKeyExists($personalCertificate, $identityID, $returnID=true, $returnLastIdInTable=false);
 
-            if (isset($returnvalue)) {
+            if (isset($returnvalue) && !empty($returnvalue)) {
                 return $returnvalue;
             } else {
                 return false;
@@ -531,7 +531,7 @@ class IMP_Smime
         $check = $this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID); // this is not gonna work or is it?
 
         $keyExists = $this->privateKeyExists($check, $identityID);
-
+        
         // check if there is a personal Certificate set
         if (!empty($check)) {
             // if there is a personal certificate, copy the personal certificate itself or the singkey (depending on wheater it is set) to the database otherwise discontinue the action
@@ -1214,15 +1214,19 @@ class IMP_Smime
         }
 
         if ($extrakey === false) {
-            // get id of newly added key
+            // get id for newly added key:
             // if the private key does not exists, get newest id to add (see method parameters of privateKeyExists)
-            $id = $this->privateKeyExists($keysinfos->private, $identityId, true, true);
+            // else do nothing ;)
 
-            // add id to the identities (serialized array) in prefs
-            $this->addPersonalPrivateKey($id, $signkey, $calledFromSetSmime = false, $identityID);
-            $this->addPersonalPublicKey($id, $signkey, $identityID);
-            //TODO: This has to be checked again... not sure the method is needed anymore at all
-            //$this->addAdditionalCert($keysinfos->certs, $signkey, $identityID);
+            if (!$this->privateKeyExists($keysinfos->private, $identityId)) {
+                $id = $this->privateKeyExists($keysinfos->private, $identityId, false, true);
+
+                // add id to the identities (serialized array) in prefs
+                $this->addPersonalPrivateKey($id, $signkey, $calledFromSetSmime = false, $identityID);
+                $this->addPersonalPublicKey($id, $signkey, $identityID);
+                //TODO: This has to be checked again... not sure the method is needed anymore at all
+                //$this->addAdditionalCert($keysinfos->certs, $signkey, $identityID);
+            }
         }
     }
 
