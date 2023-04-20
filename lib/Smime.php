@@ -122,21 +122,25 @@ class IMP_Smime
     public function addPersonalPublicKey($key, $signkey = false, $identityID=0)
     {
         global $injector, $prefs;
-        // clean the recieved key
+        // clean key if it is a string otherwise, if it is an ID (which it should be) keep it
         $val = is_array($key) ? implode('', $key) : $key;
-        $val = HordeString::convertToUtf8($val);
+        $val = is_int($key) ? $key : HordeString::convertToUtf8($val);
 
         // use identity to set the peronal private key to the serialized identity array
         $identity = $injector->getInstance('IMP_Identity');
 
-        // also set the identity to the normal prefs value (for continuity)
-        if ($signkey === true || $signkey == self::KEY_SECONDARY) {
-            $prefName = 'smime_public_sign_key';
-            $identity->setValue('pubsignkey', $val, $identityID);
-        } else {
-            $prefName = 'smime_public_key';
-            $identity->setValue('pubkey', $val, $identityID);
+        // setting id to prefstables, only if $key is an integer
+        if (is_int($key)) {
+            if ($signkey === true || $signkey == self::KEY_SECONDARY) {
+                $prefName = 'smime_public_sign_key';
+                $identity->setValue('pubsignkey', $val, $identityID);
+            } else {
+                $prefName = 'smime_public_key';
+                $identity->setValue('pubkey', $val, $identityID);
+            }
         }
+
+        // TODO: also set the identity to the normal prefs value (for continuity)??
         $prefs->setValue($prefName, $val);
         $identity->save();
     }
@@ -152,11 +156,12 @@ class IMP_Smime
     public function addPersonalPrivateKey($key, $signkey = false, $calledFromSetSmime = false, $identityID=0)
     {
         // TODO: find way to only add an id to the array of prefs..
-        
+
         global $prefs, $injector;
-        // clean key
+        // clean key if it is a string otherwise, if it is an ID (which it should be) keep it
         $val = is_array($key) ? implode('', $key) : $key;
-        $val = HordeString::convertToUtf8($val);
+        $val = is_int($key) ? $key : HordeString::convertToUtf8($val);
+
 
         // use identity to set the peronal private key to the serialized identity array
         $identity = $injector->getInstance('IMP_Identity');
@@ -169,20 +174,20 @@ class IMP_Smime
         if (!empty($check) && $signkey == false) {
             $this->unsetSmimePersonal($signkey, $calledFromSetSmime, $identityID);
         }
-        // setting to extra tables and retrieving id
-        // code ... here
-        //$this->addExtraPersonalKeys();
 
-        // setting id to prefstables
-        if ($signkey === true || $signkey == self::KEY_SECONDARY) {
-            $prefName = 'smime_private_sign_key';
-            $identity->setValue('privsignkey', $val, $identityID);
-        } else {
-            $prefName = 'smime_private_key';
-            $identity->setValue('privkey', $val, $identityID);
+        // setting id to prefstables, only if $key is an integer
+        if (is_int($key)) {
+            if ($signkey === true || $signkey == self::KEY_SECONDARY) {
+                $prefName = 'smime_private_sign_key';
+                $identity->setValue('privsignkey', $val, $identityID);
+            } else {
+                $prefName = 'smime_private_key';
+                $identity->setValue('privkey', $val, $identityID);
+            }
         }
-        $GLOBALS['prefs']->setValue($prefName, $val);
-        $identity->save();
+
+        // $GLOBALS['prefs']->setValue($prefName, $val);
+        // $identity->save();
     }
 
     /**
@@ -262,9 +267,11 @@ class IMP_Smime
         }
 
         // with keyID get key from extratables
-        $key = $this->getExtraPublicKey($keyID);
-
-        return $key;
+        if (is_int($keyID)) {
+            $key = $this->getExtraPublicKey($keyID);
+            return $key;
+        }
+        return false;
     }
 
     /**
@@ -286,12 +293,17 @@ class IMP_Smime
             $keyID = $identity->getValue('privkey', $identityID);
         }
 
-        
+
         // with keyID get key from extratables
         $key = $this->getExtraPrivateKey($keyID);
         // TODO: Problem: current users will have their keys on that spot and will loose them! Need a migrate script!
 
-        return $key;
+        // with keyID get key from extratables
+        if (is_int($keyID)) {
+            $key = $this->getExtraPrivateKey($keyID);
+            return $key;
+        }
+        return false;
     }
 
     /**
@@ -308,11 +320,7 @@ class IMP_Smime
      */
     public function getExtraPublicKey($privateKeyId, $prefName = 'smime_private_key', $identityID=0)
     {
-        /* Get the user_name  */
-        // TODO: is there a way to only use prefs?
-        $user_name = $GLOBALS['registry']->getAuth();
-
-        // TODO: there is no use for prefName! it has to be removed from all calls to this functino
+        // TODO: there is no use for prefName or identityID! it has to be removed from all calls to this functino
         // reason: the keyid is given and the username, no need for anything else
 
         // Build the SQL query
@@ -320,6 +328,11 @@ class IMP_Smime
         $values = [$privateKeyId];
         // Run the SQL query
         $result = $this->_db->selectOne($query, $values); // returns one key
+
+        // \Horde::debug($privateKeyId, '/dev/shm/backend', false);
+        // \Horde::debug($result, '/dev/shm/backend', false);
+        // \Horde::debug(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), '/dev/shm/backend', false);
+
         return $result['public_key'];
     }
 
@@ -335,10 +348,6 @@ class IMP_Smime
      */
     public function getExtraPrivateKey($id, $prefName = 'smime_private_key', $identityID = 0)
     {
-        /* Get the user_name  */
-        // TODO: is there a way to only use prefs?
-        $user_name = $GLOBALS['registry']->getAuth();
-
         // Build the SQL query
         $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE private_key_id=?';
         $values = [$id];
@@ -368,9 +377,9 @@ class IMP_Smime
             //check the database and if keys are the same
             $returnvalue = $this->privateKeyExists($personalCertificate, $identityID, $returnID=false, $returnLastIdInTable=false);
 
-            if(isset($returnvalue)){
+            if (isset($returnvalue)) {
                 return $returnvalue;
-            }else{
+            } else {
                 return false;
             }
         }
@@ -412,7 +421,7 @@ class IMP_Smime
                 }
             }
         } else {
-            if ($returnLastIdInTable){
+            if ($returnLastIdInTable) {
                 // return last id in the table, else if table is empty return the index 0
                 !empty($result) ? $result = array_key_last($result) : $result = 0;
                 return $result;
@@ -989,7 +998,6 @@ class IMP_Smime
                 'passphrase' => $this->getPassphrase(null, $differentKey), // create get pasExtraKeyPassphrase()?
             ]);
             return $value;
-
         }
     }
 
@@ -1234,9 +1242,6 @@ class IMP_Smime
             //TODO: This has to be checked again... not sure the method is needed anymore at all
             //$this->addAdditionalCert($keysinfos->certs, $signkey, $identityID);
         }
-
-
-
     }
 
     /**
