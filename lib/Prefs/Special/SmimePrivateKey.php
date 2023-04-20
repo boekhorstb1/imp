@@ -398,6 +398,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         } elseif (isset($ui->vars->unset_smime_secondary)) { // unsetting secondary certificate and transfering it to the db
             $injector->getInstance('IMP_Smime')->unsetSmimeSecondary(1, $identityID);
         } elseif (isset($ui->vars->set_smime_personal)) { // setting personal certificate... first have to unset?
+            \Horde::debug($ui->vars->set_smime_personal, '/dev/shm/helptest', false);
             $injector->getInstance('IMP_Smime')->setSmimePersonal(
                 $ui->vars->set_smime_personal,
                 0,

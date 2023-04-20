@@ -124,13 +124,16 @@ class IMP_Smime
         global $injector, $prefs;
         // clean key if it is a string otherwise, if it is an ID (which it should be) keep it
         $val = is_array($key) ? implode('', $key) : $key;
-        $val = is_int($key) ? $key : HordeString::convertToUtf8($val);
+        $val = HordeString::convertToUtf8($val);
+
+        // get the keyid to set it to the identites array in prefs
+        $keyID = $this->privateKeyExists($key, $identityID, true, true);
 
         // use identity to set the peronal private key to the serialized identity array
         $identity = $injector->getInstance('IMP_Identity');
 
         // setting id to prefstables, only if $key is an integer
-        if (is_int($key)) {
+        if (!empty($keyID)) {
             if ($signkey === true || $signkey == self::KEY_SECONDARY) {
                 $prefName = 'smime_public_sign_key';
                 $identity->setValue('pubsignkey', $val, $identityID);
@@ -138,11 +141,10 @@ class IMP_Smime
                 $prefName = 'smime_public_key';
                 $identity->setValue('pubkey', $val, $identityID);
             }
+            // TODO: also set the identity to the normal prefs value (for continuity)??
+            $prefs->setValue($prefName, $val);
+            $identity->save();
         }
-
-        // TODO: also set the identity to the normal prefs value (for continuity)??
-        $prefs->setValue($prefName, $val);
-        $identity->save();
     }
 
     /**
@@ -160,8 +162,10 @@ class IMP_Smime
         global $prefs, $injector;
         // clean key if it is a string otherwise, if it is an ID (which it should be) keep it
         $val = is_array($key) ? implode('', $key) : $key;
-        $val = is_int($key) ? $key : HordeString::convertToUtf8($val);
+        $val = HordeString::convertToUtf8($val);
 
+        // get the keyid to set it to the identites array in prefs
+        $keyID = $this->privateKeyExists($key, $identityID, true, true);
 
         // use identity to set the peronal private key to the serialized identity array
         $identity = $injector->getInstance('IMP_Identity');
@@ -171,12 +175,13 @@ class IMP_Smime
 
         // it there is a private key, these will be unset first and then the new one will be added to the database and its id will be added to the prefs array
         // unsetting
+
         if (!empty($check) && $signkey == false) {
             $this->unsetSmimePersonal($signkey, $calledFromSetSmime, $identityID);
         }
 
         // setting id to prefstables, only if $key is an integer
-        if (is_int($key)) {
+        if (!empty($keyID)) {
             if ($signkey === true || $signkey == self::KEY_SECONDARY) {
                 $prefName = 'smime_private_sign_key';
                 $identity->setValue('privsignkey', $val, $identityID);
@@ -184,10 +189,9 @@ class IMP_Smime
                 $prefName = 'smime_private_key';
                 $identity->setValue('privkey', $val, $identityID);
             }
+            $GLOBALS['prefs']->setValue($prefName, $val);
+            $identity->save();
         }
-
-        // $GLOBALS['prefs']->setValue($prefName, $val);
-        // $identity->save();
     }
 
     /**
@@ -295,8 +299,6 @@ class IMP_Smime
         return $key;
 
         // TODO: Problem: current users will have their keys on that spot and will loose them! Need a migrate script!
-
-        
     }
 
     /**
@@ -535,10 +537,10 @@ class IMP_Smime
 
         // check if a personal certificate is set
         $check = null;
-        $check = $this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID);
-        
+        $check = $this->getPersonalPrivateKey(self::KEY_PRIMARY, $identityID); // this is not gonna work or is it?
+
         $keyExists = $this->privateKeyExists($check, $identityID);
-        
+
 
         // check if there is a personal Certificate set
         if (!empty($check)) {
