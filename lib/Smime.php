@@ -361,20 +361,13 @@ class IMP_Smime
             $user_name = $GLOBALS['registry']->getAuth();
             $personalCertificate = $this->getPersonalPrivateKey($signkey, $identityID);
 
-            // Build the SQL query
-            $query = 'SELECT private_key_id, private_key FROM imp_smime_extrakeys WHERE user_name=? AND identity=?';
-            $values = [$user_name, $identityID];
-            // Run the SQL query
-            $result = $this->_db->selectAll($query, $values); // returns one key
-            if (!empty($result)) {
-                // check if privatekeys are the same
-                foreach ($result as $key => $value) {
-                    if ($value['private_key'] == $personalCertificate) {
-                        return $value['private_key_id'];
-                    }
-                }
-            } else {
-                return -1;
+            //check the database and if keys are the same
+            $returnvalue = $this->privateKeyExists($personalCertificate, $identityID, $returnID=false, $returnLastIdInTable=false);
+
+            if(isset($returnvalue)){
+                return $returnvalue;
+            }else{
+                return false;
             }
         }
     }
