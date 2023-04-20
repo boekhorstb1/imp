@@ -125,29 +125,16 @@ class IMP_Smime
         // clean key if it is a string otherwise, if it is an ID (which it should be) keep it
         $val = is_array($key) ? implode('', $key) : $key;
         $val = HordeString::convertToUtf8($val);
+
+        // NOTE: the public key does not need a field, because it will be the same as for the private key anyway
         
-        // get the keyid to set it to the identites array in prefs
-        // PROBLEM: Need to have the privatekeyid but the key that is put in here has no privatekey (only a public one)
-        $keyID = $this->privateKeyExists($key, $identityID, true, true);
-
-
-        // use identity to set the peronal private key to the serialized identity array
-        $identity = $injector->getInstance('IMP_Identity');
-
-        // setting id to prefstables, only if $key is an integer
-        if (!empty($keyID)) {
-            dd('testtest');
-            if ($signkey === true || $signkey == self::KEY_SECONDARY) {
-                $prefName = 'smime_public_sign_key';
-                $identity->setValue('pubsignkey', $keyID, $identityID);
-            } else {
-                $prefName = 'smime_public_key';
-                $identity->setValue('pubkey', $keyID, $identityID);
-            }
-            // TODO: also set the identity to the normal prefs value (for continuity)??
-            $GLOBALS['prefs']->setValue($prefName, $val);
-            $identity->save();
+        if ($signkey === true || $signkey == self::KEY_SECONDARY) {
+            $prefName = 'smime_public_sign_key';
+        } else {
+            $prefName = 'smime_public_key';
         }
+
+        $prefs->setValue($prefName, $val);
     }
 
     /**
@@ -192,7 +179,7 @@ class IMP_Smime
                 $prefName = 'smime_private_key';
                 $identity->setValue('privkey', $keyID, $identityID);
             }
-            $GLOBALS['prefs']->setValue($prefName, $val);
+            $prefs->setValue($prefName, $val);
             $identity->save();
         }
     }
