@@ -169,12 +169,10 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         // Identities are used to reply to mails with a seemingly different account.
         // See: Preferences > Mail > Personal Information
         if (!$identities) {  
-            // this should get value from prefs and not for identity array
-            $view->has_key = $prefs->getValue('smime_private_key') &&
-                $prefs->getValue('smime_public_key'); // check if both private and public keys can be fetched (returns a boolean)
-
-            $view->has_sign_key = $identity->getValue('smime_private_sign_key') &&
-                $prefs->getValue('smime_public_sign_key');
+            $view->has_key = $smime->getPersonalPrivateKey(0, $defaultIdentity) &&
+                $smime->getPersonalPublicKey(0, $defaultIdentity); // check if both private and public keys can be fetched (returns a boolean)
+                $smime->getPersonalPrivateKey(1, $defaultIdentity) &&
+                $smime->getPersonalPublicKey(1, $defaultIdentity);
         } else {
             // Ask user to go the smime page to set the keys for each identity
             $view->relink =  Horde::link($this->smime_prefs_url)
