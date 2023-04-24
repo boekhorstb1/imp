@@ -23,13 +23,13 @@
  * @package    IMP
  * @subpackage UnitTests
  */
-class Imp_Unit_Mime_Viewer_HtmlTest extends PHPUnit_Framework_TestCase
+class Imp_Unit_Mime_Viewer_HtmlTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
-        $GLOBALS['browser'] = $this->getMock('Horde_Browser');
+        $GLOBALS['browser'] = $this->createMock('Horde_Browser');
 
-        $prefs = $this->getMock('Horde_Prefs', array(), array(), '', false);
+        $prefs = $this->createMock('Horde_Prefs', array(), array(), '', false);
         $prefs->expects($this->any())
             ->method('getValue')
             ->will($this->returnValue(false));
@@ -52,7 +52,7 @@ class Imp_Unit_Mime_Viewer_HtmlTest extends PHPUnit_Framework_TestCase
         );
 
         $v = new IMP_Stub_Mime_Viewer_Html(new Horde_Mime_Part(), array(
-            'browser' => $this->getMock('Horde_Browser'),
+            'browser' => $this->createMock('Horde_Browser'),
             'charset' => 'UTF-8'
         ));
 
@@ -79,7 +79,7 @@ class Imp_Unit_Mime_Viewer_HtmlTest extends PHPUnit_Framework_TestCase
         );
 
         $v = new IMP_Stub_Mime_Viewer_Html(new Horde_Mime_Part(), array(
-            'browser' => $this->getMock('Horde_Browser'),
+            'browser' => $this->createMock('Horde_Browser'),
             'charset' => 'UTF-8'
         ));
 

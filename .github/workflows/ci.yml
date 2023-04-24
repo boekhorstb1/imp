@@ -29,7 +29,7 @@ jobs:
       matrix:
         operating-system: ['ubuntu-20.04']
         php-versions: ['7.4']
-        phpunit-versions: ['9.6']
+        phpunit-versions: ['9.5']
     steps:
     - name: Setup github ssh key
       run:  mkdir -p ~/.ssh/ && ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
