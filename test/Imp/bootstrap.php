@@ -12,7 +12,7 @@ foreach ($candidates as $candidate) {
 $candidates1 = [
     dirname(__FILE__, 6) . '/vendor/autoload.php',
     '/vendor/autoload.php',
-    'Horde/Test/Bootstrap.php'
+    'vendor/horde/test/lib/Horde/Test/Bootstrap.php'
 ];
 
 
