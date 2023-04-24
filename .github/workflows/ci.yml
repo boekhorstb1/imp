@@ -50,9 +50,10 @@ jobs:
       run: |
         ## For unclear reasons, github action fails randomly if we do not install before we require.
         COMPOSER_ROOT_VERSION=dev-FRAMEWORK_6_0 composer config minimum-stability dev
-        COMPOSER_ROOT_VERSION=dev-FRAMEWORK_6_0 composer install --verbose
+        COMPOSER_ROOT_VERSION=dev-FRAMEWORK_6_0 composer install
+        composer require horde/imp:${{ github.ref }}
     - name: run phpunit
       run: |
         echo `pwd`
-        echo `ls -al`
+        echo `cat composer.json`
         phpunit --bootstrap test/Imp/bootstrap.php
