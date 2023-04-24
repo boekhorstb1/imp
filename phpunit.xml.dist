@@ -6,12 +6,6 @@
     </include>
   </coverage>
   <testsuites>
-    <testsuite name="unit">
-      <directory>test/Imp/Unit</directory>
-    </testsuite>
-    <testsuite name="stub">
-      <directory>test/Imp/Stub</directory>
-    </testsuite>
     <testsuite name="all">
       <directory>test/Imp</directory>
     </testsuite>
