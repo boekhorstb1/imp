@@ -122,7 +122,7 @@ class IMP_Smime
     public function addPersonalPublicKey($key, $signkey = false, $identityID=0)
     {
         global $injector, $prefs;
-        // clean key if it is a string otherwise, if it is an ID (which it should be) keep it
+        // clean key if it is in array
         $val = is_array($key) ? implode('', $key) : $key;
         $val = HordeString::convertToUtf8($val);
 
