@@ -116,8 +116,8 @@ class IMP_Smime
      * Adds the personal public key to the prefs.
      *
      * @param string|array $key  The public key to add.
-     * @param boolean $signkey   The secondary key for signing (optional)
-     * @param int $identityID    The identity for wich the public key should be added
+     * @param boolean $signkey   The secondary key for signing (optional).
+     * @param int $identityID    The identity for wich the public key should be added.
      */
     public function addPersonalPublicKey($key, $signkey = false, $identityID=0)
     {

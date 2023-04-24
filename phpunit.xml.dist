@@ -7,13 +7,13 @@
   </coverage>
   <testsuites>
     <testsuite name="unit">
-      <directory>test/Unit</directory>
+      <directory>test/Imp/Unit</directory>
     </testsuite>
     <testsuite name="stub">
-      <directory>test/Stub</directory>
+      <directory>test/Imp/Stub</directory>
     </testsuite>
     <testsuite name="all">
-      <directory>test</directory>
+      <directory>test/Imp</directory>
     </testsuite>
   </testsuites>
 </phpunit>
