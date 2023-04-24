@@ -43,14 +43,13 @@ extends TestCase
     {
         $this->_oldtz = date_default_timezone_get();
         date_default_timezone_set('UTC');
-
-        $injector = $this->createMock('Horde_Injector', array(), array(), '', false);
+        $injector = $this->createMock(Horde_Injector::class, array(), array(), '', false);
         $injector->expects($this->any())
             ->method('getInstance')
             ->will($this->returnCallback(array($this, '_injectorGetInstance')));
         $GLOBALS['injector'] = $injector;
 
-        $registry = $this->createMock('Horde_Registry', array(), array(), '', false);
+        $registry = $this->createMock(Horde_Registry::class, array(), array(), '', false);
         // getCharset this method cannot be found
         // $registry->expects($this->any())
         //     ->method('getCharset')
@@ -60,7 +59,7 @@ extends TestCase
             ->will($this->returnCallback(array($this, '_registryRemoteHost')));
         $GLOBALS['registry'] = $registry;
 
-        $notification = $this->createMock('Horde_Notification_Handler', array(), array(), '', false);
+        $notification = $this->createMock(Horde_Notification_Handler::class, array(), array(), '', false);
         $notification->expects($this->any())
             ->method('push')
             ->will($this->returnCallback(array($this, '_notificationHandler')));
@@ -80,6 +79,9 @@ extends TestCase
         switch ($interface) {
         case 'Horde_Core_Hooks':
             return new Horde_Core_Hooks();
+
+        case 'Horde_Browser':
+            return new Horde_Browser();
 
         case 'IMP_Contents':
             if (!isset($this->_contents)) {
@@ -549,13 +551,13 @@ extends TestCase
     public function testResultMimeMessageHeadersContainsReceivedHeader()
     {
         $this->_doImple('accept', $this->_getInvitation()->exportvCalendar());
-        $this->assertContains('(Horde Framework) with HTTP', $this->_getMailHeaders()->getValue('Received'));
+        $this->assertStringContainsString('(Horde Framework) with HTTP', $this->_getMailHeaders()->getValue('Received'));
     }
 
     public function testResultMimeMessageHeadersContainsMessageId()
     {
         $this->_doImple('accept', $this->_getInvitation()->exportvCalendar());
-        $this->assertContains('.Horde.', $this->_getMailHeaders()->getValue('Message-ID'));
+        $this->assertStringContainsString('.Horde.', $this->_getMailHeaders()->getValue('Message-ID'));
     }
 
     public function testResultMimeMessageHeadersContainsDate()

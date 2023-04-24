@@ -33,3 +33,11 @@ $candidates2 = [
 
 $loader($candidates2);
 
+// $declaredClasses = get_declared_classes();
+
+// $composerClasses = array_filter($declaredClasses, function ($class) {
+//     return strpos($class, 'ComposerAutoloaderInit') === 0 || strpos($class, 'Composer\\') === 0;
+// });
+
+// dd($composerClasses);
+
