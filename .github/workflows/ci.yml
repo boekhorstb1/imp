@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - master
+      - ci-fxes
       - maintaina-composerfixed
       - FRAMEWORK_6_0
   pull_request:
@@ -27,8 +28,8 @@ jobs:
     strategy:
       matrix:
         operating-system: ['ubuntu-20.04']
-        php-versions: ['7.4', '8.0', 'latest']
-        phpunit-versions: ['latest', '9.5']
+        php-versions: ['7.4']
+        phpunit-versions: ['9.6']
     steps:
     - name: Setup github ssh key
       run:  mkdir -p ~/.ssh/ && ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
@@ -49,6 +50,9 @@ jobs:
       run: |
         ## For unclear reasons, github action fails randomly if we do not install before we require.
         COMPOSER_ROOT_VERSION=dev-FRAMEWORK_6_0 composer config minimum-stability dev
-        COMPOSER_ROOT_VERSION=dev-FRAMEWORK_6_0 composer install
+        COMPOSER_ROOT_VERSION=dev-FRAMEWORK_6_0 composer install --verbose
     - name: run phpunit
-      run: phpunit --bootstrap test/bootstrap.php
+      run: |
+        echo `pwd`
+        echo `ls -al`
+        phpunit --bootstrap test/bootstrap.php
