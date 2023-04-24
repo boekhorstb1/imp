@@ -13,7 +13,7 @@
  */
 
 /**
- * Test the Sime classes.
+ * Test the Sime-class lib/Basic/Smime.
  *
  * @author     Rafael te Boekhorst <boekhorst@b1-systems.de>
  * @category   Horde
@@ -23,15 +23,10 @@
  * @package    IMP
  * @subpackage UnitTests
  */
-class Imp_Unit_SmimeTest extends TestCase
+class Imp_Unit_BasicSmimeTest extends TestCase
 {
     protected function setUp(): void
     {
-        //$libSmime = $this->createMock();
-        $hordeCryptSmime = $this->createMock(Horde_Crypt_Smime::class);
-    }
-
-    public function cryptTest(){
-        var_dump($hordeCryptSmime);
+        $this->libSmime = $this->getBasicSmime();
     }
 }
