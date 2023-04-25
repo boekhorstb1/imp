@@ -272,7 +272,7 @@ extends TestCase
     public function testResultMessageContainsProductId()
     {
         $this->_doImple('accept', $this->_getInvitation()->exportvCalendar());
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
             '/-\/\/The Horde Project\/\/Horde Application Framework [1-9]+\/\/EN/',
             $this->_getIcalendar()->getAttributeSingle('PRODID')
         );
