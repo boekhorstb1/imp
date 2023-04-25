@@ -27,10 +27,10 @@ class Imp_Unit_BasicSmimeTest extends TestCase
 {
     protected function setUp(): void
     {
-        $this->libSmime = $this->getBasicSmime();
+        $this->basicSmime = $this->getBasicSmime();
     }
 
     public function testIfLibSmimeSetup(){
-        $this->assertIsObject($this->libSmime);
+        $this->assertIsObject($this->basicSmime);
     }
 }
