@@ -176,7 +176,7 @@ class IMP_Prefs_Special_SmimePrivateKey implements Horde_Core_Prefs_Ui_Special
         } else {
             // Ask user to go the smime page to set the keys for each identity
             $view->relink =  Horde::link($this->smime_prefs_url)
-            . _('Please set the default Identity and change SMIME preferences here') . '</a>';
+            . _('Change SMIME preferences here') . '</a>';
         }
 
 

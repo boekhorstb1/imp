@@ -359,6 +359,13 @@
             If this option is selected, you will be able to import your personal S/MIME keys, read encrypted mail, verify digitally signed mail, and encrypt/sign your outgoing mail.
         </para>
     </entry>
+    
+    <entry id="smime-overview-identities">
+        <title>S/MIME: Preferences: Identities: Personal Certificates</title>
+        <para>
+            Each Identity can have multiple SMIME certificates set. First create a new identity, then set this identity to 'default', after that you can change the SMIME certificates for the identity.
+        </para>
+    </entry>
 
     <entry id="smime-overview-personalkey">
         <title>S/MIME: Preferences: Personal Certificates</title>
