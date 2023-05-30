@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IMP\n"
 "Report-Msgid-Bugs-To: dev@lists.horde.org\n"
-"POT-Creation-Date: 2023-05-30 09:47+0000\n"
+"POT-Creation-Date: 2023-05-30 10:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -935,6 +935,10 @@ msgstr ""
 msgid "Check for valid recipient PGP public keys while replying?"
 msgstr ""
 
+#: config/prefs.php:131
+msgid "Check if you would like to use SMIME-keypairs for identities"
+msgstr ""
+
 #: templates/dynamic/mailbox.html.php:277
 msgid "Check mailbox for new mail?"
 msgstr ""
@@ -1320,9 +1324,6 @@ msgid "Current access to %s"
 msgstr ""
 
 #: templates/prefs/smimeprivatekey.html.php:45
-msgid "Current alias for your Certificate Set: "
-msgstr ""
-
 #: templates/prefs/smimeprivatekey.html.php:120
 #, php-format
 msgid "Current alias for your Certificate Set: %s"
@@ -4355,7 +4356,8 @@ msgid "Text:"
 msgstr ""
 
 #: templates/prefs/smimeprivatekey.html.php:59
-msgid "The ID of your Certificate Set: "
+#, php-format
+msgid "The ID of your Certificate Set: %s"
 msgstr ""
 
 #: templates/prefs/smimeprivatekey.html.php:134
@@ -4451,6 +4453,12 @@ msgstr ""
 
 #: lib/Ajax/Imple/ItipRequest.php:491
 msgid "The event was updated in your calendar."
+msgstr ""
+
+#: lib/Ajax/Application/Handler/SwitchEncryption.php:55
+msgid ""
+"The following key from the address book is used for this identity if you "
+"want to use the address book only (without SMIME-keys):"
 msgstr ""
 
 #: lib/Contents.php:626

@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IMP H6 (7.0-git)\n"
 "Report-Msgid-Bugs-To: dev@lists.horde.org\n"
-"POT-Creation-Date: 2023-05-30 09:47+0000\n"
+"POT-Creation-Date: 2023-05-30 10:11+0000\n"
 "PO-Revision-Date: 2017-09-27 14:39+0200\n"
 "Last-Translator: Jan Schneider <jan@horde.org>\n"
 "Language-Team: German <dev@lists.horde.org>\n"
@@ -1009,6 +1009,11 @@ msgstr "Auf neue Nachrichten überprüfen"
 msgid "Check for valid recipient PGP public keys while replying?"
 msgstr "Beim Antworten auf gültige PGP-Schlüssel der Empfänger überprüfen?"
 
+#: config/prefs.php:131
+msgid "Check if you would like to use SMIME-keypairs for identities"
+msgstr ""
+"Prüfen Sie, ob Sie SMIME-Schlüsselpaare für Identitäten verwenden möchten"
+
 #: templates/dynamic/mailbox.html.php:277
 msgid "Check mailbox for new mail?"
 msgstr "Ordner auf neue Nachrichten überprüfen?"
@@ -1422,10 +1427,8 @@ msgid "Current access to %s"
 msgstr "Aktuelle Rechte von %s"
 
 #: templates/prefs/smimeprivatekey.html.php:45
-msgid "Current alias for your Certificate Set: "
-msgstr "Alias ihrer Zeritifakte: "
-
 #: templates/prefs/smimeprivatekey.html.php:120
+#, php-format
 msgid "Current alias for your Certificate Set: %s"
 msgstr "Alias ihrer Zeritifakte: %s"
 
@@ -4581,10 +4584,11 @@ msgid "Text:"
 msgstr "Text:"
 
 #: templates/prefs/smimeprivatekey.html.php:59
-msgid "The ID of your Certificate Set: "
-msgstr "Die ID Ihrer Zertifikate: "
+msgid "The ID of your Certificate Set: %s"
+msgstr "Die ID Ihrer Zertifikate: %s"
 
 #: templates/prefs/smimeprivatekey.html.php:134
+#, php-format
 msgid "The ID of your Sign Certificate Set: %s"
 msgstr "Die ID Ihrer Signatur-Zertifikate: %s"
 
@@ -4684,6 +4688,15 @@ msgstr "Der Termin wurde Ihrem Kalender hinzugefügt."
 #: lib/Ajax/Imple/ItipRequest.php:491
 msgid "The event was updated in your calendar."
 msgstr "Der Termin wurde in Ihrem Kalender aktualisiert."
+
+#: lib/Ajax/Application/Handler/SwitchEncryption.php:55
+msgid ""
+"The following key from the address book is used for this identity if you "
+"want to use the address book only (without SMIME-keys):"
+msgstr ""
+"Der folgende Schlüssel aus dem Adressbuch wird für diese Identität "
+"verwendet, wenn Sie nur das Adressbuch verwenden wollen (ohne SMIME-"
+"Schlüssel):"
 
 #: lib/Contents.php:626
 msgid "The initial portion of this text part is displayed below."

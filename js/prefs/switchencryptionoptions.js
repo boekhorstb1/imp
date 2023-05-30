@@ -30,6 +30,18 @@ const switchEncryption = {
       // get the identityID
       const identity = document.getElementById('identity');
       const identityID = Number(identity.value);
+
+      var translatedText;
+      // doAction method from HordeCore
+      HordeCore.doAction(
+        'getPubKeyInfos',
+        {},
+        {
+          callback: (response) => {
+            translatedText = response
+          }
+        })
+
   
       // doAction method from HordeCore
       HordeCore.doAction(
@@ -76,7 +88,8 @@ const switchEncryption = {
               div.parentNode.insertBefore(ul, div);
   
               // create a text to inform the user
-              let text = 'The following key from the address book is used for this identity if you want to use the address book only (without SMIME-keys):';
+              let text = translatedText;
+              // 'The following key from the address book is used for this identity if you want to use the address book only (without SMIME-keys):';
               let infodiv = document.createElement('div');
               infodiv.setAttribute('id', 'addressbookonlyinfos');
               infodiv.textContent = text;

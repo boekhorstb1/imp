@@ -128,7 +128,7 @@ $_prefs['pubsignkey'] = [
 $_prefs['smimeselect'] = [
     'value' => 0, // default value will choose the adresbook, note: default identity will still be checked
     'type' => 'checkbox',
-    'desc' => 'Check if you would like to use SMIME-keypairs for identities',
+    'desc' => _('Check if you would like to use SMIME-keypairs for identities'),
 ];
 
 // *** ACL Preferences ***

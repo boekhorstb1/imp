@@ -23,16 +23,16 @@ use IMP_Prefs_SwitchHandler as SwitchHandler;
 
 class IMP_Ajax_Application_Handler_SwitchEncryption extends Horde_Core_Ajax_Application_Handler
 {
-
     /**
      * AJAX action: Get Keys from Identity of adressbook.
      *
-     * 
+     *
      * @return array  Array with keys of identity.
      */
     public function getIdentityPubKey()
-    {   global $injector;
-    
+    {
+        global $injector;
+
         // get ID of identity and email
         $identityID = $this->vars->identityID;
 
@@ -42,5 +42,18 @@ class IMP_Ajax_Application_Handler_SwitchEncryption extends Horde_Core_Ajax_Appl
 
         $handler = new SwitchHandler();
         return $handler->getPublicKeysForPrefsIdentities($identity, $identityID);
+    }
+
+    /**
+     * AJAX action: Get Translated text wiht information.
+     *
+     *
+     * @return string  Text with information concerning key-management.
+     */
+    public function getPubKeyInfos()
+    {
+        $translatedText = _('The following key from the address book is used for this identity if you want to use the address book only (without SMIME-keys):');
+
+        return $translatedText;
     }
 }

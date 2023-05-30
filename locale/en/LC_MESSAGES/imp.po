@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: IMP\n"
 "Report-Msgid-Bugs-To: dev@lists.horde.org\n"
 "POT-Creation-Date: 2023-05-30 09:47+0000\n"
-"PO-Revision-Date: 2023-05-30 09:38+0000\n"
+"PO-Revision-Date: 2023-05-30 09:47+0000\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: i18n@lists.horde.org\n"
 "Language: en\n"
@@ -1385,9 +1385,9 @@ msgid "Current alias for your Certificate Set: "
 msgstr "Current alias for your Certificate Set: "
 
 #: templates/prefs/smimeprivatekey.html.php:120
-#, fuzzy, php-format
+#, php-format
 msgid "Current alias for your Certificate Set: %s"
-msgstr "Current alias for your Certificate Set: "
+msgstr "Current alias for your Certificate Set: %s"
 
 #: lib/Basic/Search.php:79
 msgid "Custom Header"
@@ -4482,9 +4482,9 @@ msgid "The ID of your Certificate Set: "
 msgstr "The ID of your Certificate Set: "
 
 #: templates/prefs/smimeprivatekey.html.php:134
-#, fuzzy, php-format
+#, php-format
 msgid "The ID of your Sign Certificate Set: %s"
-msgstr "The ID of your Sign Certificate Set: "
+msgstr "The ID of your Sign Certificate Set: %s"
 
 #: templates/prefs/smimeprivatekey.html.php:61
 #: templates/prefs/smimeprivatekey.html.php:136
