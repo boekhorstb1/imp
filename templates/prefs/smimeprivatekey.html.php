@@ -42,7 +42,7 @@
                     <?php
                         // Show or set an alias for a certificate
                         if($this->aliasexists != false) {
-                            echo _('Current alias for your Certificate Set: '.$this->aliasexists);
+                            printf(_('Current alias for your Certificate Set: %s'), $this->aliasexists);
                         } else {
                             echo _('Set Alias for your certificate: ');
                         }
@@ -56,7 +56,7 @@
                 <td>
                     <?php // if the personal certificate exists in the extra db, show its id
     if($this->privatekeyexits) {
-        echo _('The ID of your Certificate Set: '.$this->privatekeyexits);
+        printf(_('The ID of your Certificate Set: %s'), $this->privatekeyexits);
     } else {
         echo _('The ID of your Sign Certificate Set: <i>not set in database</i>');
     }
@@ -117,7 +117,7 @@
                     <?php
                 // Show or set an alias for a certificate
                 if($this->signaliasexists != false) {
-                    echo _('Current alias for your Certificate Set: '.$this->signaliasexists);
+                    printf (_('Current alias for your Certificate Set: %s'), $this->signaliasexists);
                 } else {
                     echo _('Set Alias for your certificate: ');
                 }
@@ -131,7 +131,7 @@
                 <td>
                     <?php // if the personal certificate exists in the extra db, show its id
     if($this->signkeyexits) {
-        echo _('The ID of your Sign Certificate Set: '.$this->signkeyexits);
+        printf (_('The ID of your Sign Certificate Set: %s'), $this->signkeyexits);
     } else {
         echo _('The ID of your Sign Certificate Set: <i>not set in database</i>');
     }?>
@@ -229,7 +229,7 @@
             </tr>
             <tr>
                 <td>
-                    <?php echo _('Public Certificate: ') ?> [<?php echo $keyArray['publiclink'];
+                <?php echo _('Public Certificate: ') ?> [<?php echo $keyArray['publiclink'];
                 echo _('View') ?></a>][<?php echo $keyArray['publicinfolink'];
                 echo _('Details') ?></a>]
                 </td>

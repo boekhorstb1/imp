@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: IMP\n"
 "Report-Msgid-Bugs-To: dev@lists.horde.org\n"
-"POT-Creation-Date: 2023-05-30 08:17+0000\n"
+"POT-Creation-Date: 2023-05-30 09:47+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -449,6 +449,10 @@ msgstr ""
 
 #: lib/Prefs/Special/SmimeAliasHandler.php:29
 msgid "Alias has been set."
+msgstr ""
+
+#: templates/prefs/smimeprivatekey.html.php:223
+msgid "Alias: "
 msgstr ""
 
 #: templates/prefs/acl.html.php:45 templates/prefs/acl.html.php:80
@@ -1316,8 +1320,12 @@ msgid "Current access to %s"
 msgstr ""
 
 #: templates/prefs/smimeprivatekey.html.php:45
-#: templates/prefs/smimeprivatekey.html.php:120
 msgid "Current alias for your Certificate Set: "
+msgstr ""
+
+#: templates/prefs/smimeprivatekey.html.php:120
+#, php-format
+msgid "Current alias for your Certificate Set: %s"
 msgstr ""
 
 #: lib/Basic/Search.php:79
@@ -2190,6 +2198,12 @@ msgid ""
 "empty, the first certificate will be used for all purposes."
 msgstr ""
 
+#: templates/prefs/smimeidentities.html.php:11
+msgid ""
+"If you want to set the keys for different identity, please change your "
+"default-identity first: "
+msgstr ""
+
 #: lib/Contents.php:1282 templates/saveimage/saveimage.html.php:7
 msgid "Image"
 msgstr ""
@@ -2211,7 +2225,7 @@ msgid "Import"
 msgstr ""
 
 #: templates/prefs/smimeprivatekey.html.php:285
-msgid "Import Extra Personal Certificate test"
+msgid "Import Extra Personal Certificate"
 msgstr ""
 
 #: templates/smime/import_extra_key.html.php:6
@@ -3373,6 +3387,10 @@ msgstr ""
 msgid "Priority"
 msgstr ""
 
+#: templates/prefs/smimeprivatekey.html.php:239
+msgid "Private Certificate: "
+msgstr ""
+
 #: lib/Pgp.php:826
 msgid "Private Key"
 msgstr ""
@@ -3381,6 +3399,10 @@ msgstr ""
 msgid ""
 "Prompt to send read receipt (a/k/a message disposition notification) when "
 "requested by the sender?"
+msgstr ""
+
+#: templates/prefs/smimeprivatekey.html.php:232
+msgid "Public Certificate: "
 msgstr ""
 
 #: lib/Pgp.php:826
@@ -4337,7 +4359,8 @@ msgid "The ID of your Certificate Set: "
 msgstr ""
 
 #: templates/prefs/smimeprivatekey.html.php:134
-msgid "The ID of your Sign Certificate Set: "
+#, php-format
+msgid "The ID of your Sign Certificate Set: %s"
 msgstr ""
 
 #: templates/prefs/smimeprivatekey.html.php:61
@@ -5525,6 +5548,10 @@ msgid ""
 "Your browser security settings don't permit direct access to the clipboard."
 msgstr ""
 
+#: templates/prefs/smimeidentities.html.php:5
+msgid "Your currently set (default) identity: "
+msgstr ""
+
 #: templates/prefs/encrypt.html.php:3
 msgid "Your default encryption method for sending messages:"
 msgstr ""
@@ -5614,6 +5641,10 @@ msgstr ""
 
 #: lib/Basic/Pgp.php:47 lib/Basic/Pgp.php:78 lib/Basic/Smime.php:409
 msgid "key"
+msgstr ""
+
+#: templates/prefs/smimeidentities.html.php:12
+msgid "link to preferences"
 msgstr ""
 
 #: lib/Compose.php:3047
