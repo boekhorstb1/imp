@@ -220,7 +220,7 @@
             <!-- show alias -->
             <tr>
                 <td>
-                    alias: <?php if (empty($keyArray['alias'])) {
+                    <?php echo _('Alias: ') ?><?php if (empty($keyArray['alias'])) {
                         echo '<i>'._('No alias').'</i>';
                     } else {
                         echo $keyArray['alias'];
@@ -229,14 +229,14 @@
             </tr>
             <tr>
                 <td>
-                    Public Certificate: [<?php echo $keyArray['publiclink'];
+                    <?php echo _('Public Certificate: ') ?> [<?php echo $keyArray['publiclink'];
                 echo _('View') ?></a>][<?php echo $keyArray['publicinfolink'];
                 echo _('Details') ?></a>]
                 </td>
             </tr>
             </tr>
             <td>
-                Private Certificate: [<?php echo $keyArray['privatelink'];
+                <?php echo _('Private Certificate: ') ?> [<?php echo $keyArray['privatelink'];
                 echo _('View') ?></a>]
 
                 <!-- set-to-secondary smime button -->
@@ -282,7 +282,7 @@
                 <div>
                     <p>
                         <input type="submit" name="save" class="horde-default" id="import_extra_smime_personal"
-                            value="<?php echo _('Import Extra Personal Certificate test') ?>" />
+                            value="<?php echo _('Import Extra Personal Certificate') ?>" />
                         <?php echo $this->hordeHelp('imp', 'smime-import-personal-certs') ?>
                     </p>
                 </div>
