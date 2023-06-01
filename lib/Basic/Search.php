@@ -270,7 +270,7 @@ class IMP_Basic_Search extends IMP_Basic_Base
                     $id = $val->v;
 
                     if (strpos($id, '0\\') !== false){
-                        $flag =  strtoupper(substr($id, 2));
+                        $flag =  substr($id, 2);
                         $formdata = array('flag' => $flag, 'set' => false);
                     }
                     else if (strpos($id, '%5C') !== false){
