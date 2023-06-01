@@ -23,7 +23,7 @@ class IMP_Prefs_SwitchHandler
      */
     public function getPublicKeysForPrefsIdentities($identity, $identityID){
         
-        $email = $identity->getEmail($identityID);
+        $email = $identity->getEmail();
         $name = $identity->getName($identityID);
 
         $smime_url = Horde::url('../imp/basic.php')->add('page', 'smime');

@@ -157,7 +157,7 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
      *
      * @return mixed  See self::_getEmbeddedMimeParts().
      */
-    protected function _parseEnvelopedData($otherkey=null)
+    protected function _parseEnvelopedData()
     {
         $base_id = $this->_mimepart->getMimeId();
 
@@ -210,14 +210,13 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
             $decrypted_data = null;
 
             /* Try with other identities of the same user */
-            // need to get the right key from the prefs-identites serialzed array!
-            // TODO: only set a reference in the serialized array. Reference should go to extra-keys-table
+            // need to get the right key from the prefs-identitues serialized array!
             $identities = $identity->getAll('id');
             foreach ($identities as $key => $value) {
                 try {
                     $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), null, $key);
-                } catch (\Throwable $th) {
-                    //throw $th;
+                } catch (\Throwable $f) {
+                    // error with identity will  be thrown at the end of this method
                 }
                 if (!is_null($decrypted_data)) {
                     break;
@@ -234,31 +233,32 @@ class IMP_Mime_Viewer_Smime extends Horde_Mime_Viewer_Base
                 }
 
                 // check if privatekeys can be retrieved
-                if (!empty($keyslist) && isset($keyslist)) {
-                    foreach ($keyslist as $key => $otherkey) {
-                        try {
-                            $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), $otherkey);
-                        } catch (\Throwable $th) {
-                            //throw $th;
-                        }
-                        if (!is_null($decrypted_data)) {
-                            break;
-                        }
+                foreach ($keyslist as $key => $otherkey) {
+                    try {
+                        $decrypted_data = $this->_impsmime->decryptMessage($this->_mimepart->replaceEOL($raw_text, Horde_Mime_Part::RFC_EOL), $otherkey);
+                    } catch (\Throwable $g) {
+                        // error with identity will  be thrown at the end of this method
                     }
-                } else {
-                    $decrypted_data = null;
+                    if (!is_null($decrypted_data)) {
+                        break;
+                    }
                 }
             }
 
             /* if still nothing worked: return an error specifying why decryption did not work */
             if (is_null($decrypted_data)) {
-                // in case all of the certificates failed to decrypt, throw an error
-                if (isset($f) && $f->getMessage() == $e->getMessage()) {
-                    $status->addText($e->getMessage().' This happend for all keys used.');
-                } else {
-                    $status->addText($e->getMessage().' Please check your keys and identies. ');
+                if (isset($g) && isset($f)){
+                    $status->addText(' Could not decrypt with any keys in the database: '.$f->getMessage());
                 }
-
+                else if (isset($f)) {
+                    $status->addText(' An error occured with the key of an identity: '.$f->getMessage());
+                } 
+                else if (isset($g)){
+                    $status->addText(' An error occured with an extra key: '.$g->getMessage());
+                }
+                else {
+                    $status->addText(' Decryption failed ');
+                }
                 return null;
             }
         }
