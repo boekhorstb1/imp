@@ -215,7 +215,7 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
      *
      * @return String  A humanreadale email-address.
      */
-    public function getEmail($ident = null)
+    public function getEmail()
     {
         $idArray = $this->get($this->getDefault());
         $emailadress = $idArray['from_addr'];
@@ -233,7 +233,7 @@ class IMP_Prefs_Identity extends Horde_Core_Prefs_Identity
         $list = [];
 
         foreach ($this->getAll($this->_prefnames['id']) as $k => $v) {
-            $list[$k] = strval($this->getEmail($k));
+            $list[$k] = strval($this->getEmail());
         }
         return $list;
     }
