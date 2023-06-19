@@ -264,7 +264,7 @@ class IMP_Basic_Search extends IMP_Basic_Base
 
                 case 'flag':
                     /* Flag search. 
-                        TODO: check weither Answer, Draft and so on also need to be set in Uppercase
+                        TODO: check if the answer-flag, draft-flag and other flags also need to be set to uppercase
                         NOTE: maybe this fix is not solving the root problem
                     */
                     $id = $val->v;
