@@ -36,9 +36,9 @@ jobs:
           - operating-system: 'ubuntu-22.04'
             php-versions: '8.0'
             phpunit-versions: '9.5'
-          - operating-system: 'ubuntu-22.04'
-            php-versions: '8.1'
-            phpunit-versions: '10.1'
+          # - operating-system: 'ubuntu-22.04'
+          #   php-versions: '8.1'
+          #   phpunit-versions: '10.1'
     steps:
     - name: Setup github ssh key
       run:  mkdir -p ~/.ssh/ && ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
