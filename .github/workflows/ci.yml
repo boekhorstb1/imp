@@ -11,6 +11,7 @@ on:
       - ci-fxes
       - maintaina-composerfixed
       - FRAMEWORK_6_0
+      - identites-test-branch
   pull_request:
     branches:
       - master
