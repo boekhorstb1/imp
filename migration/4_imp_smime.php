@@ -18,7 +18,7 @@ class ImpSMIME extends Horde_Db_Migration_Base
      * Upgrade.
      */
     public function up()
-    {
+    {   
         // Create: imp_smime_extrakeys
         $tableList = $this->tables();
         if (!in_array('imp_smime_extrakeys', $tableList)) {
@@ -32,6 +32,36 @@ class ImpSMIME extends Horde_Db_Migration_Base
             $t->column('identity', 'string', ['limit' => 50,'0' => true]);
             $t->column('identity_used', 'bool', ['limit' => 50,'false' => true]); // how to set a default boolean?
             $t->end();
+        }
+            
+        // Check if 'horde_prefs' table exists before trying to access it.
+        if (in_array('horde_prefs', $tableList)) {
+            // Get all 'smime_private_key' data from 'horde_prefs' using a native SQL query.
+            $sql = "SELECT * FROM horde_prefs WHERE pref_name = 'smime_private_key'";
+            $smimePrivateKeyData = $this->_connection->selectAll($sql);
+    
+            // Now, insert the 'smime_private_key' data into 'imp_smime_extrakeys'.
+            foreach ($smimePrivateKeyData as $record) {
+                $prefUid = $record['pref_uid'];
+
+                // Retrieve the corresponding 'smime_public_key' for the 'pref_uid' using another native SQL query.
+                $sql = "SELECT * FROM horde_prefs WHERE pref_name = 'smime_public_key' AND pref_uid = ?";
+                $smimePublicKeyRecord = $this->_connection->selectAll($sql, [$prefUid]);
+
+                if ($smimePublicKeyRecord) {
+                    $insertSql = "INSERT INTO imp_smime_extrakeys (pref_name, user_name, private_key, public_key, privatekey_passwd, alias, identity, identity_used) 
+                                 VALUES (?, ?, ?, ?, NULL, NULL, ?, ?)";
+                    $this->_connection->insert($insertSql, [
+                        $record['pref_name'],
+                        $prefUid,
+                        $record['pref_value'],
+                        $smimePublicKeyRecord[0]['pref_value'],
+                        0, # default identity is 0
+                        0, # defautl identitity used is also 0
+                    ]);
+                }
+
+            }
         }
     }
 
